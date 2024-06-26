@@ -6,6 +6,8 @@ import pickle
 
 #HI SETH
 
+#IS THIS SHOWING UP IN SETH???
+
 
 # import json
 # with open('output.txt', 'w') as filehandle:
