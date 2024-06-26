@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import timeit
 from numpy.fft import rfft, rfftfreq
 from statistics import mean
-
+#hello guys!! -Deniz
 # CREATE AND SAVE A VODSCILLATOR
 
 start = timeit.default_timer() # starts timer that tells you code run time
