@@ -6,6 +6,8 @@ from statistics import mean
 
 # CREATE AND SAVE A VODSCILLATOR
 
+#hello world!
+
 start = timeit.default_timer() # starts timer that tells you code run time
 
 p = {
