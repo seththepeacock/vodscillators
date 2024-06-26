@@ -186,8 +186,7 @@ class Vodscillator:
     if index == "sum":
       y = s.summed_sol
     else:
-      #broking
-      y = s.sol(index)
+      y = s.sol[index]
 
     if component == "im":
       y = y.imag
