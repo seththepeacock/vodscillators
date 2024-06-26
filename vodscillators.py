@@ -4,6 +4,8 @@ import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
 
+#I WANT THIS TEXT FROM MAIN TO GO TO SETH
+
 class Vodscillator:
   """
   Vod-structions
