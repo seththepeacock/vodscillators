@@ -15,10 +15,6 @@ with open("frank.pkl", 'rb') as picklefile:
 #charfreq = v.omegas / (2*np.pi)
 
 
-#main thing
-
-
-
 
 
 
