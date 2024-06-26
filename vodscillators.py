@@ -1,7 +1,9 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
+
 
 class Vodscillator:
   """
@@ -24,11 +26,16 @@ class Vodscillator:
     # s = self (refers to the object itself)
     # **p unpacks the dictionary of parameters (p) we pass into the initializer
 
-    # GENERAL PARAMETERS
-    s.num_osc = p["num_osc"]  # number of oscillators in chain [default = 100 or 150]
-    
-    if "name" in p:
-      s.name = p["name"] # name your vodscillator!
+    #if we want to initialize using a file:
+    if "filename" in p:
+      s.open(p["filename"])
+    #otherwise
+    else:
+      # GENERAL PARAMETERS
+      s.num_osc = p["num_osc"]  # number of oscillators in chain [default = 100 or 150]
+      
+      if "name" in p:
+        s.name = p["name"] # name your vodscillator!
 
 
   def set_freq(s, **p):
@@ -70,7 +77,7 @@ class Vodscillator:
       # generate random ICs
       for k in range(s.num_osc):
         x_k = np.random.uniform(-1, 1)
-        y_k = np.random.uniform(-1, 1) # this was (0,1) in Beth's Code, not sure why yet
+        y_k = np.random.uniform(0, 1) # this was (0,1) in Beth's Code, not sure why yet
         s.ICs[k] = complex(x_k, y_k) # make a complex combination of x and y and save it in ICs
     elif s.IC_method == "const":
       # generate predetermined ICs
@@ -87,6 +94,7 @@ class Vodscillator:
     # NECESSARY PARAMETERS
     s.loc_noise_amp = p["loc_noise_amp"] # amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
     s.glob_noise_amp = p["glob_noise_amp"] # amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
+    # SHOULD WE ADD IMAGINARY NOISE
     s.ti = p["ti"] # start time; [default = 0]
     s.n_transient = p["n_transient"]  # the # of time points we give for transient behavior to settle down; around 30000 [default = 35855]
     s.n_ss = p["n_ss"]  # the # of time points we observe the steady state behavior for [default = 8192]
@@ -100,20 +108,20 @@ class Vodscillator:
     # We want a global xi(t) and then one for each oscillator. 
 
     # First, generate time points with a little padding at the end to smooth the interpolation
-    s.padded_tpoints = np.arange(s.ti, s.tf + 2*s.h, s.h)
+    s.padded_t = np.arange(s.ti, s.tf + 2*s.h, s.h)
 
     # global --> will impact each oscillator equally at each point in time (e.g., wind blowing?)
     # first we randomly generate points with a standard normal distribution
-    global_noise = s.glob_noise_amp * np.random.randn(len(s.padded_tpoints)) # normal distribution times noise amplitude
+    global_noise = s.glob_noise_amp * np.random.randn(len(s.padded_t)) # normal distribution times noise amplitude
     # then interpolate between (using a cubic spline) for ODE solving adaptive step purposes
-    s.xi_glob = CubicSpline(s.padded_tpoints, global_noise)
+    s.xi_glob = CubicSpline(s.padded_t, global_noise)
 
     # local --> will impact each oscillator differently at each point in time (e.g., brownian motion of fluid in inner ear surrounding hair cells)
     s.xi_loc = np.empty(s.num_osc, dtype=CubicSpline)
     for k in range(s.num_osc):
       # again, we randomly generate points (standarad normal) then interpolate between
-      local_noise = s.loc_noise_amp * np.random.randn(len(s.padded_tpoints))
-      s.xi_loc[k] = CubicSpline(s.padded_tpoints, local_noise)
+      local_noise = s.loc_noise_amp * np.random.randn(len(s.padded_t))
+      s.xi_loc[k] = CubicSpline(s.padded_t, local_noise)
 
 
   def set_ODE(s, **p):
@@ -126,22 +134,20 @@ class Vodscillator:
     s.B = p["B"] # [default = 1.0] --> amount of cubic nonlinearity
 
   def solve_ODE(s, **p):
-    s.tpoints = np.arange(s.ti, s.tf, s.h) # array of time points
-    s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y 
-    # adding ".y" grabs the solutions - an array of arrays, where each y value corresponds to t points.
-    # so s.sol[2][4] is the value of the solution for the 3rd oscillator at the 5th time point.
+    s.t = np.arange(s.ti, s.tf, s.h) # array of time points
+    s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.t).y 
+    # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
+    # so s.sol[2][1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
+
+    s.summed_sol = np.zeros(len(s.t))
+    for k in range(s.num_osc):
+      s.summed_sol = s.summed_sol + s.sol[k]
     
 
   def save(s, filename):
     # filename must be a string like "file.pkl"
     with open(filename, 'wb') as outp:  # Overwrites any existing file.
         pickle.dump(s, outp, pickle.HIGHEST_PROTOCOL)
-
-  def open(s, filename):
-    # filename must be a string like "file.pkl"
-    # this will overwrite the current object
-    with open(filename, 'rb') as picklefile:
-      s = pickle.load(picklefile)
 
   def __str__(s):
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
@@ -160,7 +166,9 @@ class Vodscillator:
     for k in range(0, s.num_osc - 1):
       # This part of the equation is the same for all oscillators. 
       # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
-      universal = (1j*s.omegas[k]* + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - s.B*((np.abs(z[k]))**2)*z[k]
+      # (Note also the t+1 argument in the xi's are so that we never use the endpoints of the interpolation, which we had padded with 2 extra points)
+      universal = (1j*s.omegas[k]* + s.epsilon)*z[k] + s.xi_glob(t+1) + s.xi_loc[k](t+1) - s.B*((np.abs(z[k]))**2)*z[k]
+
 
       # if we're in the middle of the chain, we couple with the oscillator on either side
       if k != 0 & k != (s.num_osc - 1):
@@ -173,6 +181,24 @@ class Vodscillator:
         ddt[k] = universal + ccc*(z[k-1] - z[k])
       
     return ddt
+  
+  #NOW WE PLOT!
+
+  def plot_waveform(s, index, component, fig_num):
+    if index == "sum":
+      y = s.summed_sol
+    else:
+      y = s.sol(index)
+
+    if component == "im":
+      y = y.imag
+    elif component == "re":
+      y = y.real
+    
+    plt.figure(fig_num)
+    plt.plot(s.t, y)
+    plt.show()
+
 
 
     
