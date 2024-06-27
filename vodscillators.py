@@ -110,7 +110,7 @@ class Vodscillator:
 
     # global --> will impact each oscillator equally at each point in time (e.g., wind blowing?)
     # first we randomly generate points with a standard normal distribution
-    global_noise = s.glob_noise_amp * np.random.randn(len(s.padded_t)) # normal distribution times noise amplitude
+    global_noise = s.glob_noise_amp * np.random.uniform(len(s.padded_t)) # normal distribution times noise amplitude
     # then interpolate between (using a cubic spline) for ODE solving adaptive step purposes
     s.xi_glob = CubicSpline(s.padded_t, global_noise)
 
@@ -118,7 +118,7 @@ class Vodscillator:
     s.xi_loc = np.empty(s.num_osc, dtype=CubicSpline)
     for k in range(s.num_osc):
       # again, we randomly generate points (standarad normal) then interpolate between
-      local_noise = s.loc_noise_amp * np.random.randn(len(s.padded_t))
+      local_noise = s.loc_noise_amp * np.random.uniform(len(s.padded_t))
       s.xi_loc[k] = CubicSpline(s.padded_t, local_noise)
 
 

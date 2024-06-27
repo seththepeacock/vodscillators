@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 import timeit
 import pickle
 
-#WELCOME TO SETH'S BRANCH
-
 # import json
 # with open('output.txt', 'w') as filehandle:
 #     json.dump(v.t.tolist(), filehandle)
