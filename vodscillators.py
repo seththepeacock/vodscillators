@@ -24,16 +24,11 @@ class Vodscillator:
     # s = self (refers to the object itself)
     # **p unpacks the dictionary of parameters (p) we pass into the initializer
 
-    #if we want to initialize using a file:
-    if "filename" in p:
-      s.open(p["filename"])
-    #otherwise
-    else:
-      # GENERAL PARAMETERS
-      s.num_osc = p["num_osc"]  # number of oscillators in chain [default = 100 or 150]
-      
-      if "name" in p:
-        s.name = p["name"] # name your vodscillator!
+    # GENERAL PARAMETERS
+    s.num_osc = p["num_osc"]  # number of oscillators in chain [default = 100 or 150]
+    
+    if "name" in p:
+      s.name = p["name"] # name your vodscillator!
 
 
   def set_freq(s, **p):
@@ -105,12 +100,12 @@ class Vodscillator:
 
     # We want a global xi(t) and then one for each oscillator. 
 
-    # First, generate time points with a little padding at the end to smooth the interpolation
+    # First, generate time points with a little padding at the endpoints to smooth the interpolation
     s.padded_t = np.arange(s.ti, s.tf + 2*s.h, s.h)
 
     # global --> will impact each oscillator equally at each point in time (e.g., wind blowing?)
     # first we randomly generate points with a standard normal distribution
-    global_noise = s.glob_noise_amp * np.random.uniform(len(s.padded_t)) # normal distribution times noise amplitude
+    global_noise = np.random.uniform(-s.glob_noise_amp, s.glob_noise_amp, len(s.padded_t)) # normal distribution times noise amplitude
     # then interpolate between (using a cubic spline) for ODE solving adaptive step purposes
     s.xi_glob = CubicSpline(s.padded_t, global_noise)
 
@@ -118,7 +113,7 @@ class Vodscillator:
     s.xi_loc = np.empty(s.num_osc, dtype=CubicSpline)
     for k in range(s.num_osc):
       # again, we randomly generate points (standarad normal) then interpolate between
-      local_noise = s.loc_noise_amp * np.random.uniform(len(s.padded_t))
+      local_noise = np.random.uniform(-s.loc_noise_amp, s.loc_noise_amp, len(s.padded_t))
       s.xi_loc[k] = CubicSpline(s.padded_t, local_noise)
 
 
