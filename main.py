@@ -1,15 +1,25 @@
 from vodscillators import *
 import matplotlib.pyplot as plt
+import numpy as np
 import timeit
 import pickle
 
+filename = "tiny_frank.pkl"
 
-with open("frank.pkl", 'rb') as picklefile:
+with open(filename, 'rb') as picklefile:
     v = pickle.load(picklefile)
+    # this "assert" statement will let VSCode know that this is a Vodscillator, and thus display its documentaiton for you!
+    assert isinstance(v, Vodscillator)
 
 # Now we can use our vodscillator v with its solution pre-solved for!
 # We can get the solution (complex output as a function of time) with v.sol[index] where "index" is the index of the oscillator. 
 # If we want the summed solution (all of the oscillators summed together) we grab v.summed_sol 
+
+v.get_ss_fft()
+v.plot_waveform(1)
+
+
+plt.show()
 
 
 

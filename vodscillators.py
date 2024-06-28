@@ -13,9 +13,10 @@ class Vodscillator:
     - requires #2 first!
   4. Generate Noise with "gen_noise"
   5. Set parameters in ODE with "set_ODE"
-  6. Solve ODE Function with "solve_ODE"
-  7. Save your vodscillator to a file
-  7. Plot
+  6. Solve ODE Function with "solve_ODE" 
+  7. Get summed solution with "sum_solution"
+  8. Save your vodscillator to a file
+  9. Plot
   """
 
   #Note - you must create a frequency distribution before setting ICs since an oscillator's IC depends on its char freq
@@ -96,25 +97,26 @@ class Vodscillator:
 
     # Calculate other params
     s.h = 1/s.sample_rate #delta t between time points
-    s.tf = s.h*s.n_transient + s.h*(s.n_ss + 1)  # end time - not sure what this + 1 is for
+    s.tf = s.h*s.n_transient + s.h*(s.n_ss)  # end time
 
     # We want a global xi(t) and then one for each oscillator. 
 
-    # First, generate time points with a little padding at the endpoints to smooth the interpolation
-    s.padded_t = np.arange(s.ti, s.tf + 2*s.h, s.h)
+
+    # First, generate time points
+    s.tpoints = np.arange(s.ti, s.tf, s.h)
 
     # global --> will impact each oscillator equally at each point in time (e.g., wind blowing?)
-    # first we randomly generate points with a standard normal distribution
-    global_noise = np.random.uniform(-s.glob_noise_amp, s.glob_noise_amp, len(s.padded_t)) # normal distribution times noise amplitude
+    # first we randomly generate points uniformly within the given amplitude range
+    global_noise = np.random.uniform(-s.glob_noise_amp, s.glob_noise_amp, len(s.tpoints)) 
     # then interpolate between (using a cubic spline) for ODE solving adaptive step purposes
-    s.xi_glob = CubicSpline(s.padded_t, global_noise)
+    s.xi_glob = CubicSpline(s.tpoints, global_noise)
 
     # local --> will impact each oscillator differently at each point in time (e.g., brownian motion of fluid in inner ear surrounding hair cells)
     s.xi_loc = np.empty(s.num_osc, dtype=CubicSpline)
     for k in range(s.num_osc):
-      # again, we randomly generate points (standarad normal) then interpolate between
-      local_noise = np.random.uniform(-s.loc_noise_amp, s.loc_noise_amp, len(s.padded_t))
-      s.xi_loc[k] = CubicSpline(s.padded_t, local_noise)
+      # again, we randomly generate points uniformly within the given (local) amplitude range, then interpolate between
+      local_noise = np.random.uniform(-s.loc_noise_amp, s.loc_noise_amp, len(s.tpoints))
+      s.xi_loc[k] = CubicSpline(s.tpoints, local_noise)
 
 
   def set_ODE(s, **p):
@@ -127,14 +129,28 @@ class Vodscillator:
     s.B = p["B"] # [default = 1.0] --> amount of cubic nonlinearity
 
   def solve_ODE(s, **p):
-    s.t = np.arange(s.ti, s.tf, s.h) # array of time points
-    s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.t).y 
+    # Numerically integrate our ODE from ti to tf with sample rate 1/h
+  
+    s.tpoints = np.arange(s.ti, s.tf, s.h) # array of time points
+    s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y 
     # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
     # so s.sol[2][1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
-
-    s.summed_sol = np.zeros(len(s.t))
+  
+  def sum_solution(s):
+    # this gives us the summed response of all the oscillators
+    s.summed_sol = np.zeros(len(s.tpoints))
     for k in range(s.num_osc):
       s.summed_sol = s.summed_sol + s.sol[k]
+
+  def get_ss_fft(s, **p):
+    # first, we want to restrict our solution to after the system has entered steady state (ss).
+    # we generate an array which is like our solution array, except with only timepoints after n_transient
+    s.ss_sol = s.sol[:, s.n_transient:]
+
+
+    # s.fft
+    # for k in range(s.num_osc)
+    #   s.
     
 
   def save(s, filename):
@@ -157,11 +173,11 @@ class Vodscillator:
     ccc =  s.d_R + 1j*s.d_I
 
     for k in range(0, s.num_osc - 1):
-      # This part of the equation is the same for all oscillators. 
+      # This "universal" part of the equation is the same for all oscillators. 
       # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
-      # (Note also the t+1 argument in the xi's are so that we never use the endpoints of the interpolation, which we had padded with 2 extra points)
-      universal = (1j*s.omegas[k]* + s.epsilon)*z[k] + s.xi_glob(t+1) + s.xi_loc[k](t+1) - s.B*((np.abs(z[k]))**2)*z[k]
+      universal = (1j*s.omegas[k]* + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - s.B*((np.abs(z[k]))**2)*z[k]
 
+      # COUPLING
 
       # if we're in the middle of the chain, we couple with the oscillator on either side
       if k != 0 & k != (s.num_osc - 1):
@@ -177,7 +193,19 @@ class Vodscillator:
   
   #NOW WE PLOT!
 
-  def plot_waveform(s, index, component, fig_num):
+  def plot_waveform(s, index, component = "re", fig_num = 1):
+    """ Plots a waveform for a given oscillator
+ 
+    Parameters
+    ------------
+        index: int
+          The index of your oscillator (-1 gives summed response)
+        component: str, Optional
+          Which component of signal to plot; "re" or "im" for real or imaginary, respectively
+        fig_num: int, Optional
+          Only required if plotting multiple figures
+        
+    """
     if index == "sum":
       y = s.summed_sol
     else:
@@ -189,7 +217,7 @@ class Vodscillator:
       y = y.real
     
     plt.figure(fig_num)
-    plt.plot(s.t, y)
+    plt.plot(s.tpoints, y)
     plt.show()
 
 
