@@ -25,10 +25,5 @@ with open("frank.pkl", 'rb') as picklefile:
 
 charfreq = v.omegas / (2*np.pi)
 
-v.plot_waveform(1, "im", 3)
-
-
-
-
-
+v.plot_waveform(1, "im", 1)
 
