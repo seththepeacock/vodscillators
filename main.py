@@ -29,9 +29,6 @@ plt.show()
 
 #charfreq = v.omegas / (2*np.pi)
 
-
-
-
-
+v.plot_waveform(1, "im", 1)
 
 

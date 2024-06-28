@@ -54,15 +54,3 @@ print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes")
 
 
 
-
-
-
-
-
-
-    
-
-
-
-
-
