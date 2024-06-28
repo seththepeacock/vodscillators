@@ -234,7 +234,7 @@ class Vodscillator:
           Only required if plotting multiple figures
         
     """
-    if index == "sum":
+    if index == -1: #because -1 means "sum"
       y = s.summed_sol
     else:
       y = s.sol[index]
