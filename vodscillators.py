@@ -4,7 +4,6 @@ import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
 
-
 class Vodscillator:
   """
   Vod-structions
@@ -20,7 +19,6 @@ class Vodscillator:
   """
 
   #Note - you must create a frequency distribution before setting ICs since an oscillator's IC depends on its char freq
-
 
   def __init__(s, **p):
     # s = self (refers to the object itself)

@@ -3,8 +3,10 @@ import matplotlib.pyplot as plt
 import timeit
 from numpy.fft import rfft, rfftfreq
 from statistics import mean
-#hello guys!! -Deniz
+
 # CREATE AND SAVE A VODSCILLATOR
+
+#hello world!
 
 start = timeit.default_timer() # starts timer that tells you code run time
 
@@ -45,6 +47,8 @@ v.gen_noise(**p)
 v.set_ODE(**p)
 v.solve_ODE(**p)
 v.save("frank.pkl")
+
+
 
 stop = timeit.default_timer() # ends timer
 print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
