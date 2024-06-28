@@ -148,7 +148,7 @@ class Vodscillator:
 
     s.fft_freq = fftfreq(s.n_ss, s.h)
     
-    #compute the fft for all oscillators individually and store them in "every_fft"
+    #compute the fft for all oscillators individually and store them in "all_fft"
     s.every_fft = np.zeros((s.num_osc, s.num_runs, len(s.fft_freq)), dtype=complex)
 
 
