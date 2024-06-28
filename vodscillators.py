@@ -153,9 +153,23 @@ class Vodscillator:
     #   s.
     
 
-  def save(s, filename):
-    # filename must be a string like "file.pkl"
-    with open(filename, 'wb') as outp:  # Overwrites any existing file.
+  def save(s, filename = None):
+    """ Saves your vodscillator
+ 
+    Parameters
+    ------------
+        filename: string, Optional
+          Don't include the ".pkl" at the end!
+          If no filename is provided, it will just use the "name" given to your vodscillator
+        
+    """
+    
+    if filename:
+      f = filename + ".pkl"
+    else:
+      f = s.name + ".pkl"
+
+    with open(f, 'wb') as outp:  # Overwrites any existing file with this filename!.
         pickle.dump(s, outp, pickle.HIGHEST_PROTOCOL)
 
   def __str__(s):
@@ -193,19 +207,22 @@ class Vodscillator:
   
   #NOW WE PLOT!
 
-  def plot_waveform(s, index, component = "re", fig_num = 1):
+  def plot_waveform(s, index, component = "re", fig_num = 1, ss = False):
     """ Plots a waveform for a given oscillator
  
     Parameters
     ------------
         index: int
           The index of your oscillator (-1 gives summed response)
+        ss: boolean, Optional
+          If you only want the steady state part of the solution
         component: str, Optional
           Which component of signal to plot; "re" or "im" for real or imaginary, respectively
         fig_num: int, Optional
           Only required if plotting multiple figures
         
     """
+
     if index == "sum":
       y = s.summed_sol
     else:
@@ -215,9 +232,16 @@ class Vodscillator:
       y = y.imag
     elif component == "re":
       y = y.real
+
+    t = s.tpoints
+    
+    if ss:
+      t = t[s.n_transient:]
+      y = y[s.n_transient:]
+
     
     plt.figure(fig_num)
-    plt.plot(s.tpoints, y)
+    plt.plot(t, y)
     plt.show()
 
 

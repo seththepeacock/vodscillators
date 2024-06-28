@@ -10,7 +10,7 @@ start = timeit.default_timer() # starts timer that tells you code run time
 
 p = {
 #General Initializing Params
-"name" : "Frank",
+"name" : "tiny-frank",
 "num_osc" : 3, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
@@ -45,7 +45,7 @@ v.gen_noise(**p)
 v.set_ODE(**p)
 v.solve_ODE(**p)
 v.sum_solution()
-v.save("tiny_frank.pkl")
+v.save()
 
 stop = timeit.default_timer() # ends timer
 print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 

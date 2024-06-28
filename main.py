@@ -16,7 +16,7 @@ with open(filename, 'rb') as picklefile:
 # If we want the summed solution (all of the oscillators summed together) we grab v.summed_sol 
 
 v.get_ss_fft()
-v.plot_waveform(1)
+v.plot_waveform(1, ss=True)
 
 
 plt.show()
