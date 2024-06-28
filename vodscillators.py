@@ -150,11 +150,11 @@ class Vodscillator:
     
     #compute the fft for all oscillators individually and store them in "every_fft"
     s.every_fft = np.zeros((s.num_osc, s.num_runs, len(s.fft_freq)), dtype=complex)
-
-
-    for k in range(s.num_osc):
-      s.every_fft[k] = fft(s.ss_sol[k])
-    
+    for osc in range(s.num_osc):
+      for run in range(s.num_runs):
+        s.every_fft[osc][run] = fft(s.ss_sol[osc][run * s.n_ss : (run + 1) * s.n_ss])
+      
+      
     # finally, get frequency axis (depends on # signal points n_ss and sample spacing h)
 
   
