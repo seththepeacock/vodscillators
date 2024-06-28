@@ -89,7 +89,6 @@ class Vodscillator:
     # NECESSARY PARAMETERS
     s.loc_noise_amp = p["loc_noise_amp"] # amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
     s.glob_noise_amp = p["glob_noise_amp"] # amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
-    # SHOULD WE ADD IMAGINARY NOISE
     s.ti = p["ti"] # start time; [default = 0]
     s.n_transient = p["n_transient"]  # the # of time points we give for transient behavior to settle down; around 30000 [default = 35855]
     s.n_ss = p["n_ss"]  # the # of time points we observe the steady state behavior for [default = 8192]
