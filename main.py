@@ -19,8 +19,6 @@ y = np.abs(v.all_fft[1])
 
 plt.plot(x, y)
 
-
-
 plt.show()
 
 
