@@ -89,7 +89,6 @@ class Vodscillator:
     # NECESSARY PARAMETERS
     s.loc_noise_amp = p["loc_noise_amp"] # amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
     s.glob_noise_amp = p["glob_noise_amp"] # amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
-    # SHOULD WE ADD IMAGINARY NOISE
     s.ti = p["ti"] # start time; [default = 0]
     s.n_transient = p["n_transient"]  # the # of time points we give for transient behavior to settle down; around 30000 [default = 35855]
     s.n_ss = p["n_ss"]  # the # of time points we observe the steady state behavior for [default = 8192]
@@ -129,7 +128,7 @@ class Vodscillator:
     s.d_I = p["d_I"]  # [default = -1.0] --> imaginary part of coupling coefficient
     s.B = p["B"] # [default = 1.0] --> amount of cubic nonlinearity
 
-  def solve_ODE(s, **p):
+  def solve_ODE(s):
     # Numerically integrate our ODE from ti to tf with sample rate 1/h
   
     s.tpoints = np.arange(s.ti, s.tf, s.h) # array of time points
@@ -148,8 +147,8 @@ class Vodscillator:
     # we generate an array which is like our solution array, except with only timepoints after n_transient
     s.ss_sol = s.sol[:, s.n_transient:]
 
-    #compute the fft for all oscillators individually and store them in "all_ss_fft"
-    s.all_fft = np.empty(s.num_osc)
+    #compute the fft for all oscillators individually and store them in "all_fft"
+    s.all_fft = np.zeros(s.num_osc, s.n_ss)
     #we'll also sum them all
     s.summed_fft = np.zeros(s.n_ss)
 

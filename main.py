@@ -15,7 +15,7 @@ with open(filename, 'rb') as picklefile:
 # We can get the solution (complex output as a function of time) with v.sol[index] where "index" is the index of the oscillator. 
 # If we want the summed solution (all of the oscillators summed together) we grab v.summed_sol 
 x = v.fft_freq
-y = np.abs(v.all_ss_fft[1])
+y = np.abs(v.all_fft[1])
 
 plt.plot(x, y)
 
