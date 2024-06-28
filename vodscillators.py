@@ -32,7 +32,6 @@ class Vodscillator:
     if "name" in p:
       s.name = p["name"] # name your vodscillator!
 
-
   def set_freq(s, **p):
     # Freq Dist - creates s.omegas[]
 
@@ -148,13 +147,10 @@ class Vodscillator:
     s.ss_sol = s.sol[:, s.n_transient:]
 
     #compute the fft for all oscillators individually and store them in "all_fft"
-    s.all_fft = np.zeros(s.num_osc, s.n_ss)
-    #we'll also sum them all
-    s.summed_fft = np.zeros(s.n_ss)
+    s.all_fft = np.zeros((s.num_osc, s.num_runs, s.n_ss), dtype=complex)
 
     for k in range(s.num_osc):
       s.all_fft[k] = fft(s.ss_sol[k])
-      s.summed_fft = s.summed_fft + s.all_fft[k]
     
     # finally, get frequency axis (depends on # signal points n_ss and sample spacing h)
     s.fft_freq = fftfreq(s.n_ss, s.h)
@@ -249,7 +245,6 @@ class Vodscillator:
       t = t[s.n_transient:]
       y = y[s.n_transient:]
 
-    
     plt.figure(fig_num)
     plt.plot(t, y)
     plt.show()

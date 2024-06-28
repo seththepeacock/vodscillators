@@ -18,7 +18,6 @@ x = v.fft_freq
 y = np.abs(v.all_fft[1])
 
 plt.plot(x, y)
-
 plt.show()
 
 
@@ -26,7 +25,5 @@ plt.show()
 # Generating V&D figs 2-5 style clustering graphs
 
 #charfreq = v.omegas / (2*np.pi)
-
-v.plot_waveform(1, "im", 1)
 
 
