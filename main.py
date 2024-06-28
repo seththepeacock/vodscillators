@@ -15,12 +15,10 @@ with open(filename, 'rb') as picklefile:
 # We can get the solution (complex output as a function of time) with v.sol[index] where "index" is the index of the oscillator. 
 # If we want the summed solution (all of the oscillators summed together) we grab v.summed_sol 
 x = v.fft_freq
-y = np.abs(v.all_fft[1])
+y = np.abs(v.every_fft[1][0])
 
 plt.plot(x, y)
 plt.show()
-
-
 
 # Generating V&D figs 2-5 style clustering graphs
 

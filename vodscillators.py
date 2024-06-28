@@ -148,11 +148,18 @@ class Vodscillator:
 
     s.fft_freq = fftfreq(s.n_ss, s.h)
     
-    #compute the fft for all oscillators individually and store them in "every_fft"
+    # compute the fft for all oscillators individually and store them in "every_fft"
     s.every_fft = np.zeros((s.num_osc, s.num_runs, len(s.fft_freq)), dtype=complex)
     for osc in range(s.num_osc):
       for run in range(s.num_runs):
         s.every_fft[osc][run] = fft(s.ss_sol[osc][run * s.n_ss : (run + 1) * s.n_ss])
+
+    # average over all runs (for each oscillator)
+    #s.avg_fft_amps = np.zeros
+
+    # calculate phase difference coherence between each neighboring run (for each oscillator)
+    
+
       
       
     # finally, get frequency axis (depends on # signal points n_ss and sample spacing h)
