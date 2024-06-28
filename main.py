@@ -14,9 +14,11 @@ with open(filename, 'rb') as picklefile:
 # Now we can use our vodscillator v with its solution pre-solved for!
 # We can get the solution (complex output as a function of time) with v.sol[index] where "index" is the index of the oscillator. 
 # If we want the summed solution (all of the oscillators summed together) we grab v.summed_sol 
+x = v.fft_freq
+y = np.abs(v.all_ss_fft[1])
 
-v.get_ss_fft()
-v.plot_waveform(1, ss=True)
+plt.plot(x, y)
+
 
 
 plt.show()

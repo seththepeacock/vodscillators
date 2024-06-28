@@ -6,12 +6,12 @@ from statistics import mean
 
 # CREATE AND SAVE A VODSCILLATOR
 
-start = timeit.default_timer() # starts timer that tells you code run time
+start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 #General Initializing Params
-"name" : "tiny-frank",
-"num_osc" : 3, # number of oscillators in chain[default = 100 or 150], 80 in paper
+"name" : "tiny_frank",
+"num_osc" : 150, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
 "freq_dist" : "exp", #linear or exp
@@ -28,10 +28,10 @@ p = {
 "ti" : 0, # start time; [default = 0]
 "n_transient" : 35855, # the # of time points we give for transient behavior to settle down; around 30000 [default = 35855]
 "n_ss" : 8192, # the # of time points we observe the steady state behavior for [default = 8192]
-"num_runs" : 30, # [default for no noise is 1; when we have noise we average over multiple runs]
+"num_runs" : 1, # [default for no noise is 1; when we have noise we average over multiple runs]
 "sample_rate" : 128, #[default = 128]
 
-#set_ODE
+#set_ODE"
 "epsilon" : 1.0, # [default = 1.0] --> control parameter
 "d_R" : 0.15, # [default = 0.15] --> real part of coupling coefficient
 "d_I" : -1.0, # [default = -1.0] --> imaginary part of coupling coefficient
@@ -45,6 +45,7 @@ v.gen_noise(**p)
 v.set_ODE(**p)
 v.solve_ODE(**p)
 v.sum_solution()
+v.get_fft()
 v.save()
 
 stop = timeit.default_timer() # ends timer

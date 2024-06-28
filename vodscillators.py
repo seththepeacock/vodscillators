@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
+from scipy.fft import fft, fftfreq
 
 class Vodscillator:
   """
@@ -142,15 +143,26 @@ class Vodscillator:
     for k in range(s.num_osc):
       s.summed_sol = s.summed_sol + s.sol[k]
 
-  def get_ss_fft(s, **p):
+  def get_fft(s, **p):
     # first, we want to restrict our solution to after the system has entered steady state (ss).
     # we generate an array which is like our solution array, except with only timepoints after n_transient
     s.ss_sol = s.sol[:, s.n_transient:]
 
+    #compute the fft for all oscillators individually and store them in "all_ss_fft"
+    s.all_fft = np.empty(s.num_osc)
+    #we'll also sum them all
+    s.summed_fft = np.zeros(s.n_ss)
 
-    # s.fft
-    # for k in range(s.num_osc)
-    #   s.
+    for k in range(s.num_osc):
+      s.all_fft[k] = fft(s.ss_sol[k])
+      s.summed_fft = s.summed_fft + s.all_fft[k]
+    
+    # finally, get frequency axis (depends on # signal points n_ss and sample spacing h)
+    s.fft_freq = fftfreq(s.n_ss, s.h)
+
+  
+    
+    
     
 
   def save(s, filename = None):
@@ -222,7 +234,6 @@ class Vodscillator:
           Only required if plotting multiple figures
         
     """
-
     if index == "sum":
       y = s.summed_sol
     else:
