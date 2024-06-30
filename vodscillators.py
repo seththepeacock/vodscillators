@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
-from scipy.fft import fft, fftfreq
+from scipy.fft import fft, fftfreq, rfft
 
 class Vodscillator:
   """
@@ -166,7 +166,46 @@ class Vodscillator:
 
     #GOAL 2- calculate phase difference coherence between each neighboring run (for each oscillator)
     
-    
+    M = s.num_runs
+    Npts = s.n_ss
+    #wf is our time series (waveform)
+    wf = s.ss_sol
+
+    storeM = np.empty([int(Npts/2+1),M])
+    storeP = np.empty([int(Npts/2+1),M])
+    storeWF = np.empty([int(Npts),M])
+    storePdiff = np.empty([int(Npts/2+1),M-1])  # smaller buffer for phase diffs
+
+
+# ==== spectral averaging loop
+    for run in range(0, M): #for each run:
+        indx = run*Npts  # index offset so to move along waveform
+        signal = np.squeeze(wf[indx:indx+Npts]);  # extract segment
+        # --- deal w/ FFT
+        spec = rfft(signal)  # magnitude of ft of wf
+        mag = abs(spec)
+        phase = np.angle(spec)
+        # --- store away
+        storeM[:,run] = mag #of fourier transform
+        storeP[:,run] = phase #of ft
+        storeWF[:,run] = signal #the wf ie time series
+        # ==== 
+        if (run>=1):
+            #Q: why not take the last segment from the stored buffers?
+            indxL = (run-1)*Npts  # previous segment index 
+            signalL =  np.squeeze(wf[indxL:indxL+Npts]);  # re-extract last segment
+            specL = rfft(signalL) 
+            phaseL = np.angle(specL)
+            # --- now compute phase diff re last segment (phaseDIFF2) and store
+            phaseDIFF2 = phase - phaseL
+            storePdiff[:,run-1] = phaseDIFF2
+
+    # ====
+    # vC= sqrt(mean(sin(phiC-phi0)).^2 +mean(cos(phiC-phi0)).^2);
+    xx= np.average(np.sin(storePdiff),axis=1)
+    yy= np.average(np.cos(storePdiff),axis=1)
+    coherence= np.sqrt(xx**2 + yy**2)
+
 
     #n.b. for both goals: average over windows for each osc and for sum of the fft's
 
