@@ -156,15 +156,19 @@ class Vodscillator:
       for run in range(s.num_runs):
         s.every_fft[osc][run] = fft(s.ss_sol[osc][run * s.n_ss : (run + 1) * s.n_ss])
 
-    # average over all runs (for each oscillator)
-    #s.avg_fft_amps = np.zeros((s.num_osc, len(s.fft_freq)), dtype=complex)
-    #for osc in range(s.num_osc):
-    #  for run in range(s.num_runs):
-    #    s.every_fft[osc][run] = 
+    #GOAL 1- average over all runs (for each oscillator)
+    s.avg_fft_amps = np.zeros((s.num_osc, len(s.fft_freq)), dtype=complex)
+    for osc in range(s.num_osc):
+      for run in range(s.num_runs):
+        s.avg_fft_amps[osc] = np.mean(s.every_fft[osc])
 
-    # calculate phase difference coherence between each neighboring run (for each oscillator)
+    #done i guess? -deniz
+
+    #GOAL 2- calculate phase difference coherence between each neighboring run (for each oscillator)
     
-    #average over windows for each osc and for sum of the fft's
+    
+
+    #n.b. for both goals: average over windows for each osc and for sum of the fft's
 
       
       
