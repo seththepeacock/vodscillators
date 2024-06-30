@@ -209,7 +209,7 @@ class Vodscillator:
 
     #n.b. for both goals: average over windows for each osc and for sum of the fft's
 
-      
+    #remains to do everything for sums of fft's and to plot stuff
       
 
   
