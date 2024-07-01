@@ -1,7 +1,7 @@
 from vodscillators import *
 import matplotlib.pyplot as plt
 import timeit
-from numpy.fft import rfft, rfftfreq
+from scipy.fft import rfft, rfftfreq
 from statistics import mean
 
 # CREATE AND SAVE A VODSCILLATOR

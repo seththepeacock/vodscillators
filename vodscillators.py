@@ -165,52 +165,136 @@ class Vodscillator:
     #done i guess? -deniz
 
     #GOAL 2- calculate phase difference coherence between each neighboring run (for each oscillator)
-    
-    M = s.num_runs
-    Npts = s.n_ss
-    #wf is our time series (waveform)
-    wf = s.ss_sol
+    for osc in range(s.num_osc):
+      M = s.num_runs
+      Npts = s.n_ss
+      #wf is our time series (waveform)
+      wf = s.ss_sol[osc]
 
-    storeM = np.empty([int(Npts/2+1),M])
-    storeP = np.empty([int(Npts/2+1),M])
-    storeWF = np.empty([int(Npts),M])
-    storePdiff = np.empty([int(Npts/2+1),M-1])  # smaller buffer for phase diffs
-
-
-# ==== spectral averaging loop
-    for run in range(0, M): #for each run:
-        indx = run*Npts  # index offset so to move along waveform
-        signal = np.squeeze(wf[indx:indx+Npts]);  # extract segment
-        # --- deal w/ FFT
-        spec = rfft(signal)  # magnitude of ft of wf
-        mag = abs(spec)
-        phase = np.angle(spec)
-        # --- store away
-        storeM[:,run] = mag #of fourier transform
-        storeP[:,run] = phase #of ft
-        storeWF[:,run] = signal #the wf ie time series
-        # ==== 
-        if (run>=1):
-            #Q: why not take the last segment from the stored buffers?
-            indxL = (run-1)*Npts  # previous segment index 
-            signalL =  np.squeeze(wf[indxL:indxL+Npts]);  # re-extract last segment
-            specL = rfft(signalL) 
-            phaseL = np.angle(specL)
-            # --- now compute phase diff re last segment (phaseDIFF2) and store
-            phaseDIFF2 = phase - phaseL
-            storePdiff[:,run-1] = phaseDIFF2
-
-    # ====
-    # vC= sqrt(mean(sin(phiC-phi0)).^2 +mean(cos(phiC-phi0)).^2);
-    xx= np.average(np.sin(storePdiff),axis=1)
-    yy= np.average(np.cos(storePdiff),axis=1)
-    coherence= np.sqrt(xx**2 + yy**2)
+      storeM = np.empty([int(Npts/2+1),M])
+      storeP = np.empty([int(Npts/2+1),M])
+      storeWF = np.empty([int(Npts),M])
+      storePdiff = np.empty([int(Npts/2+1),M-1])  # smaller buffer for phase diffs
 
 
-    #n.b. for both goals: average over windows for each osc and for sum of the fft's
+# ==  == spectral averaging loop
+      for run in range(0, M): #for each run:
+          indx = run*Npts  # index offset so to move along waveform
+          signal = np.squeeze(wf[indx:indx+Npts])  # extract segment
+          # --- deal w/ FFT
+          spec = fft(signal)  # magnitude of ft of wf
+          mag = abs(spec)
+          phase = np.angle(spec)
+          # --- store away
+          storeM[:,run] = mag #of fourier transform
+          storeP[:,run] = phase #of ft
+          storeWF[:,run] = signal #the wf ie time series
+          # ==== 
+          if (run>=1):
+              #Q: why not take the last segment from the stored buffers?
+              indxL = (run-1)*Npts  # previous segment index 
+              signalL =  np.squeeze(wf[indxL:indxL+Npts])  # re-extract last segment
+              specL = fft(signalL) 
+              phaseL = np.angle(specL)
+              # --- now compute phase diff re last segment (phaseDIFF2) and store
+              phaseDIFF2 = phase - phaseL
+              storePdiff[:,run-1] = phaseDIFF2
 
-    #remains to do everything for sums of fft's and to plot stuff
-      
+      # ====
+      # vC= sqrt(mean(sin(phiC-phi0)).^2 +mean(cos(phiC-phi0)).^2);
+      xx= np.average(np.sin(storePdiff),axis=1)
+      yy= np.average(np.cos(storePdiff),axis=1)
+      coherence= np.sqrt(xx**2 + yy**2)
+
+
+      #n.b. for both goals: average over windows for each osc and for sum of the fft's
+
+      #remains to do everything for sums of fft's and to plot stuff
+      #put plot and averages in another function
+      SR = s.sample_rate
+      freq = s.fft_freq
+
+      tP = np.arange(indx/SR,(indx+Npts-0)/SR,1/SR); # time assoc. for segment (only for plotting)
+      specAVGm= np.average(storeM,axis=1)  # spectral-avgd MAGs
+      specAVGp= np.average(storeP,axis=1)  # spectral-avgd PHASEs
+      specAVGpd= np.average(storePdiff,axis=1) # spectral-avgd phase diff.
+      # --- time-averaged version
+      timeAVGwf= np.average(storeWF,axis=1)  # time-averaged waveform
+      specAVGwf= rfft(timeAVGwf)
+
+      indxFl= np.where(freq>=200)[0][0]  # find freq index re above (0.2) kHz
+      indxFh= np.where(freq<=7000)[0][-1]  # find freq index re under (7) kHz
+
+      plt.close("all")
+      # --- single waveform and assoc. spectrum
+      if 1==0:
+          fig1, ax1 = plt.subplots(2,1)
+          ax1[0].plot(tP,signal,'k-',label='wf')
+          ax1[0].set_xlabel('Time [s]')  
+          ax1[0].set_ylabel('Signal [arb]') 
+          ax1[0].set_title('Last waveform used for averaging')
+          ax1[0].grid()
+          ax1[1].plot(freq/1000,20*np.log10(spec),'r-',label='X')
+          ax1[1].set_xlabel('Frequency [kHz]')  
+          ax1[1].set_ylabel('Magnitude [dB]') 
+          ax1[1].set_title('Spectrum')
+          ax1[1].grid()
+          ax1[1].set_xlim([0,8])
+          fig1.tight_layout(pad=1.5)
+
+      # --- averaged spect. MAG
+      specAVGmDB= 20*np.log10(specAVGm)
+      fig2 = plt.subplots()
+      fig2= plt.plot(freq/1000,specAVGmDB,'b-',lw=1,label='X')
+      fig2= plt.xlabel('Frequency [kHz]')
+      fig2= plt.ylabel('Magnitude [dB]') 
+      fig2= plt.title("averaged spectral magnitude") 
+      fig2= plt.grid()
+      fig2= plt.xlim([0, 7])
+      fig2= plt.ylim([np.min(specAVGmDB[indxFl:indxFh])-5,
+                      np.max(specAVGmDB[indxFl:indxFh])+5])
+
+
+      # --- averaged time-averaged. MAG
+      if 1==0:
+          specAVGwfDB= 20*np.log10(abs(specAVGwf))
+          fig3 = plt.subplots()
+          fig3= plt.plot(freq/1000,specAVGwfDB,'b-',lw=2)
+          fig3= plt.xlim([0, 7])
+          fig3= plt.ylim([np.min(specAVGwfDB[indxFl:indxFh])-5,
+                          np.max(specAVGwfDB[indxFl:indxFh])+5])
+          fig3= plt.xlabel('Frequency [kHz]')
+          fig3= plt.ylabel('Magnitude [dB]') 
+          fig3= plt.title('Time-averaged spectrum') 
+          fig3= plt.grid()
+
+      """# --- averaged spect. PHASE (difference re lower freq bin)
+      # NOTE: Not sure this is coded to completion to ascertain this/that
+      if 1==0:
+          fig4 = plt.subplots()
+          fig4= plt.plot(freq[0:-1]/1000,specAVGpd,'b-',lw=1,label='X')
+          #fig4= plt.plot(freq/1000,specAVGp,'b-',lw=1,label='X')
+          fig4= plt.xlabel('Frequency [kHz]')  
+          fig4= plt.ylabel('Phase [rads]') 
+          fig4= plt.title(fileN) 
+          fig4= plt.grid()
+          fig4= plt.xlim([0, 7])
+          #fig2= plt.ylim([-0.2,0.2])"""
+
+      # --- coherence
+      if 1==1:
+          fig1 = plt.subplots()
+          fig1= plt.plot(freq/1000,coherence,'b-',lw=1,label='X')
+          #fig4= plt.plot(freq/1000,specAVGp,'b-',lw=1,label='X')
+          fig5= plt.xlabel('Frequency [kHz]')  
+          fig5= plt.ylabel('Phase Coherence (i.e., vector strength)') 
+          fig5= plt.title("coherence") 
+          fig5= plt.grid()
+          fig5= plt.xlim([0, 7])
+          #fig2= plt.ylim([-0.2,0.2])
+
+
+
 
   
     
