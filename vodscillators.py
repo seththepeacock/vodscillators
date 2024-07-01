@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
-from scipy.fft import fft, fftfreq
+from scipy.fft import rfft, rfftfreq
 
 class Vodscillator:
   """
@@ -146,24 +146,23 @@ class Vodscillator:
     # we generate an array which is like our solution array, except with only timepoints after n_transient
     s.ss_sol = s.sol[:, s.n_transient:]
 
-    
-    #get frequency axis (depends on # signal points n_ss and sample spacing h)
-    s.fft_freq = fftfreq(s.n_ss, s.h)
+    s.fft_freq = rfftfreq(s.n_ss, s.h)
     
     # compute the fft for all oscillators individually and store them in "every_fft"
     s.every_fft = np.zeros((s.num_osc, s.num_runs, len(s.fft_freq)), dtype=complex)
     for osc in range(s.num_osc):
       for run in range(s.num_runs):
-        s.every_fft[osc][run] = fft(s.ss_sol[osc][run * s.n_ss : (run + 1) * s.n_ss])
+        s.every_fft[osc][run] = rfft(s.ss_sol[osc][run * s.n_ss : (run + 1) * s.n_ss])
 
     # average over all runs (for each oscillator)
-    #s.avg_fft_amps = np.zeros
+    s.fft_avg_amps = np.zeros
 
     # calculate phase difference coherence between each neighboring run (for each oscillator)
     
 
       
       
+    # finally, get frequency axis (depends on # signal points n_ss and sample spacing h)
 
   
     
