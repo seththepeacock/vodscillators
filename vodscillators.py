@@ -166,6 +166,12 @@ class Vodscillator:
     # we'll also get the fft of the summed response averaged over all ss intervals
     s.summed_AOI_fft = np.zeros(s.num_freq_points, dtype=complex)
 
+    s.summed_AOI_fft = np.zeros((s.num_osc, len(s.fft_freq)), dtype=complex)
+    for osc in range(s.num_osc):
+      for run in range(s.num_runs):
+        s.summed_AOI_fft[osc] = np.mean(s.every_fft[osc])
+
+
     for interval in range(s.num_intervals):
       for osc in range(s.num_osc):
         # calculate fft
