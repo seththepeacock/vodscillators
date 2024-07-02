@@ -352,10 +352,10 @@ class Vodscillator:
           y = s.AOI_fft[osc]
         else:
           y = s.every_fft[osc, interval]
-        # square the amplitude
-        y = (np.abs(y))**2
-        # normalize
-        y = y / (s.sample_rate * s.n_ss)
+      # square the amplitude
+      y = (np.abs(y))**2
+      # normalize
+      y = y / (s.sample_rate * s.n_ss)
 
       plt.plot(f, y, label="power")
       plt.plot(freq, s.SOO_phase_coherence * 1000,'b-',lw=1,label='coherence')
