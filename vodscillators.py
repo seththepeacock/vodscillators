@@ -191,17 +191,12 @@ class Vodscillator:
     s.summed_AOI_fft = s.summed_AOI_fft / s.num_intervals
 
   def coherence(s, osc=0):
-    Npts = s.n_ss
-    #wf is our time series (waveform)
+    Npts = s.n_ss #window size
     wf = s.ss_sol[osc]
     M = int(np.floor(len(wf)/Npts)) #previously s.num_runs
-    #print(wf.shape)
     SR = s.sample_rate #sampling frequency
     freq= np.arange(0,(Npts+1)/2,1)    # create a freq. array (for FFT bin labeling)
     freq= SR*freq/Npts
-    #indxFl= np.where(freq>=200)[0][0]  # find freq index re above (0.2) kHz
-    indxFh= np.where(freq<=7000)[0][-1]  # find freq index re under (7) kHz
-    indexFl=0
     storeM = np.empty([int(Npts),M])
     storeP = np.empty([int(Npts),M])
     storeWF = np.empty([int(Npts),M])
@@ -226,8 +221,6 @@ class Vodscillator:
             #signalL =  np.squeeze(wf[indxL:indxL+Npts])  # re-extract last segment
             #specL = fft(signalL) 
             phaseL = storeP[:, run-1]
-            # --- now compute phase diff re last segment (phaseDIFF2) and store
-            #phaseDIFF2 = phase - phaseL
             storePdiff[:,run-1] = phase - phaseL
     # ====
     # vC= sqrt(mean(sin(phiC-phi0)).^2 +mean(cos(phiC-phi0)).^2);
@@ -247,6 +240,10 @@ class Vodscillator:
     # --- time-averaged version
     timeAVGwf= np.average(storeWF,axis=1)  # time-averaged waveform
     specAVGwf= rfft(timeAVGwf)
+
+
+
+
   
   def save(s, filename = None):
     """ Saves your vodscillator in a .pkl file
