@@ -367,16 +367,16 @@ class Vodscillator:
   def plotter(s, plot_type=[], fig_num=1):
     freq = s.fft_freq
      # --- coherence
-    fig = plt.figure()
-    fig.subplots()
+    fig, ax = plt.subplots(nrows=len(plot_type), ncols=1)
 
     if any("coherence"== a for a in plot_type):
-      fig1= fig.add_subplot(freq/1000,s.coherence,'b-',lw=1,label='X')
-      fig1.xlabel('Frequency [kHz]')  
-      fig1.ylabel('Phase Coherence (i.e. vector strength)') 
-      fig1.title("coherence") 
+      fig1 = ax[0]
+      fig1.plot(freq/1000,s.coherence,'b-',lw=1,label='X')
+      fig1.set_xlabel('Frequency [kHz]')  
+      fig1.set_ylabel('Phase Coherence (i.e. vector strength)') 
+      fig1.set_title("coherence") 
       fig1.grid()
-      fig1.xlim([0, 0.1])
+      fig1.set_xlim([0, 0.1])
 
 
     if any("cluster"== a for a in plot_type):
@@ -404,12 +404,13 @@ class Vodscillator:
         s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
 
       # now plot!
-      fig2 = fig.add_subplot(s.avg_cluster_freqs, '-o', label="Average frequency")
+      fig2 = ax[-1]
+      fig2.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
       fig2.plot(s.avg_position_amplitudes, label="Amplitude")
       fig2.plot(s.char_freqs, '--', label="Characteristic frequency")
-      fig2.ylabel('Average Frequency')
-      fig2.xlabel('Oscillator Index')
-      fig2.title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
+      fig2.set_ylabel('Average Frequency')
+      fig2.set_xlabel('Oscillator Index')
+      fig2.set_title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
       fig2.legend()
     
 

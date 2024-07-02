@@ -5,7 +5,7 @@ import timeit
 import pickle
 
 # Open pickled vodscillator
-filename = "frank.pkl"
+filename = "TEST.pkl"
 with open(filename, 'rb') as picklefile:
     v = pickle.load(picklefile)
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
