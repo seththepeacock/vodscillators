@@ -157,92 +157,21 @@ class Vodscillator:
       # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
     s.every_fft = np.zeros((s.num_osc, s.num_intervals, s.num_freq_points), dtype=complex) # every_fft[which oscillator][which ss interval][output of fft]
 
-    # we'll also add them all together to get the fft of the summed response (sum of fft's = fft of sum)
-    s.summed_fft = np.zeros((s.num_intervals, s.num_freq_points), dtype=complex)
-
-    # For each oscillator we'll add up the fft from each intervals so to average out the noise:
-    s.AOI_fft = np.zeros((s.num_osc, s.num_freq_points), dtype=complex)
-
-    # we'll also get the fft of the summed response averaged over all ss intervals
-    s.summed_AOI_fft = np.zeros(s.num_freq_points, dtype=complex)
-
-    s.summed_AOI_fft = np.zeros((s.num_osc, len(s.fft_freq)), dtype=complex)
-    for osc in range(s.num_osc):
-      for run in range(s.num_intervals):
-        s.summed_AOI_fft[osc] = np.mean(s.every_fft[osc])
-
-
     for interval in range(s.num_intervals):
       for osc in range(s.num_osc):
         # calculate fft
         s.every_fft[osc][interval] = rfft((s.ss_sol[osc][interval * s.n_ss : (interval + 1) * s.n_ss]).real)
-        
-        # add to the summed response array
-        s.summed_fft[interval] += s.every_fft[osc][interval]
-        
-        # add to the AOI (averaged over intervals) array (eventually we'll divide by # intervals)
-        s.AOI_fft[osc] += s.every_fft[osc][interval]
-      
-      # now add summed_fft[interval] (which has the total summed response over that interval) to the summed AOI array
-      s.summed_AOI_fft += s.summed_fft[interval]
 
-    # divide by # intervals to get final average
-    s.AOI_fft = s.AOI_fft / s.num_intervals
-    s.summed_AOI_fft = s.summed_AOI_fft / s.num_intervals
+    # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
+    s.SOO_fft = np.sum(s.every_fft, 0)
 
-  def coherence(s, osc=0):
-    Npts = s.n_ss #window size
-    wf = s.ss_sol[osc]
-    M = int(np.floor(len(wf)/Npts)) #previously s.num_runs
-    SR = s.sample_rate #sampling frequency
-    freq = s.fft_freq
-    Nfreq = s.num_freq_points
-    storeM = np.empty([int(Nfreq),M])
-    storeP = np.empty([int(Nfreq),M])
-    storeWF = np.empty([int(Npts),M])
-    storePdiff = np.empty([int(Nfreq),M-1])  # smaller buffer for phase diffs
-# == == spectral averaging loop
-    for run in range(0, M): #for each run:
-        indx = run*Npts  # index offset so to move along waveform
-        signal=  np.squeeze(wf[indx:indx+Npts]);  # extract segment
-        # --- deal w/ FFT
-        spec = rfft(signal)  # magnitude of ft of wf
-        mag = abs(spec)
-        phase = np.angle(spec)
-        # --- store away
-        #print(len(signal))
-        storeM[:,run] = mag #of fourier transform
-        storeP[:,run] = phase #of ft
-        storeWF[:,run] = signal #the wf ie time series
-        # ==== 
-        if (run>=1):
-            #Q: why not take the last segment from the stored buffers?
-            #indxL = (run-1)*Npts  # previous segment index 
-            #signalL =  np.squeeze(wf[indxL:indxL+Npts])  # re-extract last segment
-            #specL = fft(signalL) 
-            phaseL = storeP[:, run-1]
-            storePdiff[:,run-1] = phase - phaseL
-    # ====
-    # vC= sqrt(mean(sin(phiC-phi0)).^2 +mean(cos(phiC-phi0)).^2);
-    xx= np.average(np.sin(storePdiff),axis=1)
-    yy= np.average(np.cos(storePdiff),axis=1)
-    coherence= np.sqrt(xx**2 + yy**2)
-    print(coherence)
-    #n.b. for both goals: average over windows for each osc and for sum of the fft's
-    #remains to do everything for sums of fft's and to plot stuff
-    #put plot and averages in another function
-    tP = np.arange(indx/SR,(indx+Npts-0)/SR,1/SR); # time assoc. for segment (only for plotting)
-    specAVGm= np.average(storeM,axis=1)  # spectral-avgd MAGs
-    specAVGp= np.average(storeP,axis=1)  # spectral-avgd PHASEs
-    specAVGpd= np.average(storePdiff,axis=1) # spectral-avgd phase diff.
-    # --- time-averaged version
-    timeAVGwf= np.average(storeWF,axis=1)  # time-averaged waveform
-    specAVGwf= rfft(timeAVGwf)
+    # For each oscillator we'll average over all intervals to average out the noise:
+    s.AOI_fft = np.mean(s.every_fft, 1)
+
+    # Same thing for the summed response
+    s.SOO_AOI_fft = np.mean(s.SOO_fft, 0)
 
 
-
-
-  
   def save(s, filename = None):
     """ Saves your vodscillator in a .pkl file
  

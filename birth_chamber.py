@@ -45,6 +45,7 @@ v.set_freq(**p)
 v.set_ICs(**p)
 v.gen_noise(**p)
 v.solve_ODE(**p)
+v.save()
 v.do_fft()
 v.save()
 
