@@ -11,8 +11,9 @@ with open(filename, 'rb') as picklefile:
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
     assert isinstance(v, Vodscillator)
 
-start = timeit.default_timer()
+# start = timeit.default_timer()
 
-stop = timeit.default_timer() # ends timer
-print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
-# prints the total time the code took to run
+# stop = timeit.default_timer() 
+# print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
+
+v.plot_freq_clusters()
