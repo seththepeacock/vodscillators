@@ -173,47 +173,57 @@ class Vodscillator:
 
 
 
-  def coherence(s, osc=0):
-    wf = s.ss_sol[osc]
-    Npts = s.n_ss
-    SR = s.sample_rate
-    M = int(np.floor(len(wf)/Npts)) #previously s.num_runs
+  def coherence(s):
+    wf = s.SOO_fft
+    #M = int(np.floor(len(wf)/Npts)+1)
+    M = s.num_intervals
     freq = s.fft_freq
     Nfreq = s.num_freq_points
     storeM = np.empty([int(Nfreq),M])
     storeP = np.empty([int(Nfreq),M])
-    storeWF = np.empty([int(Npts),M])
+    #storeWF = np.empty([int(Npts),M])
     storePdiff = np.empty([int(Nfreq),M-1])  # smaller buffer for phase diffs
     # == == spectral averaging loop
     for run in range(0, M): #for each run:
-      indx = run*Npts  # index offset so to move along waveform
-      signal=  np.squeeze(wf[indx:indx+Npts]);  # extract segment
-      # --- deal w/ FFT
-      spec = rfft(signal)  # magnitude of ft of wf
+      spec = wf[run]  # extract segment
       mag = abs(spec)
       phase = np.angle(spec)
       # --- store away
-      #print(len(signal))
       storeM[:,run] = mag #of fourier transform
       storeP[:,run] = phase #of ft
-      storeWF[:,run] = signal #the wf ie time series
       # ==== 
       if (run>=1):
           phaseL = storeP[:, run-1]
           storePdiff[:,run-1] = phase - phaseL
   
-      #remains to do everything for sum of fft's of each oscillator
-      #put plot and averages in another function
-      tP = np.arange(indx/SR,(indx+Npts-0)/SR,1/SR); # time assoc. for segment (only for plotting)
-      specAVGm= np.average(storeM,axis=1)  # spectral-avgd MAGs
-      specAVGp= np.average(storeP,axis=1)  # spectral-avgd PHASEs
-      specAVGpd= np.average(storePdiff,axis=1) # spectral-avgd phase diff.
-      # --- time-averaged version
-      timeAVGwf= np.average(storeWF,axis=1)  # time-averaged waveform
-      specAVGwf= rfft(timeAVGwf)
+        # ====
+      xx= np.average(np.sin(storePdiff),axis=1)
+      yy= np.average(np.cos(storePdiff),axis=1)
+      coherence= np.sqrt(xx**2 + yy**2)
+      print(coherence)
 
-  #def plotter(s, plot_type):
+      s.coherence = coherence
+      #n.b. for both goals: average over windows for each osc and for sum of the fft's
+
+      #remains to do everything for sums of fft's and to plot stuff
+      #put plot and averages in another function
+
     
+
+  def plotter(s, plot_type=""):
+    freq = s.fft_freq
+     # --- coherence
+    if plot_type=="coherence":
+      fig1 = plt.subplots()
+      fig1= plt.plot(freq/1000,s.coherence,'b-',lw=1,label='X')
+      fig5= plt.xlabel('Frequency [kHz]')  
+      fig5= plt.ylabel('Phase Coherence (i.e. vector strength)') 
+      fig5= plt.title("coherence") 
+      fig5= plt.grid()
+      fig5= plt.xlim([0, 1])
+      #fig2= plt.ylim([-0.2,0.2])
+
+    plt.show()
 
 
 

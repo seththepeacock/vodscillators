@@ -30,8 +30,6 @@ p = {
 "n_ss" : 8192, # the # of time points we observe the steady state behavior for [default = 8192]
 "num_intervals" : 30, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
 "sample_rate" : 128, #[default = 128]
-"num_runs" : 1, # [default for no noise is 1; when we have noise we average over multiple runs, default = 30]
-"sample_rate" : 44100, #[default = 128]
 
 #set_ODE"
 "epsilon" : 4.0, # [default = 1.0] --> control parameter
@@ -47,6 +45,8 @@ v.gen_noise(**p)
 v.solve_ODE(**p)
 v.save()
 v.do_fft()
+v.coherence()
+v.plotter("coherence")
 v.save()
 
 stop = timeit.default_timer() # ends timer
