@@ -313,7 +313,7 @@ class Vodscillator:
 
     
 
-  def plotter(s, plot_type=[], fig_num=1, interval = -1, xmin = None, xmax = None, ymin = None, ymax = None):
+  def plotter(s, plot_type=[], osc=-1, fig_num=1, interval = -1, xmin = None, xmax = None, ymin = None, ymax = None):
     """
     Creates V&D style frequency clustering plots
     Parameters
@@ -338,9 +338,44 @@ class Vodscillator:
 
     freq = s.fft_freq
      # --- coherence
+    fig = plt.figure(fig_num)
     fig, ax = plt.subplots(nrows=len(plot_type), ncols=1)
 
-    if any("coherence" == a for a in plot_type):
+    if any("superimpose" == a for a in plot_type):
+      f = s.fft_freq
+      if osc == -1:
+        if interval == -1:  
+          y = s.SOO_AOI_fft
+        else:
+          y = s.SOO_fft[interval]
+      else:
+        if interval == -1:
+          y = s.AOI_fft[osc]
+        else:
+          y = s.every_fft[osc, interval]
+        # square the amplitude
+        y = (np.abs(y))**2
+        # normalize
+        y = y / (s.sample_rate * s.n_ss)
+
+      fig1 = ax
+      fig1.plot(f, y, label="power")
+      fig1.plot(freq, s.SOO_phase_coherence,'b-',lw=1,label='coherence')
+      fig1.set_xlabel('Frequency [Hz]')  
+      fig1.set_ylabel('Phase Coherence (i.e. vector strength)') 
+      fig1.set_title("coherence") 
+      fig1.grid()
+      fig1.set_xlim([0, 0.1])
+      fig1.set_xlim(left = xmin)
+      fig1.set_xlim(right = xmax)
+      fig1.set_ylim(bottom = ymin)
+      fig1.set_ylim(top = ymax)
+      
+
+
+
+
+    elif any("coherence" == a for a in plot_type):
       fig1 = ax[0]
       fig1.plot(freq/1000,s.coherence,'b-',lw=1,label='X')
       fig1.set_xlabel('Frequency [kHz]')  
@@ -350,7 +385,7 @@ class Vodscillator:
       fig1.set_xlim([0, 0.1])
 
 
-    if any("cluster"== a for a in plot_type):
+    elif any("cluster"== a for a in plot_type):
 
 
     # first, we get our curve of characteristic frequencies

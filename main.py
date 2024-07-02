@@ -12,6 +12,5 @@ with open(filename, 'rb') as picklefile:
     assert isinstance(v, Vodscillator)
 
 
-
-plt.plot(v.fft_freq, v.SOO_phase_coherence)
+v.plotter(plot_type=['superimpose'])
 plt.show()
