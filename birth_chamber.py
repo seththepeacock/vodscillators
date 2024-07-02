@@ -46,7 +46,6 @@ v.solve_ODE(**p)
 v.save()
 v.do_fft()
 v.coherence()
-v.plotter("coherence")
 v.save()
 
 stop = timeit.default_timer() # ends timer
