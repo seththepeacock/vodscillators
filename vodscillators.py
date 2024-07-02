@@ -202,8 +202,7 @@ class Vodscillator:
           phaseL = storeP[:, run-1]
           storePdiff[:,run-1] = phase - phaseL
   
-      #n.b. for both goals: average over windows for each osc and for sum of the fft's
-      #remains to do everything for sums of fft's and to plot stuff
+      #remains to do everything for sum of fft's of each oscillator
       #put plot and averages in another function
       tP = np.arange(indx/SR,(indx+Npts-0)/SR,1/SR); # time assoc. for segment (only for plotting)
       specAVGm= np.average(storeM,axis=1)  # spectral-avgd MAGs
@@ -212,6 +211,9 @@ class Vodscillator:
       # --- time-averaged version
       timeAVGwf= np.average(storeWF,axis=1)  # time-averaged waveform
       specAVGwf= rfft(timeAVGwf)
+
+  #def plotter(s, plot_type):
+    
 
 
 
