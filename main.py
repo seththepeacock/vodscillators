@@ -12,5 +12,5 @@ with open(filename, 'rb') as picklefile:
     assert isinstance(v, Vodscillator)
 
 
-v.plotter(plot_type=['superimpose'])
+v.plotter(plot_type=['superimpose'], xmax = 10, ymax = 20)
 plt.show()

@@ -313,7 +313,7 @@ class Vodscillator:
 
     
 
-  def plotter(s, plot_type=[], osc=-1, interval=-1, fig_num=1, xmin = None, xmax = None, ymin = None, ymax = None):
+  def plotter(s, plot_type=[], osc=-1, interval=-1, fig_num=1, xmin = 0, xmax = None, ymin = 0, ymax = None):
     """
     Creates V&D style frequency clustering plots
     Parameters
@@ -331,8 +331,10 @@ class Vodscillator:
       Which SS interval to display PSD for, defaults to -1 for average
 
     xmin: float, Optional
+      Defaults to 0
     xmax: float, Optional
     ymin: float, Optional
+      Defaults to 0
     ymax: float, Optional
     
     """
@@ -357,16 +359,15 @@ class Vodscillator:
       # normalize
       y = y / (s.sample_rate * s.n_ss)
 
-      plt.plot(f, y, label="power")
-      plt.plot(freq, s.SOO_phase_coherence * 1000,'b-',lw=1,label='coherence')
+      plt.plot(f, y, color = "red", label="Power")
+      plt.plot(freq, s.SOO_phase_coherence * 10, color = "green", lw=1,label='Phase Coherence')
       plt.xlabel('Frequency [Hz]')  
-      plt.ylabel('Power / Vector Strength (Max = 1000)') 
-      plt.title("Phase Coherence and PSD") 
-      plt.grid()
-      plt.xlim(left = xmin)
-      plt.xlim(right = xmax)
-      plt.ylim(bottom = ymin)
-      plt.ylim(top = ymax)
+      plt.ylabel('Power / Vector Strength x 10') 
+      plt.title("Phase Coherence and PSD of Summed Response") 
+      plt.xlim(left = 0, right = 10)
+      plt.xlim(left = xmin, right = xmax)
+      plt.ylim(bottom = ymin, top = ymax)
+      plt.legend()
 
     else:
       fig, ax = plt.subplots(nrows=len(plot_type), ncols=1)
