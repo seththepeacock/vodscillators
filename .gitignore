@@ -2,7 +2,7 @@
 *.code-workspace
 *.pkl
 test + extra comments.py
-phase.py
+phase.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
