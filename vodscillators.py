@@ -233,7 +233,6 @@ class Vodscillator:
       xx= np.average(np.sin(storePdiff),axis=1)
       yy= np.average(np.cos(storePdiff),axis=1)
       coherence= np.sqrt(xx**2 + yy**2)
-      print(coherence)
 
       s.coherence = coherence
       #n.b. for both goals: average over windows for each osc and for sum of the fft's
@@ -243,18 +242,57 @@ class Vodscillator:
 
     
 
-  def plotter(s, plot_type=""):
+  def plotter(s, plot_type=[], fig_num=1):
     freq = s.fft_freq
      # --- coherence
-    if plot_type=="coherence":
-      fig1= plt.plot(freq/1000,s.coherence,'b-',lw=1,label='X')
-      fig1= plt.xlabel('Frequency [kHz]')  
-      fig1= plt.ylabel('Phase Coherence (i.e. vector strength)') 
-      fig1= plt.title("coherence") 
-      fig1= plt.grid()
-      fig1= plt.xlim([0, 0.1])
+    fig = plt.figure()
+    fig.subplots()
+
+    if any("coherence"== a for a in plot_type):
+      fig1= fig.add_subplot(freq/1000,s.coherence,'b-',lw=1,label='X')
+      fig1.xlabel('Frequency [kHz]')  
+      fig1.ylabel('Phase Coherence (i.e. vector strength)') 
+      fig1.title("coherence") 
+      fig1.grid()
+      fig1.xlim([0, 0.1])
+
+
+    if any("cluster"== a for a in plot_type):
+       """ Creates V&D style frequency clustering plots
+    Parameters
+    ------------
+        fig_num: int, Optional
+          Only required if plotting multiple figures
+    """
+
+    # first, we get our curve of characteristic frequencies
+    s.char_freqs = s.omegas / (2*np.pi)
+
+    # next, we get our "average position amplitudes" (square root of the average of the square of the real part of z)
+    s.avg_position_amplitudes = np.zeros(s.num_osc)
+    # and the average frequency of each oscillator
+    s.avg_cluster_freqs = np.zeros(s.num_osc)
+
+    for osc in range(s.num_osc):
+      s.avg_position_amplitudes[osc] = np.sqrt(np.mean((s.ss_sol[osc].real)**2))
+      # This is what it seems like they do in the paper:
+      #s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights = np.abs(s.AOI_fft[osc]))
+      # This is Beth's way:
+      s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
+    
+    # now plot!
+    fig2 = fig.add_subplot(s.avg_cluster_freqs, '-o', label="Average frequency")
+    fig2.plot(s.avg_position_amplitudes, label="Amplitude")
+    fig2.plot(s.char_freqs, '--', label="Characteristic frequency")
+    fig2.ylabel('Average Frequency')
+    fig2.xlabel('Oscillator Index')
+    fig2.title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
+    fig2.legend()
+
 
     plt.show()
+  
+
 
 
 
@@ -370,38 +408,7 @@ class Vodscillator:
     plt.xlabel('Frequency')
     plt.show()
 
-  def plot_freq_clusters(s, fig_num = 1):
-    """ Creates V&D style frequency clustering plots
-    Parameters
-    ------------
-        fig_num: int, Optional
-          Only required if plotting multiple figures
-    """
-
-    # first, we get our curve of characteristic frequencies
-    s.char_freqs = s.omegas / (2*np.pi)
-
-    # next, we get our "average position amplitudes" (square root of the average of the square of the real part of z)
-    s.avg_position_amplitudes = np.zeros(s.num_osc)
-    # and the average frequency of each oscillator
-    s.avg_cluster_freqs = np.zeros(s.num_osc)
-
-    for osc in range(s.num_osc):
-      s.avg_position_amplitudes[osc] = np.sqrt(np.mean((s.ss_sol[osc].real)**2))
-      # This is what it seems like they do in the paper:
-      #s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights = np.abs(s.AOI_fft[osc]))
-      # This is Beth's way:
-      s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
-    
-    # now plot!
-    plt.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
-    plt.plot(s.avg_position_amplitudes, label="Amplitude")
-    plt.plot(s.char_freqs, '--', label="Characteristic frequency")
-    plt.ylabel('Average Frequency')
-    plt.xlabel('Oscillator Index')
-    plt.title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
-    plt.legend()
-    plt.show()
+   
 
 
 
