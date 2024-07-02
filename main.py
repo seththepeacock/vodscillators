@@ -15,7 +15,12 @@ with open(filename, 'rb') as picklefile:
 # stop = timeit.default_timer() 
 # print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
 
+plots = ["coherence", 
+         "cluster"]
 
-v.plot_freq_clusters()
 
-v.plotter("coherence")
+
+
+v.plotter(plots)
+v.plot_waveform()
+

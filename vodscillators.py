@@ -242,57 +242,6 @@ class Vodscillator:
 
     
 
-  def plotter(s, plot_type=[], fig_num=1):
-    freq = s.fft_freq
-     # --- coherence
-    fig = plt.figure()
-    fig.subplots()
-
-    if any("coherence"== a for a in plot_type):
-      fig1= fig.add_subplot(freq/1000,s.coherence,'b-',lw=1,label='X')
-      fig1.xlabel('Frequency [kHz]')  
-      fig1.ylabel('Phase Coherence (i.e. vector strength)') 
-      fig1.title("coherence") 
-      fig1.grid()
-      fig1.xlim([0, 0.1])
-
-
-    if any("cluster"== a for a in plot_type):
-       """ Creates V&D style frequency clustering plots
-    Parameters
-    ------------
-        fig_num: int, Optional
-          Only required if plotting multiple figures
-    """
-
-    # first, we get our curve of characteristic frequencies
-    s.char_freqs = s.omegas / (2*np.pi)
-
-    # next, we get our "average position amplitudes" (square root of the average of the square of the real part of z)
-    s.avg_position_amplitudes = np.zeros(s.num_osc)
-    # and the average frequency of each oscillator
-    s.avg_cluster_freqs = np.zeros(s.num_osc)
-
-    for osc in range(s.num_osc):
-      s.avg_position_amplitudes[osc] = np.sqrt(np.mean((s.ss_sol[osc].real)**2))
-      # This is what it seems like they do in the paper:
-      #s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights = np.abs(s.AOI_fft[osc]))
-      # This is Beth's way:
-      s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
-    
-    # now plot!
-    fig2 = fig.add_subplot(s.avg_cluster_freqs, '-o', label="Average frequency")
-    fig2.plot(s.avg_position_amplitudes, label="Amplitude")
-    fig2.plot(s.char_freqs, '--', label="Characteristic frequency")
-    fig2.ylabel('Average Frequency')
-    fig2.xlabel('Oscillator Index')
-    fig2.title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
-    fig2.legend()
-
-
-    plt.show()
-  
-
 
 
 
@@ -320,12 +269,15 @@ class Vodscillator:
   
   #NOW WE PLOT!
 
-  def plot_waveform(s, osc = -1, component = "re", ss = False, xmin = 0.0, xmax = None, ymin = None, ymax = None, fig_num = 1, ):
+  def plot_waveform(s, plot_type = "wf", osc = -1, component = "re", interval = -1, 
+                    ss = False, xmin = -0.1, xmax = None, ymin = 0.0, ymax = None, fig_num = 1):
     """ Plots a waveform for a given oscillator
  
     Parameters
     ------------
-        index: int, Optional
+        plot_type: str, Optional
+          Plot content (wf or PSD, default:wf)
+        osc: int, Optional
           The index of your oscillator (-1 gives summed response)
         component: str, Optional
           Which component of signal to plot; "re" or "im" for real or imaginary, respectively
@@ -340,75 +292,131 @@ class Vodscillator:
 
         
     """
-    if osc == -1: #because -1 means "sum"
-      y = s.summed_sol
-    else:
-      y = s.sol[osc]
+    if plot_type == "wf":
+      if osc == -1: #because -1 means "sum"
+        y = s.summed_sol
+      else:
+        y = s.sol[osc]
 
-    if component == "im":
-      y = y.imag
-    elif component == "re":
-      y = y.real
+      if component == "im":
+        y = y.imag
+      elif component == "re":
+        y = y.real
 
-    t = s.tpoints
+      t = s.tpoints
+
+      if ss:
+        t = t[s.n_transient:]
+        y = y[s.n_transient:]
+
+      plt.figure(fig_num)
+      plt.plot(t, y)
+      plt.show()
+
+
+    if plot_type == "PSD":
+      """ Plots the fft waveform for a given oscillator (or summed response) in steady state
+  
+      Parameters
+      ------------
+          index: int = -1
+            The index of your oscillator (-1 gives summed response)
+          fig_num: int, Optional
+            Only required if plotting multiple figures
+          xmin: float, Optional
+          xmax: float, Optional
+          ymin: float, Optional
+          ymax: float, Optional
+
+      """
+
+      f = s.fft_freq
+
+      if osc == -1:
+        if interval == -1:  
+          y = s.SOO_AOI_fft
+        else:
+          y = s.SOO_fft[interval]
+      else:
+        if interval == -1:
+          y = s.AOI_fft[osc]
+        else:
+          y = s.every_fft[osc][interval]
+
+      # square the amplitude
+      y = (np.abs(y))**2
+
+      # normalize
+      y = y / (s.sample_rate * s.n_ss)
+
+      plt.figure(fig_num)
+      plt.plot(f, y)
+      plt.xlim(left = xmin)
+      plt.xlim(right = xmax)
+      plt.ylim(bottom = ymin)
+      plt.ylim(top = ymax)
+      plt.title("Power Spectral Density")
+      plt.ylabel('Density')
+      plt.xlabel('Frequency')
+      plt.show()
+
+
+
+
+
+  def plotter(s, plot_type=[], fig_num=1):
+    freq = s.fft_freq
+     # --- coherence
+    fig = plt.figure()
+    fig.subplots()
+
+    if any("coherence"== a for a in plot_type):
+      fig1= fig.add_subplot(freq/1000,s.coherence,'b-',lw=1,label='X')
+      fig1.xlabel('Frequency [kHz]')  
+      fig1.ylabel('Phase Coherence (i.e. vector strength)') 
+      fig1.title("coherence") 
+      fig1.grid()
+      fig1.xlim([0, 0.1])
+
+
+    if any("cluster"== a for a in plot_type):
+      """
+      Creates V&D style frequency clustering plots
+      Parameters
+      ------------
+      fig_num: int, Optional
+      Only required if plotting multiple figures
+      """
+
+    # first, we get our curve of characteristic frequencies
+      s.char_freqs = s.omegas / (2*np.pi)
+
+      # next, we get our "average position amplitudes" (square root of the average of the square of the real part of z)
+      s.avg_position_amplitudes = np.zeros(s.num_osc)
+      # and the average frequency of each oscillator
+      s.avg_cluster_freqs = np.zeros(s.num_osc)
+
+      for osc in range(s.num_osc):
+        s.avg_position_amplitudes[osc] = np.sqrt(np.mean((s.ss_sol[osc].real)**2))
+        # This is what it seems like they do in the paper:
+        #s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights = np.abs(s.AOI_fft[osc]))
+        # This is Beth's way:
+        s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
+
+      # now plot!
+      fig2 = fig.add_subplot(s.avg_cluster_freqs, '-o', label="Average frequency")
+      fig2.plot(s.avg_position_amplitudes, label="Amplitude")
+      fig2.plot(s.char_freqs, '--', label="Characteristic frequency")
+      fig2.ylabel('Average Frequency')
+      fig2.xlabel('Oscillator Index')
+      fig2.title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
+      fig2.legend()
     
-    if ss:
-      t = t[s.n_transient:]
-      y = y[s.n_transient:]
 
-    plt.figure(fig_num)
-    plt.plot(t, y)
+
+
     plt.show()
-
-
-  def plot_PSD(s, osc = -1, interval = -1, xmin = -0.1, xmax = None, ymin = 0.0, ymax = None, fig_num = 1):
-
-    """ Plots the fft waveform for a given oscillator (or summed response) in steady state
- 
-    Parameters
-    ------------
-        index: int = -1
-          The index of your oscillator (-1 gives summed response)
-        fig_num: int, Optional
-          Only required if plotting multiple figures
-        xmin: float, Optional
-        xmax: float, Optional
-        ymin: float, Optional
-        ymax: float, Optional
-        
-    """
-
-    f = s.fft_freq
-
-    if osc == -1:
-      if interval == -1:  
-        y = s.SOO_AOI_fft
-      else:
-        y = s.SOO_fft[interval]
-    else:
-      if interval == -1:
-        y = s.AOI_fft[osc]
-      else:
-        y = s.every_fft[osc][interval]
-
-    # square the amplitude
-    y = (np.abs(y))**2
-
-    # normalize
-    y = y / (s.sample_rate * s.n_ss)
-
-    plt.figure(fig_num)
-    plt.plot(f, y)
-    plt.xlim(left = xmin)
-    plt.xlim(right = xmax)
-    plt.ylim(bottom = ymin)
-    plt.ylim(top = ymax)
-    plt.title("Power Spectral Density")
-    plt.ylabel('Density')
-    plt.xlabel('Frequency')
-    plt.show()
-
-   
+  
 
 
 
