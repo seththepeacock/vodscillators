@@ -130,7 +130,7 @@ class Vodscillator:
     # so s.sol[2][1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
 
     # finally, we get the summed response of all the oscillators
-    s.summed_sol = np.zeros(len(s.tpoints))
+    s.summed_sol = np.zeros(len(s.tpoints), dtype=complex)
     for k in range(s.num_osc):
       s.summed_sol += s.sol[k]
 
