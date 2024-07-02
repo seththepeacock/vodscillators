@@ -313,7 +313,7 @@ class Vodscillator:
 
     
 
-  def plotter(s, plot_type=[], osc=-1, fig_num=1, interval = -1, xmin = None, xmax = None, ymin = None, ymax = None):
+  def plotter(s, plot_type=[], osc=-1, interval=-1, fig_num=1, xmin = None, xmax = None, ymin = None, ymax = None):
     """
     Creates V&D style frequency clustering plots
     Parameters
