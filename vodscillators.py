@@ -144,8 +144,8 @@ class Vodscillator:
   def ODE(s, t, z):
     # This function will only be called by the ODE solver
 
-    # Mark the current progress
-    print(f"Time = {t}/{s.tf}")
+    # Mark the current point in time to track progress
+    print(f"Time = {int(t)}/{int(s.tf)}")
 
     # First make an array to represent the current (complex) derivative of each oscillator
     ddt = np.zeros(s.num_osc, dtype=complex)
@@ -197,7 +197,7 @@ class Vodscillator:
         # calculate fft
         n_start = interval * s.n_ss
         n_stop = (interval + 1) * s.n_ss
-        s.every_fft[osc, interval, :] = rfft((s.ss_sol[osc, n_start:n_stop, :]).real)
+        s.every_fft[osc, interval, :] = rfft((s.ss_sol[osc, n_start:n_stop]).real)
 
     # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
     s.SOO_fft = np.sum(s.every_fft, 0)
