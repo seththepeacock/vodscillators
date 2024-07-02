@@ -1,7 +1,7 @@
 from vodscillators import *
 import matplotlib.pyplot as plt
 import timeit
-from numpy.fft import rfft, rfftfreq
+from scipy.fft import rfft, rfftfreq
 from statistics import mean
 
 # CREATE AND SAVE A VODSCILLATOR
@@ -30,6 +30,8 @@ p = {
 "n_ss" : 8192, # the # of time points we observe the steady state behavior for [default = 8192]
 "num_intervals" : 30, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
 "sample_rate" : 128, #[default = 128]
+"num_runs" : 1, # [default for no noise is 1; when we have noise we average over multiple runs, default = 30]
+"sample_rate" : 44100, #[default = 128]
 
 #set_ODE"
 "epsilon" : 4.0, # [default = 1.0] --> control parameter
