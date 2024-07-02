@@ -1,36 +1,19 @@
 from vodscillators import *
 import matplotlib.pyplot as plt
+import numpy as np
 import timeit
 import pickle
 
-
-#WELCOME TO SETH's BRANCH
-
-
-# import json
-# with open('output.txt', 'w') as filehandle:
-#     json.dump(v.t.tolist(), filehandle)
-
-# plt.plot(v.t, v.summed_sol.real, v.t, v.summed_sol.imag)
-# plt.savefig("summed_response")
-# plt.show()
-
-
-with open("frank.pkl", 'rb') as picklefile:
+# Open pickled vodscillator
+filename = "V+D fig 2.pkl"
+with open(filename, 'rb') as picklefile:
     v = pickle.load(picklefile)
+    # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+    assert isinstance(v, Vodscillator)
 
-# Now we can use our vodscillator v with its solution pre-solved for!
-# We can get the solution (complex output as a function of time) with v.sol[index] where "index" is the index of the oscillator. 
-# If we want the summed solution (all of the oscillators summed together) we grab v.summed_sol 
+# start = timeit.default_timer()
 
+# stop = timeit.default_timer() 
+# print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
 
-
-# Generating V&D figs 2-5 style clustering graphs
-
-charfreq = v.omegas / (2*np.pi)
-
-
-
-
-
-
+v.plot_freq_clusters()
