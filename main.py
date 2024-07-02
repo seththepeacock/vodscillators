@@ -12,7 +12,6 @@ with open(filename, 'rb') as picklefile:
     assert isinstance(v, Vodscillator)
 
 # start = timeit.default_timer()
-
 # stop = timeit.default_timer() 
 # print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
 

@@ -125,7 +125,6 @@ class Vodscillator:
     s.epsilon = p["epsilon"] # [default = 1.0] --> control parameter
     s.d_R = p["d_R"]  # [default = 0.15] --> real part of coupling coefficient
     s.d_I = p["d_I"]  # [default = -1.0] --> imaginary part of coupling coefficient
-    s.B = p["B"] # [default = 1.0] --> amount of cubic nonlinearity
     s.alpha = p["alpha"] # [default = 1.0] --> real coefficient for cubic nonlinearity
 
     # Define complex coupling coefficient ccc
