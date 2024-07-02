@@ -184,7 +184,6 @@ class Vodscillator:
     s.AOI_fft = s.AOI_fft / s.num_intervals
     s.summed_AOI_fft = s.summed_AOI_fft / s.num_intervals
 
-
   def save(s, filename = None):
     """ Saves your vodscillator in a .pkl file
  

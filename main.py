@@ -12,5 +12,3 @@ with open(filename, 'rb') as picklefile:
     assert isinstance(v, Vodscillator)
 
 
-
-v.plot_PSD()
