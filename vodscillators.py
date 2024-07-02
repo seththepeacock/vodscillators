@@ -134,7 +134,7 @@ class Vodscillator:
     s.tpoints = np.arange(s.ti, s.tf, s.h) # array of time points
     s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y 
     # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
-    # so s.sol[2][1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
+    # so s.sol[2, 1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
 
     # finally, we get the summed response of all the oscillators
     s.summed_sol = np.zeros(len(s.tpoints), dtype=complex)
@@ -169,9 +169,9 @@ class Vodscillator:
 
   def do_fft(s):
     """ Returns four arrays:
-    1. every_fft[oscillator index][ss interval index][output]
+    1. every_fft[oscillator index, ss interval index, output]
     2. SOO_fft[output]
-    3. AOI_fft[oscillator index][output]
+    3. AOI_fft[oscillator index, output]
     4. SOO_AOI_fft[output]
 
     AOI = Averaged Over Intervals (for noise)
@@ -188,12 +188,14 @@ class Vodscillator:
     
     # compute the (r)fft for all oscillators individually and store them in "every_fft"
       # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
-    s.every_fft = np.zeros((s.num_osc, s.num_intervals, s.num_freq_points), dtype=complex) # every_fft[which oscillator][which ss interval][output of fft]
+    s.every_fft = np.zeros((s.num_osc, s.num_intervals, s.num_freq_points), dtype=complex) # every_fft[osc index, which ss interval, fft output]
 
     for interval in range(s.num_intervals):
       for osc in range(s.num_osc):
         # calculate fft
-        s.every_fft[osc][interval] = rfft((s.ss_sol[osc][interval * s.n_ss : (interval + 1) * s.n_ss]).real)
+        n_start = interval * s.n_ss
+        n_stop = (interval + 1) * s.n_ss
+        s.every_fft[osc, interval, :] = rfft((s.ss_sol[osc, n_start:n_stop, :]).real)
 
     # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
     s.SOO_fft = np.sum(s.every_fft, 0)
@@ -207,48 +209,44 @@ class Vodscillator:
 
 
   def coherence(s):
-    wf = s.SOO_fft
-    #M = int(np.floor(len(wf)/Npts)+1)
-    M = s.num_intervals
-    freq = s.fft_freq
-    Nfreq = s.num_freq_points
-    storeM = np.empty([int(Nfreq),M])
-    storeP = np.empty([int(Nfreq),M])
-    #storeWF = np.empty([int(Npts),M])
-    storePdiff = np.empty([int(Nfreq),M-1])  # smaller buffer for phase diffs
-    # == == spectral averaging loop
-    for run in range(0, M): #for each run:
-      spec = wf[run]  # extract segment
-      mag = abs(spec)
-      phase = np.angle(spec)
-      # --- store away
-      storeM[:,run] = mag #of fourier transform
-      storeP[:,run] = phase #of ft
-      # ==== 
-      if (run>=1):
-          phaseL = storeP[:, run-1]
-          storePdiff[:,run-1] = phase - phaseL
-  
-        # ====
-      xx= np.average(np.sin(storePdiff),axis=1)
-      yy= np.average(np.cos(storePdiff),axis=1)
-      coherence= np.sqrt(xx**2 + yy**2)
-      print(coherence)
+    # get phase diffs for the sum of oscillators
+    SOO_phase_diffs = np.zeros((s.num_intervals - 1, s.num_freq_points))
+    # and also for each oscillator
+    each_oscillator_phase_diffs = np.zeros((s.num_osc, s.num_intervals - 1, s.num_freq_points))
 
-      s.coherence = coherence
-      #n.b. for both goals: average over windows for each osc and for sum of the fft's
+    for interval in range(0, s.num_intervals - 1):
+      # get the phases in this current interval and the next then take the difference
+      SOO_current_phases = np.angle(s.SOO_fft[interval, :])
+      SOO_next_phases = np.angle(s.SOO_fft[interval + 1, :])
+      SOO_phase_diffs[interval] = SOO_next_phases - SOO_current_phases
 
-      #remains to do everything for sums of fft's and to plot stuff
-      #put plot and averages in another function
+      # repeat for each individual oscillator
+      # note these steps are the same as above, except we have an extra index slot at the beginning for oscillator #
+      current_phases = np.angle(s.every_fft[:, interval, :])
+      next_phases = np.angle(s.every_fft[:, interval + 1, :])
+      each_oscillator_phase_diffs[:, interval, :] = next_phases - current_phases
 
-    
+    # now calculate phase coherence by averaging over the set of adjacent-interval-pairs
+    # Note each of these arrays have shape (num_freq_points,)
+    SOO_xx= np.average(np.sin(SOO_phase_diffs),axis=0)
+    SOO_yy= np.average(np.cos(SOO_phase_diffs),axis=0)
+    # here's our final output:
+    s.SOO_phase_coherence = np.sqrt(SOO_xx**2 + SOO_yy**2)
+
+    # repeat for each individual oscillator
+    # each of these arrays have shape (num_osc, num_freq_points)
+    xx = np.average(np.sin(each_oscillator_phase_diffs),axis=1)
+    yy= np.average(np.cos(each_oscillator_phase_diffs),axis=1)
+    # here's our final output:
+    s.each_oscillator_phase_coherence = np.sqrt(xx**2 + yy**2)
+
 
   def plotter(s, plot_type=""):
     freq = s.fft_freq
      # --- coherence
     if plot_type=="coherence":
       fig1 = plt.subplots()
-      fig1= plt.plot(freq/1000,s.coherence,'b-',lw=1,label='X')
+      fig1= plt.plot(freq/1000,s.phase_coherence,'b-',lw=1,label='X')
       fig5= plt.xlabel('Frequency [kHz]')  
       fig5= plt.ylabel('Phase Coherence (i.e. vector strength)') 
       fig5= plt.title("coherence") 
@@ -353,7 +351,7 @@ class Vodscillator:
       if interval == -1:
         y = s.AOI_fft[osc]
       else:
-        y = s.every_fft[osc][interval]
+        y = s.every_fft[osc, interval]
 
     # square the amplitude
     y = (np.abs(y))**2
