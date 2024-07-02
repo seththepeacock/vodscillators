@@ -157,32 +157,20 @@ class Vodscillator:
       # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
     s.every_fft = np.zeros((s.num_osc, s.num_intervals, s.num_freq_points), dtype=complex) # every_fft[which oscillator][which ss interval][output of fft]
 
-    # we'll also add them all together to get the fft of the summed response (sum of fft's = fft of sum)
-    s.summed_fft = np.zeros((s.num_intervals, s.num_freq_points), dtype=complex)
-
-    # For each oscillator we'll add up the fft from each intervals so to average out the noise:
-    s.AOI_fft = np.zeros((s.num_osc, s.num_freq_points), dtype=complex)
-
-    # we'll also get the fft of the summed response averaged over all ss intervals
-    s.summed_AOI_fft = np.zeros(s.num_freq_points, dtype=complex)
-
     for interval in range(s.num_intervals):
       for osc in range(s.num_osc):
         # calculate fft
         s.every_fft[osc][interval] = rfft((s.ss_sol[osc][interval * s.n_ss : (interval + 1) * s.n_ss]).real)
-        
-        # add to the summed response array
-        s.summed_fft[interval] += s.every_fft[osc][interval]
-        
-        # add to the AOI (averaged over intervals) array (eventually we'll divide by # intervals)
-        s.AOI_fft[osc] += s.every_fft[osc][interval]
-      
-      # now add summed_fft[interval] (which has the total summed response over that interval) to the summed AOI array
-      s.summed_AOI_fft += s.summed_fft[interval]
 
-    # divide by # intervals to get final average
-    s.AOI_fft = s.AOI_fft / s.num_intervals
-    s.summed_AOI_fft = s.summed_AOI_fft / s.num_intervals
+    # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
+    s.summed_fft = np.sum(s.every_fft, 0)
+
+    # For each oscillator we'll average over all intervals to average out the noise:
+    s.AOI_fft = np.mean(s.every_fft, 1)
+
+    # Same thing for the summed response
+    s.summed_AOI_fft = np.mean(s.summed_fft)
+
 
   def save(s, filename = None):
     """ Saves your vodscillator in a .pkl file
