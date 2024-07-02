@@ -144,11 +144,13 @@ class Vodscillator:
   def ODE(s, t, z):
     # This function will only be called by the ODE solver
 
-    # Note that this is equation (11) in V&D 2008
+    # Mark the current progress
+    print(f"Time = {t}/{s.tf}")
 
     # First make an array to represent the current (complex) derivative of each oscillator
     ddt = np.zeros(s.num_osc, dtype=complex)
 
+    # We are using equation (11) in Vilfan & Duke 2008
     for k in range(s.num_osc):
       # This "universal" part of the equation is the same for all oscillators. 
       # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
