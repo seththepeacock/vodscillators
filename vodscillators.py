@@ -165,11 +165,19 @@ class Vodscillator:
     #done i guess? -deniz
 
     #GOAL 2- calculate phase difference coherence between each neighboring run (for each oscillator)
+    """we should probably store the previous fft's and reuse them here instead of re-doing the fft's here"""    
     for osc in range(s.num_osc):
-      M = s.num_runs
       Npts = s.n_ss
       #wf is our time series (waveform)
       wf = s.ss_sol[osc]
+      M = int(np.floor(len(wf)/Npts)) #previously s.num_runs
+      #print(wf.shape)
+      SR = s.h #sampling frequency
+      freq= np.arange(0,(Npts+1)/2,1)    # create a freq. array (for FFT bin labeling)
+      freq= SR*freq/Npts
+      #indxFl= np.where(freq>=200)[0][0]  # find freq index re above (0.2) kHz
+      indxFh= np.where(freq<=7000)[0][-1]  # find freq index re under (7) kHz
+
 
       storeM = np.empty([int(Npts/2+1),M])
       storeP = np.empty([int(Npts/2+1),M])
@@ -180,12 +188,13 @@ class Vodscillator:
 # ==  == spectral averaging loop
       for run in range(0, M): #for each run:
           indx = run*Npts  # index offset so to move along waveform
-          signal = np.squeeze(wf[indx:indx+Npts])  # extract segment
+          signal=  np.squeeze(wf[indx:indx+Npts]);  # extract segment
           # --- deal w/ FFT
           spec = fft(signal)  # magnitude of ft of wf
           mag = abs(spec)
           phase = np.angle(spec)
           # --- store away
+          #print(len(signal))
           storeM[:,run] = mag #of fourier transform
           storeP[:,run] = phase #of ft
           storeWF[:,run] = signal #the wf ie time series
