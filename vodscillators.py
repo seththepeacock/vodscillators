@@ -168,7 +168,7 @@ class Vodscillator:
 
     s.summed_AOI_fft = np.zeros((s.num_osc, len(s.fft_freq)), dtype=complex)
     for osc in range(s.num_osc):
-      for run in range(s.num_runs):
+      for run in range(s.num_intervals):
         s.summed_AOI_fft[osc] = np.mean(s.every_fft[osc])
 
 
@@ -195,12 +195,12 @@ class Vodscillator:
     wf = s.ss_sol[osc]
     M = int(np.floor(len(wf)/Npts)) #previously s.num_runs
     SR = s.sample_rate #sampling frequency
-    freq= np.arange(0,(Npts+1)/2,1)    # create a freq. array (for FFT bin labeling)
-    freq= SR*freq/Npts
-    storeM = np.empty([int(Npts),M])
-    storeP = np.empty([int(Npts),M])
+    freq = s.fft_freq
+    Nfreq = s.num_freq_points
+    storeM = np.empty([int(Nfreq),M])
+    storeP = np.empty([int(Nfreq),M])
     storeWF = np.empty([int(Npts),M])
-    storePdiff = np.empty([int(Npts),M-1])  # smaller buffer for phase diffs
+    storePdiff = np.empty([int(Nfreq),M-1])  # smaller buffer for phase diffs
 # == == spectral averaging loop
     for run in range(0, M): #for each run:
         indx = run*Npts  # index offset so to move along waveform
@@ -231,8 +231,6 @@ class Vodscillator:
     #n.b. for both goals: average over windows for each osc and for sum of the fft's
     #remains to do everything for sums of fft's and to plot stuff
     #put plot and averages in another function
-    SR = s.sample_rate
-    freq = s.fft_freq
     tP = np.arange(indx/SR,(indx+Npts-0)/SR,1/SR); # time assoc. for segment (only for plotting)
     specAVGm= np.average(storeM,axis=1)  # spectral-avgd MAGs
     specAVGp= np.average(storeP,axis=1)  # spectral-avgd PHASEs
