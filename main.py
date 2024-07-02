@@ -5,7 +5,7 @@ import timeit
 import pickle
 
 # Open pickled vodscillator
-filename = "V&D fig 2A NO NOISE.pkl"
+filename = "nonoise.pkl"
 with open(filename, 'rb') as picklefile:
     v = pickle.load(picklefile)
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
@@ -13,8 +13,8 @@ with open(filename, 'rb') as picklefile:
 
 start = timeit.default_timer()
 
-v.coherence()
-v.save()
+#v.coherence()
+#v.save()
 
 stop = timeit.default_timer() 
 print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
