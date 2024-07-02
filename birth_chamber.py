@@ -17,7 +17,7 @@ p = {
 "freq_dist" : "linear", #linear or exp
 "roughness_amp" : 0,
 "omega_0" : 2*np.pi, # char frequency of lowest oscillator [default = 2*np.pi] 
-"omega_N" : 5*np.pi, # char frequency of highest oscillator [default = 5*(2*np.pi)] 
+"omega_N" : 5*(2*np.pi), # char frequency of highest oscillator [default = 5*(2*np.pi)] 
 
 #set_ICs
 "IC_method" : "rand", #rand or const
@@ -28,13 +28,13 @@ p = {
 "ti" : 0, # start time; [default = 0]
 "n_transient" : 35855, # the # of time points we give for transient behavior to settle down; around 30000 [default = 35855]
 "n_ss" : 8192, # the # of time points we observe the steady state behavior for [default = 8192]
-"num_intervals" : 5, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
+"num_intervals" : 30, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
 "sample_rate" : 128, #[default = 128]
 
 #set_ODE"
 "epsilon" : 4.0, # [default = 1.0] --> control parameter
-"d_R" : 16, # [default = 0.15] --> real part of coupling coefficient
-"d_I" : 0, # [default = -1.0] --> imaginary part of coupling coefficient
+"d_R" : 16.0, # [default = 0.15] --> real part of coupling coefficient
+"d_I" : 0.0, # [default = -1.0] --> imaginary part of coupling coefficient
 "B" : 1.0, # [default = 1.0] --> amount of cubic nonlinearity
 }
 
@@ -43,8 +43,7 @@ v.set_freq(**p)
 v.set_ICs(**p)
 v.gen_noise(**p)
 v.solve_ODE(**p)
-v.sum_solution()
-v.get_fft()
+v.do_fft()
 v.save()
 
 stop = timeit.default_timer() # ends timer

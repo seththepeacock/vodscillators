@@ -13,9 +13,7 @@ class Vodscillator:
   3. Set ICs with "set_ICs" 
     - requires #2 first!
   4. Generate Noise with "gen_noise"
-  5. Set parameters in ODE with "set_ODE"
-  6. Solve ODE Function with "solve_ODE" 
-  7. Get summed solution with "sum_solution"
+  6. Pass in parameters and solve ODE Function with "solve_ODE" 
   8. Save your vodscillator to a file
   9. Plot
   """
@@ -44,7 +42,6 @@ class Vodscillator:
     # Now we set the frequencies of each oscillator in our chain - linear or exponential
     if s.freq_dist == "linear":
       s.omegas = np.linspace(s.omega_0,s.omega_N,s.num_osc) # linearly spaced frequencies from omega_0 to omega_N
-      # add roughness
     elif s.freq_dist == "exp":
       s.omegas = np.zeros(s.num_osc, dtype=float)
       for k in range(s.num_osc): # exponentially spaced frequencies from omega_0 to omega_N
@@ -71,10 +68,10 @@ class Vodscillator:
       # generate random ICs
       for k in range(s.num_osc):
         x_k = np.random.uniform(-1, 1)
-        y_k = np.random.uniform(0, 1) # this was (0,1) in Beth's Code, not sure why yet
+        y_k = np.random.uniform(-1, 1) # this was (0,1) in Beth's code
         s.ICs[k] = complex(x_k, y_k) # make a complex combination of x and y and save it in ICs
     elif s.IC_method == "const":
-      # generate predetermined ICs
+      # generate the same predetermined ICs as Beth
       all_x = np.linspace(-1, 1, s.num_osc)
       all_y = np.linspace(1, -1, s.num_osc)
       for k in range(s.num_osc):
@@ -97,7 +94,6 @@ class Vodscillator:
     # Calculate other params
     s.h = 1/s.sample_rate #delta t between time points
     s.tf = s.h*(s.n_transient + s.num_intervals * s.n_ss)  # end time is delta t * total # points
-
     # We want a global xi(t) and then one for each oscillator. 
 
 
@@ -132,19 +128,18 @@ class Vodscillator:
     s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y 
     # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
     # so s.sol[2][1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
-  
-  def sum_solution(s):
-    # this gives us the summed response of all the oscillators
+
+    # finally, we get the summed response of all the oscillators
     s.summed_sol = np.zeros(len(s.tpoints))
     for k in range(s.num_osc):
-      s.summed_sol = s.summed_sol + s.sol[k]
+      s.summed_sol += s.sol[k]
 
-  def get_fft(s):
+  def do_fft(s):
     """ Returns four arrays:
     1. every_fft[oscillator index][ss interval index][output]
     2. summed_fft[output]
-    3. AOI_fft_amps[oscillator index][output]
-    4. summed_AOI_fft_amps[output]
+    3. AOI_fft[oscillator index][output]
+    4. summed_AOI_fft[output]
 
     AOI = Averaged Over Intervals (for noise)
 
@@ -165,11 +160,11 @@ class Vodscillator:
     # we'll also add them all together to get the fft of the summed response (sum of fft's = fft of sum)
     s.summed_fft = np.zeros((s.num_intervals, s.num_freq_points), dtype=complex)
 
-    # along the way, for each oscillator we'll calculate fft amplitudes and average over the ss intervals and store it in this array:
-    s.AOI_fft_amps = np.zeros((s.num_osc, s.num_freq_points))
+    # For each oscillator we'll add up the fft from each intervals so to average out the noise:
+    s.AOI_fft = np.zeros((s.num_osc, s.num_freq_points))
 
-    # we'll also get the fft amplitude of the summed response averaged over all ss intervals
-    s.summed_AOI_fft_amps = np.zeros(s.num_freq_points)
+    # we'll also get the fft of the summed response averaged over all ss intervals
+    s.summed_AOI_fft = np.zeros(s.num_freq_points)
 
     for interval in range(s.num_intervals):
       for osc in range(s.num_osc):
@@ -177,21 +172,17 @@ class Vodscillator:
         s.every_fft[osc][interval] = rfft((s.ss_sol[osc][interval * s.n_ss : (interval + 1) * s.n_ss]).real)
         
         # add to the summed response array
-        s.summed_fft[interval] = s.summed_fft[interval] + s.every_fft[osc][interval]
+        s.summed_fft[interval] += s.every_fft[osc][interval]
         
-        # take the amplitude and add to the average amplitude array
-        s.AOI_fft_amps[osc] = s.AOI_fft_amps[osc] + np.abs(s.every_fft[osc][interval])
+        # add to the AOI (averaged over intervals) array (eventually we'll divide by # intervals)
+        s.AOI_fft[osc] += s.every_fft[osc][interval]
       
-      # at the end of each "osc" loop, summed_fft[interval] will have all of the oscillators in there. 
-      # We will take the amplitude and at it to our summed_avg_fft_amps array
-      s.summed_AOI_fft_amps = s.summed_AOI_fft_amps + np.abs(s.summed_fft[interval])
+      # now add summed_fft[interval] (which has the total summed response over that interval) to the summed AOI array
+      s.summed_AOI_fft += s.summed_fft[interval]
 
     # divide by # intervals to get final average
-    s.AOI_fft_amps = s.AOI_fft_amps / s.num_intervals
-    s.summed_AOI_fft_amps = s.summed_AOI_fft_amps / s.num_intervals
-
-
-
+    s.AOI_fft = s.AOI_fft / s.num_intervals
+    s.summed_AOI_fft = s.summed_AOI_fft / s.num_intervals
 
 
   def save(s, filename = None):
@@ -227,22 +218,22 @@ class Vodscillator:
     # Define the complex coupling constant (ccc)
     ccc =  s.d_R + 1j*s.d_I
 
-    for k in range(0, s.num_osc - 1):
+    for k in range(s.num_osc):
       # This "universal" part of the equation is the same for all oscillators. 
       # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
-      universal = (1j*s.omegas[k]* + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - s.B*((np.abs(z[k]))**2)*z[k]
+      universal = (1j*s.omegas[k] + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - s.B*((np.abs(z[k]))**2)*z[k]
 
       # COUPLING
 
-      # if we're in the middle of the chain, we couple with the oscillator on either side
-      if k != 0 & k != (s.num_osc - 1):
-        ddt[k] = universal + ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
-
-      # But if we're at an endpoint, we only have one oscillator to couple with
-      elif k == 0:
+      # if we're at an endpoint, we only have one oscillator to couple with
+      if k == 0:
         ddt[k] = universal + ccc*(z[k+1] - z[k])
       elif k == s.num_osc - 1:
         ddt[k] = universal + ccc*(z[k-1] - z[k])
+      # but if we're in the middle of the chain, we couple with the oscillator on either side
+      else:
+        ddt[k] = universal + ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
+
       
     return ddt
   
@@ -289,7 +280,7 @@ class Vodscillator:
     plt.show()
 
 
-  def plot_spectra(s, osc = -1, interval = -1, xmin = -0.1, xmax = None, ymin = 0.0, ymax = None, fig_num = 1):
+  def plot_PSD(s, osc = -1, interval = -1, xmin = -0.1, xmax = None, ymin = 0.0, ymax = None, fig_num = 1):
 
     """ Plots the fft waveform for a given oscillator (or summed response) in steady state
  
@@ -310,12 +301,12 @@ class Vodscillator:
 
     if osc == -1:
       if interval == -1:  
-        y = s.summed_AOI_fft_amps
+        y = s.summed_AOI_fft
       else:
         y = np.abs(s.summed_fft[interval])
     else:
       if interval == -1:
-        y = s.AOI_fft_amps[osc]
+        y = s.AOI_fft[osc]
       else:
         y = np.abs(s.every_fft[osc][interval])
 
@@ -325,6 +316,9 @@ class Vodscillator:
     plt.xlim(right = xmax)
     plt.ylim(bottom = ymin)
     plt.ylim(top = ymax)
+    plt.title("Power Spectral Density")
+    plt.ylabel('Density')
+    plt.xlabel('Frequency')
     plt.show()
 
   def plot_freq_clusters(s, fig_num = 1):
@@ -345,19 +339,17 @@ class Vodscillator:
 
     for osc in range(s.num_osc):
       s.avg_position_amplitudes[osc] = np.sqrt(np.mean((s.ss_sol[osc].real)**2))
-     
-      # we're going to (temporarily) exclude the peak around 0 freq here!
-      min_freq_pt = int(1 * s.h)
 
-      s.avg_cluster_freqs[osc] = np.mean(s.AOI_fft_amps[osc][min_freq_pt:] / (2*np.pi))
+
+      s.avg_cluster_freqs[osc] = np.mean(s.AOI_fft[osc] / (2*np.pi))
     
     # now plot!
-    plt.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
+    #plt.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
     plt.plot(s.avg_position_amplitudes, label="Amplitude")
     plt.plot(s.char_freqs, '--', label="Characteristic frequency")
-    plt.ylabel('Frequency')
-    plt.xlabel('Oscillator')
-    plt.title(f"Frequency clustering, sigma local = {s.loc_noise_amp}, sigma global = {s.glob_noise_amp}")
+    plt.ylabel('Average Frequency')
+    plt.xlabel('Oscillator Index')
+    plt.title(f"Frequency Clustering with Sigma (Noise): Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
     plt.legend()
     plt.show()
 
