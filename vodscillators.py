@@ -268,18 +268,16 @@ class Vodscillator:
   
   #NOW WE PLOT!
 
-  def plot_waveform(s, plot_type = "wf", osc = -1, component = "re", interval = -1, 
+  def plot_waveform(s, osc = -1, component = "re", interval = -1, 
                     ss = False, xmin = -0.1, xmax = None, ymin = 0.0, ymax = None, fig_num = 1):
     """ Plots a waveform for a given oscillator
  
     Parameters
     ------------
-        plot_type: str, Optional
-          Plot content (wf or PSD, default:wf)
         osc: int, Optional
           The index of your oscillator (-1 gives summed response)
         component: str, Optional
-          Which component of signal to plot; "re" or "im" for real or imaginary, respectively
+          Which component of waveform signal to plot; "re" or "im" for real or imaginary, respectively
         ss: boolean, Optional
           If you only want the steady state part of the solution
         xmin: float, Optional
@@ -291,84 +289,58 @@ class Vodscillator:
 
         
     """
-    if plot_type == "wf":
-      if osc == -1: #because -1 means "sum"
-        y = s.summed_sol
-      else:
-        y = s.sol[osc]
 
-      if component == "im":
-        y = y.imag
-      elif component == "re":
-        y = y.real
-
-      t = s.tpoints
-
-      if ss:
-        t = t[s.n_transient:]
-        y = y[s.n_transient:]
-
-      plt.figure(fig_num)
-      plt.plot(t, y)
-      plt.show()
-
-
-    if plot_type == "PSD":
-      """ Plots the fft waveform for a given oscillator (or summed response) in steady state
-  
-      Parameters
-      ------------
-          index: int = -1
-            The index of your oscillator (-1 gives summed response)
-          fig_num: int, Optional
-            Only required if plotting multiple figures
-          xmin: float, Optional
-          xmax: float, Optional
-          ymin: float, Optional
-          ymax: float, Optional
-
-      """
-
-      f = s.fft_freq
-
-    if osc == -1:
-      if interval == -1:  
-        y = s.SOO_AOI_fft
-      else:
-        y = s.SOO_fft[interval]
+    if osc == -1: #because -1 means "sum"
+      y = s.summed_sol
     else:
-      if interval == -1:
-        y = s.AOI_fft[osc]
-      else:
-        y = s.every_fft[osc, interval]
+      y = s.sol[osc]
 
-      # square the amplitude
-      y = (np.abs(y))**2
+    if component == "im":
+      y = y.imag
+    elif component == "re":
+      y = y.real
 
-      # normalize
-      y = y / (s.sample_rate * s.n_ss)
+    t = s.tpoints
 
-      plt.figure(fig_num)
-      plt.plot(f, y)
-      plt.xlim(left = xmin)
-      plt.xlim(right = xmax)
-      plt.ylim(bottom = ymin)
-      plt.ylim(top = ymax)
-      plt.title("Power Spectral Density")
-      plt.ylabel('Density')
-      plt.xlabel('Frequency')
-      plt.show()
+    if ss:
+      t = t[s.n_transient:]
+      y = y[s.n_transient:]
+
+    plt.figure(fig_num)
+    plt.plot(t, y)
+    plt.show()
 
 
+    
 
+  def plotter(s, plot_type=[], fig_num=1, interval = -1, xmin = None, xmax = None, ymin = None, ymax = None):
+    """
+    Creates V&D style frequency clustering plots
+    Parameters
+    ------------
+    plot_type: list
+      "coherence" plots phase coherence,
+      "cluster" plots V&D style frequency clustering plots,
+      "PSD" plots power spectral density
+    
+    fig_num: int, Optional
+      Only required if plotting multiple figures
 
+    interval: int, Optional
+      Which SS interval to display PSD for, defaults to -1 for average
 
-  def plotter(s, plot_type=[], fig_num=1):
+    xmin: float, Optional
+    xmax: float, Optional
+    ymin: float, Optional
+    ymax: float, Optional
+    
+    """
+
     freq = s.fft_freq
      # --- coherence
     fig, ax = plt.subplots(nrows=len(plot_type), ncols=1)
 
-    if any("coherence"== a for a in plot_type):
+    if any("coherence" == a for a in plot_type):
       fig1 = ax[0]
       fig1.plot(freq/1000,s.coherence,'b-',lw=1,label='X')
       fig1.set_xlabel('Frequency [kHz]')  
@@ -379,13 +351,7 @@ class Vodscillator:
 
 
     if any("cluster"== a for a in plot_type):
-      """
-      Creates V&D style frequency clustering plots
-      Parameters
-      ------------
-      fig_num: int, Optional
-      Only required if plotting multiple figures
-      """
+
 
     # first, we get our curve of characteristic frequencies
       s.char_freqs = s.omegas / (2*np.pi)
@@ -411,9 +377,36 @@ class Vodscillator:
       fig2.set_xlabel('Oscillator Index')
       fig2.set_title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
       fig2.legend()
-    
 
+      if any("PSD" == a for a in plot_type):
+        f = s.fft_freq
+        if osc == -1:
+          if interval == -1:  
+            y = s.SOO_AOI_fft
+          else:
+            y = s.SOO_fft[interval]
+        else:
+          if interval == -1:
+            y = s.AOI_fft[osc]
+          else:
+            y = s.every_fft[osc, interval]
 
+          # square the amplitude
+          y = (np.abs(y))**2
+
+          # normalize
+          y = y / (s.sample_rate * s.n_ss)
+
+          plt.figure(fig_num)
+          plt.plot(f, y)
+          plt.xlim(left = xmin)
+          plt.xlim(right = xmax)
+          plt.ylim(bottom = ymin)
+          plt.ylim(top = ymax)
+          plt.title("Power Spectral Density")
+          plt.ylabel('Density')
+          plt.xlabel('Frequency')
+          plt.show()
 
     plt.show()
   
