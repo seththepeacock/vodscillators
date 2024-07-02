@@ -36,12 +36,11 @@ p = {
 "d_R" : 16.0, # [default = 0.15] --> real part of coupling coefficient
 "d_I" : 0.0, # [default = -1.0] --> imaginary part of coupling coefficient
 "alpha" : 1.0, # [default = 1.0] --> real coefficient for cubic nonlinearity
-"beta" : 0.0 # --> imaginary coefficient for cubic nonlinearity
+"beta_sigma" : 0.0 # --> std dev for imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
 }
 
 v = Vodscillator(**p)
-v.set_freq(**p)
-v.set_ICs(**p)
+v.gen(**p)
 v.gen_noise(**p)
 v.solve_ODE(**p)
 v.save()

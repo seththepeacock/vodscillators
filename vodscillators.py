@@ -30,15 +30,20 @@ class Vodscillator:
     if "name" in p:
       s.name = p["name"] # name your vodscillator!
 
-  def set_freq(s, **p):
-    # Freq Dist - creates s.omegas[]
+  def gen(s, **p):
+    """
+    Generates frequency distribution (omegas[]), initial conditions (ICs[]), 
+    """
 
     # NECESSARY PARAMETERS
     s.freq_dist = p["freq_dist"] # set to "linear" for frequency increasing linearly, set to "exp" for frequency increasing exponentially
     s.roughness_amp = p["roughness_amp"] # variation in each oscillator's characteristic frequency
     s.omega_0 = p["omega_0"]  # char frequency of lowest oscillator [default = 2*np.pi] 
     s.omega_N = p["omega_N"]  # char frequency of highest oscillator [default = 5*(2*np.pi)] 
+    s.IC_method = p["IC_method"]  # set to "rand" for randomized initial conditions, set to "const" for constant initial conditions
+    s.beta_sigma = p["beta_sigma"] # standard deviation for imaginary coefficient for cubic nonlinearity
 
+    # Tonotopic Frequency Distribution
     # Now we set the frequencies of each oscillator in our chain - linear or exponential
     if s.freq_dist == "linear":
       s.omegas = np.linspace(s.omega_0,s.omega_N,s.num_osc) # linearly spaced frequencies from omega_0 to omega_N
@@ -48,20 +53,15 @@ class Vodscillator:
         A = s.omega_0
         B = (s.omega_N/s.omega_0)**(1/(s.num_osc - 1))
         s.omegas[k] = A*(B**k)
-        # note that omegas[0] = A = omega_0, and omegas[num_osc - 1] = A * B = omega_N
+        # note that omegas[0] = A = omega_0, and omegas[num_osc - 1] = A * B = omega_N 
 
-    # add roughness
+    # add roughness to the freq distribution
     r = s.roughness_amp
     roughness = np.random.uniform(low=-r, high=r, size=(s.num_osc,))
     s.omegas = s.omegas + roughness
 
-  def set_ICs(s, **p):
-    # Generates s.ICs[]
-    # Note: we need omegas[] for this, so set_freq first!  
 
-    # NECESSARY PARAMETER
-    s.IC_method = p["IC_method"]  # set to "rand" for randomized initial conditions, set to "const" for constant initial conditions
-    
+    # Generate initial conditions and store in ICs[]
     s.ICs = np.zeros(s.num_osc, dtype=complex)
 
     if s.IC_method == "rand":
@@ -79,6 +79,10 @@ class Vodscillator:
         y_k = all_y[k]
         s.ICs[k] = x_k - (y_k*1j/s.omegas[k])
 
+    # generate beta_j using a gaussian centered at 0 with std deviation beta_sigma (as in Faber & Bozovic)
+    s.betas = np.random.normal(loc=0.0, scale=s.beta_sigma, size=s.num_osc)
+
+
   def gen_noise(s, **p):
     # Generating Noise - creates s.xi_glob and s.xi_loc[]
 
@@ -94,8 +98,8 @@ class Vodscillator:
     # Calculate other params
     s.h = 1/s.sample_rate #delta t between time points
     s.tf = s.h*(s.n_transient + s.num_intervals * s.n_ss)  # end time is delta t * total # points
+    
     # We want a global xi(t) and then one for each oscillator. 
-
 
     # First, generate time points
     s.tpoints = np.arange(s.ti, s.tf, s.h)
@@ -123,7 +127,9 @@ class Vodscillator:
     s.d_I = p["d_I"]  # [default = -1.0] --> imaginary part of coupling coefficient
     s.B = p["B"] # [default = 1.0] --> amount of cubic nonlinearity
     s.alpha = p["alpha"] # [default = 1.0] --> real coefficient for cubic nonlinearity
-    s.beta = p["beta"] # --> imaginary coefficient for cubic nonlinearity
+
+    # Define complex coupling coefficient ccc
+    s.ccc = s.d_R + 1j*s.d_I
 
     # Numerically integrate our ODE from ti to tf with sample rate 1/h
     s.tpoints = np.arange(s.ti, s.tf, s.h) # array of time points
@@ -144,24 +150,21 @@ class Vodscillator:
     # First make an array to represent the current (complex) derivative of each oscillator
     ddt = np.zeros(s.num_osc, dtype=complex)
 
-    # Define the complex coupling constant (ccc)
-    ccc =  s.d_R + 1j*s.d_I
-
     for k in range(s.num_osc):
       # This "universal" part of the equation is the same for all oscillators. 
       # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
-      universal = (1j*s.omegas[k] + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - (s.alpha + s.beta*1j)*((np.abs(z[k]))**2)*z[k]
+      universal = (1j*s.omegas[k] + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - (s.alpha + s.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
 
       # COUPLING
 
       # if we're at an endpoint, we only have one oscillator to couple with
       if k == 0:
-        ddt[k] = universal + ccc*(z[k+1] - z[k])
+        ddt[k] = universal + s.ccc*(z[k+1] - z[k])
       elif k == s.num_osc - 1:
-        ddt[k] = universal + ccc*(z[k-1] - z[k])
+        ddt[k] = universal + s.ccc*(z[k-1] - z[k])
       # but if we're in the middle of the chain, we couple with the oscillator on either side
       else:
-        ddt[k] = universal + ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
+        ddt[k] = universal + s.ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
 
     return ddt
 
@@ -333,8 +336,10 @@ class Vodscillator:
 
     for osc in range(s.num_osc):
       s.avg_position_amplitudes[osc] = np.sqrt(np.mean((s.ss_sol[osc].real)**2))
-      s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights = np.abs(s.AOI_fft[osc]))
-      #s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
+      # This is what it seems like they do in the paper:
+      #s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights = np.abs(s.AOI_fft[osc]))
+      # This is Beth's way:
+      s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
     
     # now plot!
     plt.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
@@ -342,7 +347,7 @@ class Vodscillator:
     plt.plot(s.char_freqs, '--', label="Characteristic frequency")
     plt.ylabel('Average Frequency')
     plt.xlabel('Oscillator Index')
-    plt.title(f"Frequency Clustering with Sigma (Noise): Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
+    plt.title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
     plt.legend()
     plt.show()
 
