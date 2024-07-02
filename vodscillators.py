@@ -172,17 +172,17 @@ class Vodscillator:
       wf = s.ss_sol[osc]
       M = int(np.floor(len(wf)/Npts)) #previously s.num_runs
       #print(wf.shape)
-      SR = s.h #sampling frequency
+      SR = s.sample_rate #sampling frequency
       freq= np.arange(0,(Npts+1)/2,1)    # create a freq. array (for FFT bin labeling)
       freq= SR*freq/Npts
       #indxFl= np.where(freq>=200)[0][0]  # find freq index re above (0.2) kHz
       indxFh= np.where(freq<=7000)[0][-1]  # find freq index re under (7) kHz
+      indexFl=0
 
-
-      storeM = np.empty([int(Npts/2+1),M])
-      storeP = np.empty([int(Npts/2+1),M])
+      storeM = np.empty([int(Npts),M])
+      storeP = np.empty([int(Npts),M])
       storeWF = np.empty([int(Npts),M])
-      storePdiff = np.empty([int(Npts/2+1),M-1])  # smaller buffer for phase diffs
+      storePdiff = np.empty([int(Npts),M-1])  # smaller buffer for phase diffs
 
 
 # ==  == spectral averaging loop
@@ -260,8 +260,8 @@ class Vodscillator:
       fig2= plt.title("averaged spectral magnitude") 
       fig2= plt.grid()
       fig2= plt.xlim([0, 7])
-      fig2= plt.ylim([np.min(specAVGmDB[indxFl:indxFh])-5,
-                      np.max(specAVGmDB[indxFl:indxFh])+5])
+      #fig2= plt.ylim([np.min(specAVGmDB[indxFl:indxFh])-5,
+      #                np.max(specAVGmDB[indxFl:indxFh])+5])
 
 
       # --- averaged time-averaged. MAG
@@ -270,8 +270,8 @@ class Vodscillator:
           fig3 = plt.subplots()
           fig3= plt.plot(freq/1000,specAVGwfDB,'b-',lw=2)
           fig3= plt.xlim([0, 7])
-          fig3= plt.ylim([np.min(specAVGwfDB[indxFl:indxFh])-5,
-                          np.max(specAVGwfDB[indxFl:indxFh])+5])
+          #fig3= plt.ylim([np.min(specAVGwfDB[indxFl:indxFh])-5,
+          #                np.max(specAVGwfDB[indxFl:indxFh])+5])
           fig3= plt.xlabel('Frequency [kHz]')
           fig3= plt.ylabel('Magnitude [dB]') 
           fig3= plt.title('Time-averaged spectrum') 
@@ -302,7 +302,7 @@ class Vodscillator:
           fig5= plt.xlim([0, 7])
           #fig2= plt.ylim([-0.2,0.2])
 
-
+      plt.show()
 
 
   
