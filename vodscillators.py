@@ -137,9 +137,9 @@ class Vodscillator:
   def do_fft(s):
     """ Returns four arrays:
     1. every_fft[oscillator index][ss interval index][output]
-    2. summed_fft[output]
+    2. SOO_fft[output]
     3. AOI_fft[oscillator index][output]
-    4. summed_AOI_fft[output]
+    4. SOO_AOI_fft[output]
 
     AOI = Averaged Over Intervals (for noise)
 
@@ -288,14 +288,20 @@ class Vodscillator:
 
     if osc == -1:
       if interval == -1:  
-        y = s.summed_AOI_fft
+        y = s.SOO_AOI_fft
       else:
-        y = np.abs(s.summed_fft[interval])
+        y = s.SOO_fft[interval]
     else:
       if interval == -1:
         y = s.AOI_fft[osc]
       else:
-        y = np.abs(s.every_fft[osc][interval])
+        y = s.every_fft[osc][interval]
+
+    # square the amplitude
+    y = (np.abs(y))**2
+
+    # normalize
+    y = y / (s.sample_rate * s.n_ss)
 
     plt.figure(fig_num)
     plt.plot(f, y)
@@ -326,12 +332,11 @@ class Vodscillator:
 
     for osc in range(s.num_osc):
       s.avg_position_amplitudes[osc] = np.sqrt(np.mean((s.ss_sol[osc].real)**2))
-
-
-      s.avg_cluster_freqs[osc] = np.mean(s.AOI_fft[osc] / (2*np.pi))
+      s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights = np.abs(s.AOI_fft[osc]))
+      #s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
     
     # now plot!
-    #plt.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
+    plt.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
     plt.plot(s.avg_position_amplitudes, label="Amplitude")
     plt.plot(s.char_freqs, '--', label="Characteristic frequency")
     plt.ylabel('Average Frequency')
