@@ -400,7 +400,7 @@ class Vodscillator:
           s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
 
         # now plot!
-        fig2 = ax[-1]
+        fig2 = ax
         fig2.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
         fig2.plot(s.avg_position_amplitudes, label="Amplitude")
         fig2.plot(s.char_freqs, '--', label="Characteristic frequency")
