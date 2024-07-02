@@ -122,6 +122,8 @@ class Vodscillator:
     s.d_R = p["d_R"]  # [default = 0.15] --> real part of coupling coefficient
     s.d_I = p["d_I"]  # [default = -1.0] --> imaginary part of coupling coefficient
     s.B = p["B"] # [default = 1.0] --> amount of cubic nonlinearity
+    s.alpha = p["alpha"] # [default = 1.0] --> real coefficient for cubic nonlinearity
+    s.beta = p["beta"] # --> imaginary coefficient for cubic nonlinearity
 
     # Numerically integrate our ODE from ti to tf with sample rate 1/h
     s.tpoints = np.arange(s.ti, s.tf, s.h) # array of time points
@@ -133,6 +135,35 @@ class Vodscillator:
     s.summed_sol = np.zeros(len(s.tpoints), dtype=complex)
     for k in range(s.num_osc):
       s.summed_sol += s.sol[k]
+
+  def ODE(s, t, z):
+    # This function will only be called by the ODE solver
+
+    # Note that this is equation (11) in V&D 2008
+
+    # First make an array to represent the current (complex) derivative of each oscillator
+    ddt = np.zeros(s.num_osc, dtype=complex)
+
+    # Define the complex coupling constant (ccc)
+    ccc =  s.d_R + 1j*s.d_I
+
+    for k in range(s.num_osc):
+      # This "universal" part of the equation is the same for all oscillators. 
+      # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
+      universal = (1j*s.omegas[k] + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - (s.alpha + s.beta*1j)*((np.abs(z[k]))**2)*z[k]
+
+      # COUPLING
+
+      # if we're at an endpoint, we only have one oscillator to couple with
+      if k == 0:
+        ddt[k] = universal + ccc*(z[k+1] - z[k])
+      elif k == s.num_osc - 1:
+        ddt[k] = universal + ccc*(z[k-1] - z[k])
+      # but if we're in the middle of the chain, we couple with the oscillator on either side
+      else:
+        ddt[k] = universal + ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
+
+    return ddt
 
   def do_fft(s):
     """ Returns four arrays:
@@ -193,36 +224,6 @@ class Vodscillator:
 
   def __str__(s):
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
-  
-  def ODE(s, t, z):
-    # This function will only be called by the ODE solver
-
-    # Note that this is equation (11) in V&D 2008
-
-    # First make an array to represent the current (complex) derivative of each oscillator
-    ddt = np.zeros(s.num_osc, dtype=complex)
-
-    # Define the complex coupling constant (ccc)
-    ccc =  s.d_R + 1j*s.d_I
-
-    for k in range(s.num_osc):
-      # This "universal" part of the equation is the same for all oscillators. 
-      # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
-      universal = (1j*s.omegas[k] + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - s.B*((np.abs(z[k]))**2)*z[k]
-
-      # COUPLING
-
-      # if we're at an endpoint, we only have one oscillator to couple with
-      if k == 0:
-        ddt[k] = universal + ccc*(z[k+1] - z[k])
-      elif k == s.num_osc - 1:
-        ddt[k] = universal + ccc*(z[k-1] - z[k])
-      # but if we're in the middle of the chain, we couple with the oscillator on either side
-      else:
-        ddt[k] = universal + ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
-
-      
-    return ddt
   
   #NOW WE PLOT!
 
