@@ -243,22 +243,6 @@ class Vodscillator:
     s.each_oscillator_phase_coherence = np.sqrt(xx**2 + yy**2)
 
 
-  def plotter(s, plot_type=""):
-    freq = s.fft_freq
-     # --- coherence
-    if plot_type=="coherence":
-      fig1 = plt.subplots()
-      fig1= plt.plot(freq/1000,s.phase_coherence,'b-',lw=1,label='X')
-      fig5= plt.xlabel('Frequency [kHz]')  
-      fig5= plt.ylabel('Phase Coherence (i.e. vector strength)') 
-      fig5= plt.title("coherence") 
-      fig5= plt.grid()
-      fig5= plt.xlim([0, 1])
-      #fig2= plt.ylim([-0.2,0.2])
-
-    plt.show()
-
-
 
   def save(s, filename = None):
     """ Saves your vodscillator in a .pkl file
