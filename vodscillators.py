@@ -172,6 +172,51 @@ class Vodscillator:
     s.SOO_AOI_fft = np.mean(s.SOO_fft, 0)
 
 
+
+    def coherence(s, osc=0):
+      wf = s.ss_sol[osc]
+      
+      SR = s.sample_rate
+      M = int(np.floor(len(wf)/Npts)) #previously s.num_runs
+      freq = s.fft_freq
+      Nfreq = s.num_freq_points
+
+      storeM = np.empty([int(Nfreq),M])
+      storeP = np.empty([int(Nfreq),M])
+      storeWF = np.empty([int(Npts),M])
+      storePdiff = np.empty([int(Nfreq),M-1])  # smaller buffer for phase diffs
+      # == == spectral averaging loop
+      for run in range(0, M): #for each run:
+          indx = run*Npts  # index offset so to move along waveform
+          signal=  np.squeeze(wf[indx:indx+Npts]);  # extract segment
+          # --- deal w/ FFT
+          spec = rfft(signal)  # magnitude of ft of wf
+          mag = abs(spec)
+          phase = np.angle(spec)
+          # --- store away
+          #print(len(signal))
+          storeM[:,run] = mag #of fourier transform
+          storeP[:,run] = phase #of ft
+          storeWF[:,run] = signal #the wf ie time series
+          # ==== 
+          if (run>=1):
+              phaseL = storeP[:, run-1]
+              storePdiff[:,run-1] = phase - phaseL
+      # ====
+    
+    #n.b. for both goals: average over windows for each osc and for sum of the fft's
+    #remains to do everything for sums of fft's and to plot stuff
+    #put plot and averages in another function
+      tP = np.arange(indx/SR,(indx+Npts-0)/SR,1/SR); # time assoc. for segment (only for plotting)
+      specAVGm= np.average(storeM,axis=1)  # spectral-avgd MAGs
+      specAVGp= np.average(storeP,axis=1)  # spectral-avgd PHASEs
+      specAVGpd= np.average(storePdiff,axis=1) # spectral-avgd phase diff.
+      # --- time-averaged version
+      timeAVGwf= np.average(storeWF,axis=1)  # time-averaged waveform
+      specAVGwf= rfft(timeAVGwf)
+
+
+
   def save(s, filename = None):
     """ Saves your vodscillator in a .pkl file
  
