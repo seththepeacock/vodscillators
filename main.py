@@ -11,6 +11,8 @@ with open(filename, 'rb') as picklefile:
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
     assert isinstance(v, Vodscillator)
 
-plt.plot(v.fft_freq, v.AOI_fft[0].real)
-plt.show()
+start = timeit.default_timer()
 
+stop = timeit.default_timer() # ends timer
+print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
+# prints the total time the code took to run

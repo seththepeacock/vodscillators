@@ -163,13 +163,13 @@ class Vodscillator:
         s.every_fft[osc][interval] = rfft((s.ss_sol[osc][interval * s.n_ss : (interval + 1) * s.n_ss]).real)
 
     # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
-    s.summed_fft = np.sum(s.every_fft, 0)
+    s.SOO_fft = np.sum(s.every_fft, 0)
 
     # For each oscillator we'll average over all intervals to average out the noise:
     s.AOI_fft = np.mean(s.every_fft, 1)
 
     # Same thing for the summed response
-    s.summed_AOI_fft = np.mean(s.summed_fft)
+    s.SOO_AOI_fft = np.mean(s.SOO_fft, 0)
 
 
   def save(s, filename = None):
