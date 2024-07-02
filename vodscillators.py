@@ -161,10 +161,10 @@ class Vodscillator:
     s.summed_fft = np.zeros((s.num_intervals, s.num_freq_points), dtype=complex)
 
     # For each oscillator we'll add up the fft from each intervals so to average out the noise:
-    s.AOI_fft = np.zeros((s.num_osc, s.num_freq_points))
+    s.AOI_fft = np.zeros((s.num_osc, s.num_freq_points), dtype=complex)
 
     # we'll also get the fft of the summed response averaged over all ss intervals
-    s.summed_AOI_fft = np.zeros(s.num_freq_points)
+    s.summed_AOI_fft = np.zeros(s.num_freq_points, dtype=complex)
 
     for interval in range(s.num_intervals):
       for osc in range(s.num_osc):
