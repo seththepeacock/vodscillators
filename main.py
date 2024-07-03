@@ -17,5 +17,20 @@ v.plotter("PSD")
 v.plotter("superimpose")
 v.plot_waveform()
 
+
+
+"""
+logaritmic plot for coherence & psd
+------------------------
+v.psd()
+v.coherence()
+plt.plot(v.fft_freq, np.log(v.psd), label="psd")
+plt.plot(v.fft_freq, v.SOO_phase_coherence*10, label="coherence")
+plt.legend()
+"""
+
+#write stuff like this!!!
+#vlodder.coherence(v.SOO_fft)
+
 plt.show()
 
