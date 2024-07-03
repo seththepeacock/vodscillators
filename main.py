@@ -12,5 +12,10 @@ with open(filename, 'rb') as picklefile:
     assert isinstance(v, Vodscillator)
 
 
-v.plotter(plot_type=['cluster'], xmax = 10, ymax = 20)
+v.plotter("cluster")
+v.plotter("PSD")
+v.plotter("superimpose")
+v.plot_waveform()
+
 plt.show()
+
