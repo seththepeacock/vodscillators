@@ -30,9 +30,9 @@ class Vodscillator:
     if "name" in p:
       s.name = p["name"] # name your vodscillator!
 
-  def gen(s, **p):
+  def initialize(s, **p):
     """
-    Generates frequency distribution (omegas[]), initial conditions (ICs[]), 
+    Generates frequency distribution (omegas[]), initial conditions (ICs[]), and betas[]
     """
 
     # NECESSARY PARAMETERS
@@ -267,7 +267,7 @@ class Vodscillator:
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
   
   #NOW WE PLOT!
-
+  
   def plot_waveform(s, osc = -1, component = "re", interval = -1, 
                     ss = False, xmin = -0.1, xmax = None, ymin = 0.0, ymax = None, fig_num = 1):
     """ Plots a waveform for a given oscillator
