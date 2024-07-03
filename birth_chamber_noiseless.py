@@ -1,4 +1,4 @@
-from vodscillators import *
+from vodscillator import *
 import matplotlib.pyplot as plt
 import timeit
 from scipy.fft import rfft, rfftfreq
@@ -40,11 +40,10 @@ p = {
 }
 
 v = Vodscillator(**p)
-v.gen(**p)
+v.initialize(**p)
 v.gen_noise(**p)
 v.solve_ODE(**p)
 v.do_fft()
-v.coherence()
 v.save()
 
 stop = timeit.default_timer() # ends timer
