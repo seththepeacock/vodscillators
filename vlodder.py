@@ -55,27 +55,16 @@ def phase_portrait(v):
     plt.grid()
 
 
-#write stuff like this!!!
-#vlodder.coherence(v.SOO_fft)
-
 def heat_map(v=Vodscillator):
     #spectra = list of z_j's
     # heat map not averaged
     n = v.num_osc
-    spectra = v.every_fft #first index is oscillator index
+    spectra = (abs(v.every_fft))**2  #first index is oscillator index
+    avgd_spectra = np.average(spectra, axis=1) #avging over runs
     osc_array = np.arange(0, n, 1)
     freq_array = v.fft_freq
     
     xx, yy = np.meshgrid(osc_array, freq_array) 
-    
-    zz = spectra
-
-    """ 
-    for i in range(len(xx)):
-        for j in range(len(yy)):
-            zz[i][y] = spectra[i][j]
-    """
-    
         
 
     plt.figure()
@@ -87,5 +76,6 @@ def heat_map(v=Vodscillator):
     plt.ylabel('Frequency [kHz]')
     plt.title("Heat Map")
 
-    plt.imshow(zz, origin='lower', extent=[0,5,0,3])
-    plt.colorbar(shrink=0.75, aspect=10)  #shrink: hauteur; aspect: hauteur/largeur
+    #plt.pcolormesh(xx, yy, avgd_spectra)
+    plt.hexbin(osc_array, freq_array, avgd_spectra)
+    plt.colorbar() 
