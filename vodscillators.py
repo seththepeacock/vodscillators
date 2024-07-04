@@ -223,11 +223,6 @@ class Vodscillator:
   def __str__(s):
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
 
-
-  
-  #NOW WE CAN PLOT!
-
-
   
 
     
