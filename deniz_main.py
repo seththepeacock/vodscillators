@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import timeit
 import pickle
+from vlodder import *
 
 # Open pickled vodscillator
 filename = "vd-w-noise.pkl"
@@ -12,12 +13,12 @@ with open(filename, 'rb') as picklefile:
     assert isinstance(v, Vodscillator)
 
 
-v.plotter("cluster")
-v.plotter("PSD")
-v.plotter("superimpose")
+#v.plotter("cluster")
+#v.plotter("PSD")
+#.plotter("superimpose")
 
 
-
+heat_map(v)
     
 
 

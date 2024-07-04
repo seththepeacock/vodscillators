@@ -68,23 +68,24 @@ def heat_map(v=Vodscillator):
     
     xx, yy = np.meshgrid(osc_array, freq_array) 
     
-    zz = np.array()
+    zz = spectra
 
-
-    for x in xx:
-        for y in yy:
-            zz[][]
+    """ 
+    for i in range(len(xx)):
+        for j in range(len(yy)):
+            zz[i][y] = spectra[i][j]
+    """
     
         
 
-    plt.figure(1)
-    plt.imshow(spectradB_heat, cmap='jet', extent=[jmin, jmax, freq_heat.min(), freq_heat.max()],
-                origin='lower', aspect='auto', vmin=spectradB_heat.min(), vmax=spectradB_heat.max(),
-                interpolation='nearest')
-    plt.colorbar()
+    plt.figure()
+    #plt.imshow(spectradB_heat, cmap='jet', extent=[jmin, jmax, freq_heat.min(), freq_heat.max()],
+    #            origin='lower', aspect='auto', vmin=spectradB_heat.min(), vmax=spectradB_heat.max(),
+    #           interpolation='nearest')
+    
     plt.xlabel('Oscillator Number')
     plt.ylabel('Frequency [kHz]')
     plt.title("Heat Map")
-    plt.show()
-    
-    
+
+    plt.imshow(zz, origin='lower', extent=[0,5,0,3])
+    plt.colorbar(shrink=0.75, aspect=10)  #shrink: hauteur; aspect: hauteur/largeur
