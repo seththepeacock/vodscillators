@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 from scipy.fft import rfft, rfftfreq
+from vodscillators import *
 
 
 def coherence_vs_PSD(s, wf, sample_rate, win_size = 16):
@@ -57,10 +58,33 @@ def phase_portrait(v):
 #write stuff like this!!!
 #vlodder.coherence(v.SOO_fft)
 
-def heat_map(v):
-    pass
-
+def heat_map(v=Vodscillator):
+    #spectra = list of z_j's
+    # heat map not averaged
+    n = v.num_osc
+    spectra = v.every_fft #first index is oscillator index
+    osc_array = np.arange(0, n, 1)
+    freq_array = v.fft_freq
     
+    xx, yy = np.meshgrid(osc_array, freq_array) 
+    
+    zz = np.array()
 
+
+    for x in xx:
+        for y in yy:
+            zz[][]
+    
+        
+
+    plt.figure(1)
+    plt.imshow(spectradB_heat, cmap='jet', extent=[jmin, jmax, freq_heat.min(), freq_heat.max()],
+                origin='lower', aspect='auto', vmin=spectradB_heat.min(), vmax=spectradB_heat.max(),
+                interpolation='nearest')
+    plt.colorbar()
+    plt.xlabel('Oscillator Number')
+    plt.ylabel('Frequency [kHz]')
+    plt.title("Heat Map")
+    plt.show()
     
     
