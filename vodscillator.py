@@ -158,7 +158,8 @@ class Vodscillator:
 
       # COUPLING
 
-      # if we're at an endpoint, we only have one oscillator to couple with
+      # if we're at an endserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "point, we only have one oscillator to couple with
       if k == 0:
         ddt[k] = universal + s.ccc*(z[k+1] - z[k])
       elif k == s.num_osc - 1:
