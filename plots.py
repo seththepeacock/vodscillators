@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import timeit
 from vodscillators import *
 from scipy.fft import rfft, rfftfreq
-
 
 
 def coherence_vs_PSD(wf, sample_rate, win_size = 16):
@@ -228,7 +228,6 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
   plt.ylim(bottom = ymin, top = ymax)
   # and show plot!
   plt.show()
-
 
 
 
