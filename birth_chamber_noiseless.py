@@ -1,4 +1,4 @@
-from vodscillators import *
+from vodscillator import *
 import matplotlib.pyplot as plt
 import timeit
 from scipy.fft import rfft, rfftfreq
