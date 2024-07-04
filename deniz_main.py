@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import timeit
 import pickle
-from vlodder import *
+from plots import *
 
 # Open pickled vodscillator
 filename = "vd-no-noise.pkl"
