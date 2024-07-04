@@ -46,7 +46,19 @@ def coherence_vs_PSD(s, wf, sample_rate, win_size = 16):
     s.psd = y
     
 
-    
+
+def phase_portrait(v):
+    xdot = np.imag((v.sol))
+    x = np.real((v.sol))
+    plt.plot(x, xdot)
+    plt.grid()
+
+
+#write stuff like this!!!
+#vlodder.coherence(v.SOO_fft)
+
+def heat_map(v):
+    pass
 
     
 
