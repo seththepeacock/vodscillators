@@ -264,11 +264,12 @@ class Vodscillator:
 
     if plot_type == "superimpose":
       y1 = 10*np.log10(s.psd(osc))
-      y2 = s.coherence(osc)
-      plt.plot(f, y1, color = "red", lw=5, label="Power")
-      plt.plot(f, y2, color = "purple", lw=5, label='Phase Coherence')
+      phase_coherence_max = 10
+      y2 = phase_coherence_max*s.coherence(osc)
+      plt.plot(f, y1, color = "red", lw=1, label="Power")
+      plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence')
       plt.xlabel('Frequency [Hz]')  
-      plt.ylabel('Power [dB] / Vector Strength [max = 1]')
+      plt.ylabel(f'Power [dB] / Vector Strength [max = {phase_coherence_max}]')
       plt.legend() 
 
       # set title
@@ -279,7 +280,7 @@ class Vodscillator:
 
     if plot_type == "PSD":
       y = 10*np.log10(s.psd(osc))
-      plt.plot(f, y, color = "red", lw=5)
+      plt.plot(f, y, color = "red", lw=1)
       plt.ylabel('Density')
       plt.xlabel('Frequency')
       # set title
@@ -357,6 +358,8 @@ class Vodscillator:
     # finally, overwrite any default x and y lims (this does nothing if none were inputted)
     plt.xlim(left = xmin, right = xmax)
     plt.ylim(bottom = ymin, top = ymax)
+    # and show plot!
+    plt.show()
 
   
   # Plotter helper functions:
@@ -376,7 +379,7 @@ class Vodscillator:
     
     for interval in range(0, s.num_intervals - 1):
       # take the difference between the phases in this current interval and the next
-      phase_diffs[interval] = phase_diffs[interval + 1] - phase_diffs[interval]
+      phase_diffs[interval] = phases[interval + 1] - phases[interval]
 
     # get the average sin and cos of the phase diffs
     xx= np.mean(np.sin(phase_diffs),axis=0)
