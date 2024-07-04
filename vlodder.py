@@ -40,8 +40,8 @@ def coherence_vs_PSD(s, wf, sample_rate, win_size = 16):
 
     y = (np.abs(y))**2
 
-      # normalize
-      y = y / (s.sample_rate * s.n_ss)
+    # normalize
+    y = y / (s.sample_rate * s.n_ss)
       
     s.psd = y
     
