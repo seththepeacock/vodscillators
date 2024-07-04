@@ -24,7 +24,8 @@ def coherence_vs_PSD(s, wf, sample_rate, win_size = 16):
     # initialize matrix which will hold the windowed waveform
     windowed_wf = np.zeros(num_win, num_win_pts)
     for k in num_win:
-        windowed_wf = 
+        windowed_wf[k, :] = wf[k * num_win_pts:(k+1)*num_win_pts]
+    
 
     
     
