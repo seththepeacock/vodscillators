@@ -5,6 +5,7 @@ test + extra comments.py
 phase.txt
 seth_main.py
 seth's_birth_chamber.py
+deniz_main.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
