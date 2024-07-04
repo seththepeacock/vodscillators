@@ -29,9 +29,9 @@ plt.plot(v.fft_freq, v.SOO_phase_coherence*10, label="coherence")
 plt.legend()
 """
 
-xdot = (v.sol).x
+xdot = np.imag((v.sol))
 
-x = (v.sol).y
+x = np.real((v.sol))
 
 plt.plot(x, xdot)
 
