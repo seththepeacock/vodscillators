@@ -201,12 +201,6 @@ class Vodscillator:
     # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
     s.SOO_fft = np.sum(s.every_fft, 0)
 
-    # For each oscillator we'll average over all intervals to average out the noise:
-    s.AOI_fft = np.mean(s.every_fft, 1)
-
-    # Same thing for the summed response
-    s.SOO_AOI_fft = np.mean(s.SOO_fft, 0)
-
   def save(s, filename = None):
     """ Saves your vodscillator in a .pkl file
  
@@ -233,173 +227,82 @@ class Vodscillator:
   
   #NOW WE CAN PLOT!
 
-  # Plotter helper functions:
-
-  def coherence(s):
-    # get phase diffs for the sum of oscillators
-    SOO_phase_diffs = np.zeros((s.num_intervals - 1, s.num_freq_points))
-    # and also for each oscillator
-    each_oscillator_phase_diffs = np.zeros((s.num_osc, s.num_intervals - 1, s.num_freq_points))
-
-    for interval in range(0, s.num_intervals - 1):
-      # get the phases in this current interval and the next then take the difference
-      SOO_current_phases = np.angle(s.SOO_fft[interval, :])
-      SOO_next_phases = np.angle(s.SOO_fft[interval + 1, :])
-      SOO_phase_diffs[interval] = SOO_next_phases - SOO_current_phases
-
-      # repeat for each individual oscillator
-      # note these steps are the same as above, except we have an extra index slot at the beginning for oscillator #
-      current_phases = np.angle(s.every_fft[:, interval, :])
-      next_phases = np.angle(s.every_fft[:, interval + 1, :])
-      each_oscillator_phase_diffs[:, interval, :] = next_phases - current_phases
-
-    # now calculate phase coherence by averaging over the set of adjacent-interval-pairs
-    # Note each of these arrays have shape (num_freq_points,)
-    SOO_xx= np.average(np.sin(SOO_phase_diffs),axis=0)
-    SOO_yy= np.average(np.cos(SOO_phase_diffs),axis=0)
-    # here's our final output:
-    s.SOO_phase_coherence = np.sqrt(SOO_xx**2 + SOO_yy**2)
-
-    # repeat for each individual oscillator
-    # each of these arrays have shape (num_osc, num_freq_points)
-    xx = np.average(np.sin(each_oscillator_phase_diffs),axis=1)
-    yy= np.average(np.cos(each_oscillator_phase_diffs),axis=1)
-    # here's our final output:
-    s.each_oscillator_phase_coherence = np.sqrt(xx**2 + yy**2)
-
-
-  def psd(s, osc=-1, interval=-1):
-    
-    if osc == -1:
-      if interval == -1:  
-        y = s.SOO_AOI_fft
-      else:
-        y = s.SOO_fft[interval]
-    else:
-      if interval == -1:
-        y = s.AOI_fft[osc]
-      else:
-        y = s.every_fft[osc, interval]
-
-      # square the amplitude
-      y = (np.abs(y))**2
-
-      # normalize
-      y = y / (s.sample_rate * s.n_ss)
-      
-    s.psd = y
-
-  
-  def plot_waveform(s, osc = -1, component = "re", interval = -1, 
-                    ss = False, xmin = -0.1, xmax = None, ymin = 0.0, ymax = None, fig_num = 1):
-    """ Plots a waveform for a given oscillator
- 
+  def plotter(s, plot_type, osc=-1, xmin=0, xmax=None, ymin=None, ymax=None, wf_comp="re", 
+                    wf_ss=False, fig_num=1):
+    """
+    Plots various plots
     Parameters
     ------------
-        osc: int, Optional
-          The index of your oscillator (-1 gives summed response)
-        component: str, Optional
-          Which component of waveform signal to plot; "re" or "im" for real or imaginary, respectively
-        ss: boolean, Optional
-          If you only want the steady state part of the solution
-        xmin: float, Optional
-        xmax: float, Optional
-        ymin: float, Optional
-        ymax: float, Optional
-        fig_num: int, Optional
-          Only required if plotting multiple figures
-
-        
-    """
-
-    if osc == -1: #because -1 means "sum"
-      y = s.SOO_sol
-    else:
-      y = s.sol[osc]
-
-    if component == "im":
-      y = y.imag
-    elif component == "re":
-      y = y.real
-
-    t = s.tpoints
-
-    if ss:
-      t = t[s.n_transient:]
-      y = y[s.n_transient:]
-
-    fig5 = plt.figure()
-    plt.plot(t, y)
-
-
-
-  def plotter(s, plot_type="", osc=-1, interval=-1, fig_num=1, xmin = 0, xmax = None, ymin = 0, ymax = None):
-    """
-    Creates V&D style frequency clustering plots
-    Parameters
-    ------------
-    plot_type: list
+    plot_type: String
       "coherence" plots phase coherence,
       "cluster" plots V&D style frequency clustering plots,
       "PSD" plots power spectral density,
       "superimpose" plots phase coherence and PSD
+      "wf" plots a waveform
     
-    fig_num: int, Optional
-      Only required if plotting multiple figures
-
-    interval: int, Optional
-      Which SS interval to display PSD for, defaults to -1 for average
-
+    osc: int, Optional
     xmin: float, Optional
       Defaults to 0
     xmax: float, Optional
     ymin: float, Optional
       Defaults to 0
     ymax: float, Optional
+    wf_comp: str, Optional
+      Which component of waveform signal to plot: "re" or "im" for real or imaginary, respectively
+    wf_ss: boolean, Optional
+      If you only want the steady state part of the waveform solution
+    fig_num: int, Optional
+      Only required if plotting multiple figures
     
     """
+    # get frequency and time axes
+    f = s.fft_freq
+    t = s.tpoints
 
-    freq = s.fft_freq
+    # initialize figure (with fig_num if you're making multiple plots)
+    plt.figure(fig_num)
 
     if plot_type == "superimpose":
-      f = s.fft_freq
-      if osc == -1:
-        if interval == -1:  
-          y = s.SOO_AOI_fft
-        else:
-          y = s.SOO_fft[interval]
-      else:
-        if interval == -1:
-          y = s.AOI_fft[osc]
-        else:
-          y = s.every_fft[osc, interval]
-      # square the amplitude
-      y = (np.abs(y))**2
-      # normalize
-      y = y / (s.sample_rate * s.n_ss)
-
-      fig1 = plt.figure()
-      plt.plot(f, y, color = "red", label="Power")
-      plt.plot(freq, s.SOO_phase_coherence * 10, color = "green", lw=1,label='Phase Coherence')
+      y1 = 10*np.log10(s.psd(osc))
+      y2 = s.coherence(osc)
+      plt.plot(f, y1, color = "red", lw=5, label="Power")
+      plt.plot(f, y2, color = "purple", lw=5, label='Phase Coherence')
       plt.xlabel('Frequency [Hz]')  
-      plt.ylabel('Power / Vector Strength x 10') 
-      plt.title("Phase Coherence and PSD of Summed Response") 
-      plt.xlim(left = 0, right = 10)
-      plt.xlim(left = xmin, right = xmax)
-      plt.ylim(bottom = ymin, top = ymax)
-      plt.legend()
+      plt.ylabel('Power [dB] / Vector Strength [max = 1]')
+      plt.legend() 
 
+      # set title
+      if osc == -1:
+        plt.title("Phase Coherence and PSD of Summed Response")
+      else:
+        plt.title(f"Phase Coherence and PSD of Oscillator #{osc}")
+
+    if plot_type == "PSD":
+      y = 10*np.log10(s.psd(osc))
+      plt.plot(f, y, color = "red", lw=5)
+      plt.ylabel('Density')
+      plt.xlabel('Frequency')
+      # set title
+      if osc == -1:
+        plt.title("Power Spectral Density of Summed Response")
+      else:
+        plt.title(f"Power Spectral Density of Oscillator #{osc}")
 
     if plot_type == "coherence":
-      fig2 = plt.figure()
-      plt.plot(freq/1000,s.coherence,'b-',lw=1,label='X')
-      plt.xlabel('Frequency [kHz]')  
-      plt.ylabel('Phase Coherence (i.e. vector strength)') 
-      plt.title("coherence") 
-      plt.xlim([0, 0.1])
+      y = s.coherence(osc)
+      plt.plot(f, y1, color = "purple", lw=5)
+      plt.xlabel('Frequency [Hz]')  
+      plt.ylabel('Power / Vector Strength')
+
+      # set title
+      if osc == -1:
+        plt.title("Phase Coherence")
+      else:
+        plt.title(f"Phase Coherenceof Oscillator #{osc}")
       
 
     if plot_type == "cluster":
+    # Creates V&D style frequency clustering plots
     # first, we get our curve of characteristic frequencies
       s.char_freqs = s.omegas / (2*np.pi)
       # next, we get our "average position amplitudes" (square root of the average of the square of the real part of z)
@@ -407,14 +310,16 @@ class Vodscillator:
       # and the average frequency of each oscillator
       s.avg_cluster_freqs = np.zeros(s.num_osc)
       for osc in range(s.num_osc):
+        # get the average amplitude (bottom line on V&D figure)
         s.avg_position_amplitudes[osc] = np.sqrt(np.mean((s.ss_sol[osc].real)**2))
-        # This is what it seems like they do in the paper:
-        #s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights = np.abs(s.AOI_fft[osc]))
-        # This is Beth's way:
-        s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(np.abs(s.AOI_fft[osc]))]
-      # now plot!
+        # get the average cluster frequency
+        # first get the psd of this oscillator
+        psd = s.psd(osc)
+        # Now, the paper seems to indicate a proper average over each frequency's PSD:
+        # s.avg_cluster_freqs[osc] = np.average(s.fft_freq, weights=psd)
+        # But Beth's way was just to use the frequency which has the highest PSD peak
+        s.avg_cluster_freqs[osc] = s.fft_freq[np.argmax(psd)]
       
-      fig3 = plt.figure()
       plt.plot(s.avg_cluster_freqs, '-o', label="Average frequency")
       plt.plot(s.avg_position_amplitudes, label="Amplitude")
       plt.plot(s.char_freqs, '--', label="Characteristic frequency")
@@ -422,21 +327,78 @@ class Vodscillator:
       plt.xlabel('Oscillator Index')
       plt.title(f"Frequency Clustering with Noise Amp: Local = {s.loc_noise_amp}, Global = {s.glob_noise_amp}")
       plt.legend()
+    
+    if plot_type == "wf":
+      if osc == -1: #because -1 means "sum"
+        y = s.SOO_sol
+        title = "Waveform of Summed Response"
+      else:
+        y = s.sol[osc]
+        title = f"Waveform of Oscillator #{osc}"
 
-    if plot_type == "PSD":
-        fig4 = plt.figure()
-        s.psd()
-        f = s.fft_freq
-        y = s.psd
-        #plt.figure(fig_num)
-        plt.plot(f, y)
-        plt.xlim(left = xmin)
-        plt.xlim(right = xmax)
-        plt.ylim(bottom = ymin)
-        plt.ylim(top = ymax)
-        plt.title("Power Spectral Density")
-        plt.ylabel('Density')
-        plt.xlabel('Frequency')
+      if wf_comp == "im":
+        y = y.imag
+        title = "Velocity " + title
+        plt.ylabel("Velocity")
+      elif wf_comp == "re":
+        y = y.real
+        title = "Position " + title
+        plt.ylabel("Position")
+
+      if wf_ss:
+        t = t[s.n_transient:]
+        y = y[s.n_transient:]
+        title = "Steady State " + title
+
+      plt.plot(t, y)
+      plt.xlabel("Time")
+      plt.title(title)
+      
+    # finally, overwrite any default x and y lims (this does nothing if none were inputted)
+    plt.xlim(left = xmin, right = xmax)
+    plt.ylim(bottom = ymin, top = ymax)
+
+  
+  # Plotter helper functions:
+  
+  def coherence(s, osc = -1):
+    # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+      # defaults to osc = -1 which is the sum of oscillators
+    if osc == -1:
+      y = s.SOO_fft[:, :]
+    else:
+      y = s.every_fft[osc, :, :]
+    
+    # get phases
+    phases = np.angle(y)
+    # initialize array for phase diffs
+    phase_diffs = np.zeros((s.num_intervals - 1, s.num_freq_points))
+    
+    for interval in range(0, s.num_intervals - 1):
+      # take the difference between the phases in this current interval and the next
+      phase_diffs[interval] = phase_diffs[interval + 1] - phase_diffs[interval]
+
+    # get the average sin and cos of the phase diffs
+    xx= np.mean(np.sin(phase_diffs),axis=0)
+    yy= np.mean(np.cos(phase_diffs),axis=0)
+
+    # finally, output the vector strength (for each frequency)
+    return np.sqrt(xx**2 + yy**2)
+
+  def psd(s, osc=-1):
+    # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+    if osc == -1:
+      # if osc = -1 (the default) we want the summed (SOO) response!
+      y = s.SOO_fft[:, :]
+    else:
+      y = s.every_fft[osc, :, :]
+
+    # take the amplitude squared and normalize
+    psd = ((np.abs(y))**2) / (s.sample_rate * s.n_ss)
+    # average over windows
+    avg_psd = np.mean(psd, 0)
+    
+    return avg_psd
     
 
   

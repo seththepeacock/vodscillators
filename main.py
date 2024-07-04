@@ -12,33 +12,10 @@ with open(filename, 'rb') as picklefile:
     assert isinstance(v, Vodscillator)
 
 
-#v.plotter("cluster")
-#v.plotter("PSD")
-#v.plotter("superimpose")
-#v.plot_waveform()
+v.plotter("cluster")
+v.plotter("PSD")
+v.plotter("superimpose")
 
 
 
-"""
-logaritmic plot for coherence & psd
-------------------------
-v.psd()
-v.coherence()
-plt.plot(v.fft_freq, np.log(v.psd), label="psd")
-plt.plot(v.fft_freq, v.SOO_phase_coherence*10, label="coherence")
-plt.legend()
-"""
-
-xdot = (v.sol).x
-
-x = (v.sol).y
-
-plt.plot(x, xdot)
-
-plt.grid()
-
-#write stuff like this!!!
-#vlodder.coherence(v.SOO_fft)
-
-plt.show()
 
