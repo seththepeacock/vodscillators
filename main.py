@@ -35,6 +35,9 @@ def phase_portrait(v):
 #write stuff like this!!!
 #vlodder.coherence(v.SOO_fft)
 
+def heat_map(v):
+    pass
+
 
 plt.show()
 
