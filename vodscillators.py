@@ -131,7 +131,7 @@ class Vodscillator:
 
     # Numerically integrate our ODE from ti to tf with sample rate 1/h
     s.tpoints = np.arange(s.ti, s.tf, s.h) # array of time points
-    s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y 
+    s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y
     # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
     # so s.sol[2, 1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
 
