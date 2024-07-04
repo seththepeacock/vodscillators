@@ -60,7 +60,6 @@ class Vodscillator:
     roughness = np.random.uniform(low=-r, high=r, size=(s.num_osc,))
     s.omegas = s.omegas + roughness
 
-
     # Generate initial conditions and store in ICs[]
     s.ICs = np.zeros(s.num_osc, dtype=complex)
 
@@ -136,10 +135,14 @@ class Vodscillator:
     # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
     # so s.sol[2, 1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
 
-    # finally, we get the summed response of all the oscillators
-    s.summed_sol = np.zeros(len(s.tpoints), dtype=complex)
+    # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators)
+    s.SOO_sol = np.zeros(len(s.tpoints), dtype=complex)
     for k in range(s.num_osc):
-      s.summed_sol += s.sol[k]
+      s.SOO_sol += s.sol[k]
+
+    # It will also be useful to have versions of these solutions restricted to after the system has entered steady state (ss).
+    s.ss_sol = s.sol[:, s.n_transient:]
+    s.SOO_ss_sol = s.SOO_sol[s.n_transient:]
 
   def ODE(s, t, z):
     # This function will only be called by the ODE solver
@@ -179,11 +182,7 @@ class Vodscillator:
     AOI = Averaged Over Intervals (for noise)
 
     """
-    # first, we want to restrict our solution to after the system has entered steady state (ss).
-    # we generate an array which is like our solution array, except with only timepoints after n_transient
-    s.ss_sol = s.sol[:, s.n_transient:]
-
-    # get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_ss), 
+    # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_ss), 
     # and sample spacing (h) tells it what these frequencies correspond to in terms of real time 
     s.fft_freq = rfftfreq(s.n_ss, s.h)
     s.num_freq_points = len(s.fft_freq)
@@ -208,7 +207,33 @@ class Vodscillator:
     # Same thing for the summed response
     s.SOO_AOI_fft = np.mean(s.SOO_fft, 0)
 
+  def save(s, filename = None):
+    """ Saves your vodscillator in a .pkl file
+ 
+    Parameters
+    ------------
+        filename: string, Optional
+          Don't include the ".pkl" at the end of the string!
+          If no filename is provided, it will just use the "name" given to your vodscillator
+        
+    """
+    
+    if filename:
+      f = filename + ".pkl"
+    else:
+      f = s.name + ".pkl"
 
+    with open(f, 'wb') as outp:  # Overwrites any existing file with this filename!.
+        pickle.dump(s, outp, pickle.HIGHEST_PROTOCOL)
+
+  def __str__(s):
+    return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
+
+
+  
+  #NOW WE CAN PLOT!
+
+  # Plotter helper functions:
 
   def coherence(s):
     # get phase diffs for the sum of oscillators
@@ -243,30 +268,27 @@ class Vodscillator:
     s.each_oscillator_phase_coherence = np.sqrt(xx**2 + yy**2)
 
 
-
-  def save(s, filename = None):
-    """ Saves your vodscillator in a .pkl file
- 
-    Parameters
-    ------------
-        filename: string, Optional
-          Don't include the ".pkl" at the end of the string!
-          If no filename is provided, it will just use the "name" given to your vodscillator
-        
-    """
+  def psd(s, osc=-1, interval=-1):
     
-    if filename:
-      f = filename + ".pkl"
+    if osc == -1:
+      if interval == -1:  
+        y = s.SOO_AOI_fft
+      else:
+        y = s.SOO_fft[interval]
     else:
-      f = s.name + ".pkl"
+      if interval == -1:
+        y = s.AOI_fft[osc]
+      else:
+        y = s.every_fft[osc, interval]
 
-    with open(f, 'wb') as outp:  # Overwrites any existing file with this filename!.
-        pickle.dump(s, outp, pickle.HIGHEST_PROTOCOL)
+      # square the amplitude
+      y = (np.abs(y))**2
 
-  def __str__(s):
-    return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
-  
-  #NOW WE PLOT!
+      # normalize
+      y = y / (s.sample_rate * s.n_ss)
+      
+    s.psd = y
+
   
   def plot_waveform(s, osc = -1, component = "re", interval = -1, 
                     ss = False, xmin = -0.1, xmax = None, ymin = 0.0, ymax = None, fig_num = 1):
@@ -291,7 +313,7 @@ class Vodscillator:
     """
 
     if osc == -1: #because -1 means "sum"
-      y = s.summed_sol
+      y = s.SOO_sol
     else:
       y = s.sol[osc]
 
@@ -309,27 +331,6 @@ class Vodscillator:
     fig5 = plt.figure()
     plt.plot(t, y)
 
-
-  def psd(s, osc=-1, interval=-1):
-    
-    if osc == -1:
-      if interval == -1:  
-        y = s.SOO_AOI_fft
-      else:
-        y = s.SOO_fft[interval]
-    else:
-      if interval == -1:
-        y = s.AOI_fft[osc]
-      else:
-        y = s.every_fft[osc, interval]
-
-      # square the amplitude
-      y = (np.abs(y))**2
-
-      # normalize
-      y = y / (s.sample_rate * s.n_ss)
-      
-    s.psd = y
 
 
   def plotter(s, plot_type="", osc=-1, interval=-1, fig_num=1, xmin = 0, xmax = None, ymin = 0, ymax = None):
