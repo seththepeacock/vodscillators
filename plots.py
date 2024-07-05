@@ -317,8 +317,10 @@ def heat_map(v=Vodscillator):
 
   xx, yy = np.meshgrid(osc_array, freq_array) 
 
-  print(avgd_spectra.shape, xx.shape, yy.shape)
 
   #sns.heatmap(avgd_spectra.transpose())
-  plt.pcolormesh(xx, yy, avgd_spectra, cmap="plasma")
+  plt.pcolormesh(xx, yy, avgd_spectra, vmax=1000000)
   plt.colorbar()
+  plt.xlabel("Oscillator index")
+  plt.ylabel("Frequency (Hz)")
+  plt.ylim(0, 8)

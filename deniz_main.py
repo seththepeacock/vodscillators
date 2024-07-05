@@ -18,8 +18,8 @@ with open(filename, 'rb') as picklefile:
 #v.plotter("cluster")
 #v.plotter("PSD")
 #v.plotter("superimpose")
+#phase_portrait(v)
 
-#heat_map(v)
-phase_portrait(v)
+heat_map(v)
 plt.show()
 
