@@ -119,14 +119,13 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
   return f, coherence, psd
 
 
-def phase_portrait(v):
-    xdot = np.imag((v.sol))
-    x = np.real((v.sol))
+def phase_portrait(wf, wf_title="Sum of Oscillators"):
+    xdot = np.imag(wf)
+    x = np.real(wf)
     plt.plot(x, xdot)
+    plt.title("Phase Portrait of " + wf_title)
     plt.grid()
-
-def heat_map(v):
-    pass
+    plt.show()
 
 def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=None, ymax=None, wf_comp="re", 
                     wf_ss=False, fig_num=1):
