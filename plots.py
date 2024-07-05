@@ -16,7 +16,7 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
         waveform input array
       sample_rate:
         defaults to 44100 
-      window_size: int, Optional
+      win_size: float, Optional
         The # points in each window will be 512 * window_size
         Defaults to 16, which gives a total window size of 8192 which is the standard Vodscillator averaging window
       max_vec_strength: int, Optional
@@ -37,7 +37,7 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
 
   """
   # get length and spacing of window
-  num_win_pts = win_size * 512
+  num_win_pts = win_size * sample_rate * 4
   sample_spacing = 1/sample_rate
   # calculate number of windows 
   num_win = int(np.floor(len(wf) / num_win_pts))
@@ -98,8 +98,8 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
     y2 = max_vec_strength*coherence
 
     plt.figure(fig_num)
-    plt.plot(f, y1, color = "green", lw=3, label="Power")
-    plt.plot(f, y2, color = "purple", lw=2, label='Phase Coherence')
+    plt.plot(f, y1, color = "green", lw=2, label="Power")
+    plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence', alpha=0.5)
     plt.xlabel('Frequency [Hz]')  
     plt.ylabel(f'Power [dB] / Vector Strength [max = {max_vec_strength}]')
     plt.legend() 
@@ -114,8 +114,6 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
     plt.xlim(left = xmin, right = xmax)
     plt.ylim(bottom = ymin, top = ymax)
 
-    # and show plot
-    plt.show()
   return f, coherence, psd
 
 
