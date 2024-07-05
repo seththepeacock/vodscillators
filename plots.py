@@ -6,7 +6,7 @@ from vodscillator import *
 from scipy.fft import rfft, rfftfreq
 
 
-def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd_shift=0, xmin=0, xmax=None, 
+def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
                      ymin=None, ymax=None, wf_title=None, make_plot=True, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
@@ -23,13 +23,15 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
         multiplier on the vector strength of phase coherence; defaults to 1
       psd_shift: int, Optional
         shifts the PSD up or down
-      wf_title: String, Optional
-        Plot title is: "Phase Coherence and PSD of {wf_title}"
+      db: bool, Optional
+        Chooses whether to plot PSD on a dB (10*log_10) scale
       xmin: float, Optional
         Defaults to 0
       xmax: float, Optional
       ymin: float, Optional
       ymax: float, Optional
+      wf_title: String, Optional
+        Plot title is: "Phase Coherence and PSD of {wf_title}"
       wf_comp: str, Optional
       make_plot: bool, Optional
         optionally repress plot
@@ -94,7 +96,9 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
   # PLOT!
   f = rfftfreq(num_win_pts, sample_spacing)
   if make_plot:
-    y1 = 10*np.log10(psd) + psd_shift
+    y1 = psd
+    if (db == True):
+      y1 = 10*np.log10(y1) + psd_shift
     y2 = max_vec_strength*coherence
 
     plt.figure(fig_num)
