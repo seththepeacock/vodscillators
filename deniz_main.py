@@ -7,13 +7,19 @@ from plots import *
 import seaborn as sns
 
 
-# Open pickled vodscillator
-filename = "vd-no-noise.pkl"
-with open(filename, 'rb') as picklefile:
-    v = pickle.load(picklefile)
-    # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-    assert isinstance(v, Vodscillator)
+if 1==1:
+    # Open pickled vodscillator
+    with open("vd-no-noise.pkl", 'rb') as picklefile:
+        v = pickle.load(picklefile)
+        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+        assert isinstance(v, Vodscillator)
 
+if 0==1:
+# Open pickled vodscillator
+    with open("vd-w-noise.pkl", 'rb') as picklefile:
+        v = pickle.load(picklefile)
+        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+        assert isinstance(v, Vodscillator)
 
 #v.plotter("cluster")
 #v.plotter("PSD")
