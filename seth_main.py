@@ -164,8 +164,9 @@ if 1==1:
         v = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(v, Vodscillator)
+    plt.subplot(2, 1, 1)
     plots.heat_map(v, min_freq=1, max_freq=5)
 
-    plt.figure(2)
+    plt.subplot(2, 1, 2)
     plots.heat_map(v, min_freq=1, max_freq=5, db=False)
     plt.show()

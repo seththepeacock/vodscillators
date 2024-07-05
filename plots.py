@@ -327,7 +327,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
 
 def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True):
   n = v.num_osc
-  spectra = (abs(v.every_fft)) #first index is oscillator index
+  spectra = (abs(v.every_fft))**2 #first index is oscillator index
   if db:
     spectra = 10*np.log10(spectra)
   avgd_spectra = np.squeeze(np.average(spectra, axis=1)).transpose() #avging over runs
@@ -343,9 +343,16 @@ def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True):
 
   xx, yy = np.meshgrid(osc_array, freq_array) 
 
-  #sns.heatmap(avgd_spectra.transpose())
+  if db:
+    vmax = 115
+  else:
+    vmax = 10000000
 
-  plt.pcolormesh(xx, yy, avgd_spectra, cmap='plasma')
-  plt.colorbar(label="PSD [dB]")
+  plt.pcolormesh(xx, yy, avgd_spectra, cmap='plasma', vmax=vmax)
+  label = "PSD"
+  if db:
+      label = label + " [dB]"
+  plt.colorbar(label=label)
   plt.xlabel("Oscillator index")
   plt.ylabel("Frequency (Hz)")
+  plt.title("Heat Map of Frequency Clusters")
