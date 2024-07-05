@@ -6,7 +6,7 @@ from vodscillator import *
 from scipy.fft import rfft, rfftfreq
 
 
-def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
+def coherence_vs_PSD(wf, sample_rate=44100, win_size=64, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
                      ymin=None, ymax=None, wf_title=None, show_plot=True, do_psd = True, do_coherence = True, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
@@ -18,7 +18,7 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
         defaults to 44100 
       win_size: float, Optional
         The # points in each window will be 512 * window_size
-        Defaults to 16, which gives a total window size of 8192 which is the standard Vodscillator averaging window
+        Defaults to 64, which gives a total window size of 8192 which is the standard Vodscillator averaging window
       max_vec_strength: int, Optional
         multiplier on the vector strength of phase coherence; defaults to 1
       psd_shift: int, Optional
@@ -43,7 +43,7 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
 
   """
   # get length and spacing of window
-  num_win_pts = win_size * 512
+  num_win_pts = win_size * 128
   sample_spacing = 1/sample_rate
   # calculate number of windows 
   num_win = int(np.floor(len(wf) / num_win_pts))
@@ -325,9 +325,11 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
 
   
 
-def heat_map(v=Vodscillator, min_freq=None, max_freq=None):
+def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True):
   n = v.num_osc
-  spectra = 10*np.log10((abs(v.every_fft))**2)  #first index is oscillator index
+  spectra = (abs(v.every_fft)) #first index is oscillator index
+  if db:
+    spectra = 10*np.log10(spectra)
   avgd_spectra = np.squeeze(np.average(spectra, axis=1)).transpose() #avging over runs
   osc_array = range(0, n)
   freq_array = v.fft_freq
@@ -341,11 +343,9 @@ def heat_map(v=Vodscillator, min_freq=None, max_freq=None):
 
   xx, yy = np.meshgrid(osc_array, freq_array) 
 
-
   #sns.heatmap(avgd_spectra.transpose())
 
   plt.pcolormesh(xx, yy, avgd_spectra, cmap='plasma')
   plt.colorbar(label="PSD [dB]")
   plt.xlabel("Oscillator index")
   plt.ylabel("Frequency (Hz)")
-  plt.show()

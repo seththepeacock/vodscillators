@@ -24,7 +24,7 @@ if 1 == 0:
     plt.show()
 
 #psd + coherence of generated data
-if 1 == 0:
+if 1==0:
     sr = 512
     t = np.arange(0, 1000, 1/sr)
     noise_amp = 50
@@ -36,13 +36,13 @@ if 1 == 0:
     plots.coherence_vs_PSD(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
 
 #psd + coherence of soae anolis data
-if 1 == 0:
+if 1==0:
     # Load the .mat file
     filepath = 'C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\SOAE Data'
-    filename = '\\2020.02.21 Anolis\\fwavef.ACsb18learSOAEwfG4.CF985.BW60'
+    filename = '\\2020.02.21 Anolis\\ACsb18learSOAEwfG4.mat'
     mat = scipy.io.loadmat(filepath + filename)
-    soae = mat['fwavef'][0]
-    wf_title = 'fwavef.JIrearSOAEwf2.CF1723.BW30.mat'
+    soae = np.squeeze(mat['wf'])
+    wf_title = 'ACsb18learSOAEwfG4.mat'
     fig_num=1
     win_size=128
     show_plot=True
@@ -58,15 +58,15 @@ if 1 == 0:
     
     # xmin=1.69
     # xmax=1.76
-    xmin = 0.9
-    xmax = 1.17
-    # xmin=1.5
-    # xmax=2
-    ymin=0
-    ymax=20
+    # xmin = 0.9
+    # xmax = 1.17
+    xmin=0
+    xmax=4
+    # ymin=0
+    # ymax=20
     # plots.coherence_vs_PSD(soae, win_size=win_size, show_plot=False, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                         #    db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
-    win_size = 64
+    win_size = 2
     fig_num = 2
     plots.coherence_vs_PSD(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
@@ -86,7 +86,7 @@ if 1 == 0:
     # plt.show()
 
 #psd + coherence of JIrear data
-if 1 == 1:
+if 1==0:
     # Load the .mat file
     filename = 'TH21RearwaveformSOAE'
     mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
@@ -106,8 +106,8 @@ if 1 == 1:
     ymax=None
     # xmin=1.69
     # xmax=1.76
-    # # xmin=1.5
-    # # xmax=2
+    xmin=1
+    xmax=5
     # ymin=0
     # ymax=1
     # plots.coherence_vs_PSD(soae, win_size=win_size, show_plot=False, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
@@ -117,8 +117,7 @@ if 1 == 1:
     plots.coherence_vs_PSD(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
 
-
-#psd + coherence of vodscillatorS
+#psd + coherence of vodscillators
 if 1==0:
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
@@ -131,7 +130,7 @@ if 1==0:
     wf = v.SOO_ss_sol.flatten()
     wf_title = v.name
     fig_num=1
-    win_size=8
+    win_size=6
     show_plot=True
     max_vec_strength=10
     psd_shift=20
@@ -143,7 +142,7 @@ if 1==0:
     ymin=None
     ymax=None
     xmin=0
-    xmax=5
+    xmax=3
     # xmin=1.5
     # xmax=2
     ymin=0
@@ -157,15 +156,16 @@ if 1==0:
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
 
 #freq cluster of vodscillator
-if 1 ==0:
+if 1==1:
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
+    filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
     with open(filepath + filename, 'rb') as picklefile:
         v = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(v, Vodscillator)
     plots.heat_map(v, min_freq=1, max_freq=5)
-    
 
-
+    plt.figure(2)
+    plots.heat_map(v, min_freq=1, max_freq=5, db=False)
+    plt.show()
