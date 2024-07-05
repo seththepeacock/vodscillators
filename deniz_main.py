@@ -8,7 +8,7 @@ import seaborn as sns
 
 
 # Open pickled vodscillator
-filename = "vd-w-noise.pkl"
+filename = "vd-no-noise.pkl"
 with open(filename, 'rb') as picklefile:
     v = pickle.load(picklefile)
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
@@ -19,6 +19,7 @@ with open(filename, 'rb') as picklefile:
 #v.plotter("PSD")
 #v.plotter("superimpose")
 
-heat_map(v)
+#heat_map(v)
+phase_portrait(v)
 plt.show()
 
