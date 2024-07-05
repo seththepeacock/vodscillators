@@ -113,6 +113,8 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
     # finally, overwrite any default x and y lims (this does nothing if none were inputted)
     plt.xlim(left = xmin, right = xmax)
     plt.ylim(bottom = ymin, top = ymax)
+  
+  plt.show()
 
   return f, coherence, psd
 
