@@ -28,7 +28,7 @@ p = {
 "ti" : 0, # start time; [default = 0]
 "n_transient" : 35855, # the # of time points we give for transient behavior to settle down; around 30000 [default = 35855]
 "n_ss" : 8192, # the # of time points we observe the steady state behavior for [default = 8192]
-"num_intervals" : 1, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
+"num_intervals" : 30, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
 "sample_rate" : 128, #[default = 128]
 
 #set_ODE"
