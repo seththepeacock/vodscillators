@@ -1,4 +1,4 @@
-from vodscillators import *
+from vodscillator import *
 import matplotlib.pyplot as plt
 import timeit
 from scipy.fft import rfft, rfftfreq
@@ -10,7 +10,7 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 #General Initializing Params
-"name" : "V&D fig 2A",
+"name" : "V&D fig 2A, loc=0, glob=0",
 "num_osc" : 80, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
@@ -23,8 +23,8 @@ p = {
 "IC_method" : "rand", #rand or const
 
 #gen_noise
-"loc_noise_amp" : 0.1, #amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
-"glob_noise_amp" : 0.1, #amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
+"loc_noise_amp" : 0, #amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
+"glob_noise_amp" : 0, #amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
 "ti" : 0, # start time; [default = 0]
 "n_transient" : 35855, # the # of time points we give for transient behavior to settle down; around 30000 [default = 35855]
 "n_ss" : 8192, # the # of time points we observe the steady state behavior for [default = 8192]

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import timeit
-from vodscillators import *
+from vodscillator import *
 from scipy.fft import rfft, rfftfreq
 
 

@@ -1,4 +1,4 @@
-from vodscillators import *
+from vodscillator import *
 import matplotlib.pyplot as plt
 import numpy as np
 import timeit
@@ -34,7 +34,7 @@ if 1 == 0:
     #     wf = wf + np.sin(2*np.pi*freq*t)
     plots.coherence_vs_PSD(wf, sr, xmax = 100, psd_shift = 0, max_vec_strength=1)
 
-if 1 == 1:
+if 1 == 0:
     # Load the .mat file
     mat = scipy.io.loadmat('SOAE Data/fwavef.JIrearSOAEwf2.CF1723.BW30.mat')
     soae = mat['fwavef'][0]
@@ -55,12 +55,14 @@ if 1 == 1:
     # plt.xlim(left = 1720, right = 1760)
     # plt.show()
 
-if 1==0:
+if 1==1:
     # Open pickled vodscillator
     filename = "V&D fig 2A.pkl"
     with open(filename, 'rb') as picklefile:
         v = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(v, Vodscillator)
+    
+    plots.vlodder(v, "coherence")
 
 
