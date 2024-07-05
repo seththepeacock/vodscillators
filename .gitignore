@@ -1,6 +1,7 @@
 *.pyc
 *.code-workspace
 *.pkl
+*.mat
 test + extra comments.py
 phase.txt
 seth_main.py
