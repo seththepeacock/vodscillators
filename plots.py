@@ -6,39 +6,118 @@ from vodscillators import *
 from scipy.fft import rfft, rfftfreq
 
 
-def coherence_vs_PSD(wf, sample_rate, win_size = 16):
-    """ Plots the power spectral density and phase coherence of an input waveform
-    
-    Parameters
-    ------------
-        waveform: array
-        window_size: int, Optional
-            The # points in each window will be 512 * window_size
-            Defaults to 16, which gives a total window size of 8192 which is the standard Vodscillator averaging window
-    """
-    # get length and spacing of window
-    num_win_pts = win_size * 512
-    sample_spacing = 1/sample_rate
-    # calculate number of windows 
-    num_win = np.floor(len(wf) / 16)
-    # initialize matrix which will hold the windowed waveform
-    windowed_wf = np.zeros(num_win, num_win_pts)
-    for k in num_win:
-        win_start = k*num_win_pts
-        win_end = (k+1)*num_win_pts
-        windowed_wf[k, :] = wf[win_start:win_end]
+def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd_shift=0, xmin=0, xmax=None, 
+                     ymin=None, ymax=None, wf_title=None, make_plot=True, fig_num=1):
+  """ Plots the power spectral density and phase coherence of an input waveform
+  
+  Parameters
+  ------------
+      wf: array
+        waveform input array
+      sample_rate:
+        defaults to 44100 
+      window_size: int, Optional
+        The # points in each window will be 512 * window_size
+        Defaults to 16, which gives a total window size of 8192 which is the standard Vodscillator averaging window
+      max_vec_strength: int, Optional
+        multiplier on the vector strength of phase coherence; defaults to 1
+      psd_shift: int, Optional
+        shifts the PSD up or down
+      wf_title: String, Optional
+        Plot title is: "Phase Coherence and PSD of {wf_title}"
+      xmin: float, Optional
+        Defaults to 0
+      xmax: float, Optional
+      ymin: float, Optional
+      ymax: float, Optional
+      wf_comp: str, Optional
+      make_plot: bool, Optional
+        optionally repress plot
+      fig_num: Any, Optional
 
-    # Now we do the ffts!
+  """
+  # get length and spacing of window
+  num_win_pts = win_size * 512
+  sample_spacing = 1/sample_rate
+  # calculate number of windows 
+  num_win = int(np.floor(len(wf) / num_win_pts))
+  # initialize matrix which will hold the windowed waveform
+  windowed_wf = np.zeros((num_win, num_win_pts))
+  for win in range(num_win):
+      win_start = win*num_win_pts
+      win_end = (win+1)*num_win_pts
+      # grab the (real part of the) waveform in this window
+      windowed_wf[win, :] = wf[win_start:win_end].real
 
-    # get frequency axis 
-    freq_pts = rfftfreq(num_win_pts, sample_spacing)
-    windowed_fft = np.zeros(num_win, len(freq_pts))
-    for k in num_win:
-        windowed_fft[k, :] = rfft(windowed_wf[k, :])
-    
-    # first, get PSD, averaged over all windows
-    # average over all windows
-    
+  # Now we do the ffts!
+
+  # get frequency axis 
+  freq_pts = rfftfreq(num_win_pts, sample_spacing)
+  num_freq_pts = len(freq_pts)
+  # get fft of each window
+  windowed_fft = np.zeros((num_win, len(freq_pts)), dtype=complex)
+  for win in range(num_win):
+    windowed_fft[win, :] = rfft(windowed_wf[win, :])
+
+  # POWER SPECTRAL DENSITY
+
+  # initialize array
+  windowed_psd = np.zeros((num_win, num_freq_pts))
+
+  # calculate the normalizing factor (canonical for discrete PSD)
+  normalizing_factor = sample_rate * num_win_pts
+  # get PSD for each window
+  for win in range(num_win):
+    windowed_psd[win, :] = ((np.abs(windowed_fft[win, :]))**2) / normalizing_factor
+  # average over all windows
+  psd = np.mean(windowed_psd, 0)
+
+  # PHASE COHERENCE
+
+  # get phases
+  phases = np.angle(windowed_fft)
+  # initialize array for phase diffs
+  num_win_pairs = num_win - 1
+  phase_diffs = np.zeros((num_win_pairs, num_freq_pts))
+  
+  for interval in range(0, num_win_pairs):
+    # take the difference between the phases in this current window and the next
+    phase_diffs[interval] = phases[interval + 1] - phases[interval]
+
+  # get the sin and cos of the phase diffs, and average over the window pairs
+  xx= np.mean(np.sin(phase_diffs),axis=0)
+  yy= np.mean(np.cos(phase_diffs),axis=0)
+
+  # finally, output the vector strength (for each frequency)
+  coherence = np.sqrt(xx**2 + yy**2)
+
+  # PLOT!
+  f = rfftfreq(num_win_pts, sample_spacing)
+  if make_plot:
+    y1 = 10*np.log10(psd) + psd_shift
+    y2 = max_vec_strength*coherence
+
+    plt.figure(fig_num)
+    plt.plot(f, y1, color = "green", lw=3, label="Power")
+    plt.plot(f, y2, color = "purple", lw=2, label='Phase Coherence')
+    plt.xlabel('Frequency [Hz]')  
+    plt.ylabel(f'Power [dB] / Vector Strength [max = {max_vec_strength}]')
+    plt.legend() 
+
+    # set title
+    if wf_title:
+      plt.title(f"Phase Coherence and PSD of {wf_title}")
+    else:
+      plt.title("Phase Coherence and PSD of Waveform")
+
+    # finally, overwrite any default x and y lims (this does nothing if none were inputted)
+    plt.xlim(left = xmin, right = xmax)
+    plt.ylim(bottom = ymin, top = ymax)
+
+    # and show plot
+    plt.show()
+  return f, coherence, psd
+
 
 def phase_portrait(v):
     xdot = np.imag((v.sol))
@@ -46,10 +125,8 @@ def phase_portrait(v):
     plt.plot(x, xdot)
     plt.grid()
 
-
-#write stuff like this!!!
-#vlodder.coherence(v.SOO_fft)
-
+def heat_map(v):
+    pass
 
 def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=None, ymax=None, wf_comp="re", 
                     wf_ss=False, fig_num=1):
@@ -71,7 +148,6 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
     Defaults to 0
   xmax: float, Optional
   ymin: float, Optional
-    Defaults to 0
   ymax: float, Optional
   wf_comp: str, Optional
     Which component of waveform signal to plot: "re" or "im" for real or imaginary, respectively
@@ -115,9 +191,9 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
       y = vod.every_fft[osc, :, :]
 
     # take the amplitude squared and normalize
-    psd_ = ((np.abs(y))**2) / (vod.sample_rate * vod.n_ss)
+    psd = ((np.abs(y))**2) / (vod.sample_rate * vod.n_ss)
     # average over windows
-    avg_psd = np.mean(psd_, 0)
+    avg_psd = np.mean(psd, 0)
     
     return avg_psd
 
