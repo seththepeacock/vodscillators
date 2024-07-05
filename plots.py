@@ -7,7 +7,7 @@ from scipy.fft import rfft, rfftfreq
 
 
 def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
-                     ymin=None, ymax=None, wf_title=None, make_plot=True, fig_num=1):
+                     ymin=None, ymax=None, wf_title=None, show_plot=True, do_psd = True, do_coherence = True, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
   Parameters
@@ -33,13 +33,17 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
       wf_title: String, Optional
         Plot title is: "Phase Coherence and PSD of {wf_title}"
       wf_comp: str, Optional
-      make_plot: bool, Optional
-        optionally repress plot
+      show_plot: bool, Optional
+        Repress showing plot
+      do_psd: bool, Optional
+        Repress psd part of plot
+      do_coherence: bool, Optional
+        Repress coherence part of plot
       fig_num: Any, Optional
 
   """
   # get length and spacing of window
-  num_win_pts = win_size * sample_rate * 4
+  num_win_pts = win_size * 512
   sample_spacing = 1/sample_rate
   # calculate number of windows 
   num_win = int(np.floor(len(wf) / num_win_pts))
@@ -94,31 +98,40 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=16, max_vec_strength=1, psd
   coherence = np.sqrt(xx**2 + yy**2)
 
   # PLOT!
-  f = rfftfreq(num_win_pts, sample_spacing)
-  if make_plot:
-    y1 = psd
-    if (db == True):
-      y1 = 10*np.log10(y1) + psd_shift
-    y2 = max_vec_strength*coherence
-
-    plt.figure(fig_num)
-    plt.plot(f, y1, color = "green", lw=2, label="Power")
-    plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence', alpha=0.5)
-    plt.xlabel('Frequency [Hz]')  
-    plt.ylabel(f'Power [dB] / Vector Strength [max = {max_vec_strength}]')
-    plt.legend() 
-
-    # set title
-    if wf_title:
-      plt.title(f"Phase Coherence and PSD of {wf_title}")
-    else:
-      plt.title("Phase Coherence and PSD of Waveform")
-
-    # finally, overwrite any default x and y lims (this does nothing if none were inputted)
-    plt.xlim(left = xmin, right = xmax)
-    plt.ylim(bottom = ymin, top = ymax)
+  f = rfftfreq(num_win_pts, sample_spacing) / 1000
   
-  plt.show()
+  y1 = psd
+  if (db == True):
+    y1 = 10*np.log10(y1)
+  y1 = y1 + psd_shift
+  y2 = max_vec_strength*coherence
+
+  plt.figure(fig_num)
+
+  if do_psd:
+    # plt.axes().fill_between(f, y1, 0, color='green', alpha=.2)
+    plt.plot(f, y1, color = "green", lw=1, label="Power", alpha=0.7)
+
+  if do_coherence:
+    plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence')
+  plt.xlabel('Frequency [kHz]')  
+  plt.ylabel(f'Power [dB] / Vector Strength [max = {max_vec_strength}]')
+  if psd_shift:
+    plt.ylabel(f'Power [dB] + {psd_shift} / Vector Strength [max = {max_vec_strength}]')
+  plt.legend() 
+
+  # set title
+  if wf_title:
+    plt.title(f"Phase Coherence and PSD of {wf_title}")
+  else:
+    plt.title("Phase Coherence and PSD of Waveform")
+
+  # finally, overwrite any default x and y lims (this does nothing if none were inputted)
+  plt.xlim(left = xmin, right = xmax)
+  plt.ylim(bottom = ymin, top = ymax)
+  
+  if show_plot:
+    plt.show()
 
   return f, coherence, psd
 
@@ -309,22 +322,30 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
 
 
 
+
   
 
-def heat_map(v=Vodscillator):
+def heat_map(v=Vodscillator, min_freq=None, max_freq=None):
   n = v.num_osc
-  spectra = (abs(v.every_fft))**2  #first index is oscillator index
+  spectra = 10*np.log10((abs(v.every_fft))**2)  #first index is oscillator index
   avgd_spectra = np.squeeze(np.average(spectra, axis=1)).transpose() #avging over runs
-  osc_array = np.arange(0, n, 1)
+  osc_array = range(0, n)
   freq_array = v.fft_freq
-
+  if min_freq and max_freq:
+    # get the index of these frequencies in the frequency array
+    min_freq_pt = int(min_freq * v.sample_rate / 2)
+    max_freq_pt = int(max_freq * v.sample_rate / 2)
+    # restrict to relevant frequencies
+    freq_array = freq_array[min_freq_pt:max_freq_pt]
+    avgd_spectra = avgd_spectra[min_freq_pt:max_freq_pt,:] 
 
   xx, yy = np.meshgrid(osc_array, freq_array) 
 
 
   #sns.heatmap(avgd_spectra.transpose())
-  plt.pcolormesh(xx, yy, avgd_spectra, vmax=1000000)
-  plt.colorbar()
+
+  plt.pcolormesh(xx, yy, avgd_spectra, cmap='plasma')
+  plt.colorbar(label="PSD [dB]")
   plt.xlabel("Oscillator index")
   plt.ylabel("Frequency (Hz)")
-  plt.ylim(0, 8)
+  plt.show()
