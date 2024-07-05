@@ -233,27 +233,17 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
   
 
 def heat_map(v=Vodscillator):
-    #spectra = list of z_j's
-    # heat map not averaged
-    n = v.num_osc
-    spectra = (abs(v.every_fft))**2  #first index is oscillator index
-    avgd_spectra = np.average(spectra, axis=1) #avging over runs
-    osc_array = np.arange(0, n, 1)
-    freq_array = v.fft_freq
-    
-    xx, yy = np.meshgrid(osc_array, freq_array) 
-        
+  n = v.num_osc
+  spectra = (abs(v.every_fft))**2  #first index is oscillator index
+  avgd_spectra = np.squeeze(np.average(spectra, axis=1)).transpose() #avging over runs
+  osc_array = np.arange(0, n, 1)
+  freq_array = v.fft_freq
 
-    plt.figure()
-    #plt.imshow(spectradB_heat, cmap='jet', extent=[jmin, jmax, freq_heat.min(), freq_heat.max()],
-    #            origin='lower', aspect='auto', vmin=spectradB_heat.min(), vmax=spectradB_heat.max(),
-    #           interpolation='nearest')
-    
-    plt.xlabel('Oscillator Number')
-    plt.ylabel('Frequency [kHz]')
-    plt.title("Heat Map")
 
-    #plt.pcolormesh(xx, yy, avgd_spectra)
-    plt.hexbin(osc_array, freq_array, avgd_spectra)
-    plt.colorbar() 
-  
+  xx, yy = np.meshgrid(osc_array, freq_array) 
+
+  print(avgd_spectra.shape, xx.shape, yy.shape)
+
+  #sns.heatmap(avgd_spectra.transpose())
+  plt.pcolormesh(xx, yy, avgd_spectra, cmap=plasma)
+  plt.colorbar()
