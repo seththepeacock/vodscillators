@@ -245,5 +245,5 @@ def heat_map(v=Vodscillator):
   print(avgd_spectra.shape, xx.shape, yy.shape)
 
   #sns.heatmap(avgd_spectra.transpose())
-  plt.pcolormesh(xx, yy, avgd_spectra, cmap=plasma)
+  plt.pcolormesh(xx, yy, avgd_spectra, cmap="plasma")
   plt.colorbar()
