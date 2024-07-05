@@ -55,7 +55,7 @@ if 1 == 0:
     # plt.xlim(left = 1720, right = 1760)
     # plt.show()
 
-if 1==1:
+if 1==0:
     # Open pickled vodscillator
     filename = "V&D fig 2A.pkl"
     with open(filename, 'rb') as picklefile:

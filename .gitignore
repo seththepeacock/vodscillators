@@ -4,7 +4,7 @@
 *.mat
 test + extra comments.py
 phase.txt
-seth's_birth_chamber.py
+seth_birth_chamber.py
 einstein.py
 
 # Byte-compiled / optimized / DLL files

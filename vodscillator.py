@@ -8,17 +8,14 @@ from scipy.fft import rfft, rfftfreq
 class Vodscillator:
   """
   Vod-structions
-  1. Initialize
-  2. Create Frequency Distribution with "set_freq"
-  3. Set ICs with "set_ICs" 
-    - requires #2 first!
-  4. Generate Noise with "gen_noise"
-  6. Pass in parameters and solve ODE Function with "solve_ODE" 
-  8. Save your vodscillator to a file
-  9. Plot
+  1. Create Vodscillator
+  2. Initialize frequency distribution, ICs, and (optional) non-isochronicity with "initialize(**p)"
+  3. Generate Noise with "gen_noise(**p)"
+  4. Pass in ODE parameters and solve ODE Function with "solve_ODE(**p)" 
+  5. Do FFT with "do_fft()"
+  6. Save (pickle) your vodscillator to a file with "save()"
+  7. Plot!
   """
-
-  #Note - you must create a frequency distribution before setting ICs since an oscillator's IC depends on its char freq
 
   def __init__(s, **p):
     # s = self (refers to the object itself)
