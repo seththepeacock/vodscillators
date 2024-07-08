@@ -10,14 +10,14 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 #General Initializing Params
-"name" : "F&B fig 2D.pkl",
+"name" : "F&B fig 2D",
 "num_osc" : 50, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
 "freq_dist" : "exp", #linear or exp
 "roughness_amp" : 0,
-"omega_0" : 5/(2*np.pi), # char radial frequency of lowest oscillator [default = 2*np.pi] 
-"omega_N" : 25/(2*np.pi), # char radial frequency of highest oscillator [default = 5*(2*np.pi)] 
+"omega_0" : 5, # char radial frequency of lowest oscillator [default = 2*np.pi] 
+"omega_N" : 25, # char radial frequency of highest oscillator [default = 5*(2*np.pi)] 
 
 #set_ICs
 "IC_method" : "rand", #rand or const
@@ -26,10 +26,10 @@ p = {
 "loc_noise_amp" : 0.1, #amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
 "glob_noise_amp" : 0, #amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
 "ti" : 0, # start time; [default = 0]
-"t_transient" : 100, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
+"t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_ss" : 64, # length of an interval of ss observation [default = 64 --> n.transient = 8192]
-"num_intervals" : 5, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
-"sample_rate" : 64, #[default = 128]
+"num_intervals" : 30, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
+"sample_rate" : 128, #[default = 128]
 
 #set_ODE"
 "epsilon" : 1.0, # [default = 1.0] --> control parameter

@@ -214,3 +214,6 @@ if 1==1:
         v = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(v, Vodscillator)
+    plots.vlodder(v, "cluster")
+    
+    
