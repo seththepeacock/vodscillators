@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
@@ -85,20 +84,23 @@ class Vodscillator:
     # NECESSARY PARAMETERS
     s.loc_noise_amp = p["loc_noise_amp"] # amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
     s.glob_noise_amp = p["glob_noise_amp"] # amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
-    s.ti = p["ti"] # start time; [default = 0]
-    s.n_transient = p["n_transient"]  # the # of time points we give for transient behavior to settle down; around 30000 [default = 35855]
-    s.n_ss = p["n_ss"]  # the # of time points in a given interval of ss observation [default = 8192]
-    s.num_intervals = p["num_intervals"] # [default for no noise is 1; with noise we must average over multiple intervals]
     s.sample_rate = p["sample_rate"] # [default = 128]
+    s.ti = p["ti"] # start time; [default = 0]
+    s.t_transient = p["t_transient"] # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
+    s.t_ss = p["t_ss"] # length of an interval of ss observation [default = 64 --> n.transient = 8192]
+    s.num_intervals = p["num_intervals"] # [default for no noise is 1; with noise we must average over multiple intervals]
+
 
     # Calculate other params
-    s.h = 1/s.sample_rate #delta t between time points
-    s.tf = s.h*(s.n_transient + s.num_intervals * s.n_ss)  # end time is delta t * total # points
+    s.delta_t = 1/s.sample_rate #delta t between time points
+    s.n_transient = s.t_transient * s.sample_rate # num of time points corresponding to t_transient
+    s.n_ss = s.t_ss * s.sample_rate # num of time points corresponding to t_ss
+    s.tf = s.t_transient + s.num_intervals * s.t_ss
     
     # We want a global xi(t) and then one for each oscillator. 
 
     # First, generate time points
-    s.tpoints = np.arange(s.ti, s.tf, s.h)
+    s.tpoints = np.arange(s.ti, s.tf, s.delta_t)
 
     # global --> will impact each oscillator equally at each point in time (e.g., wind blowing?)
     # first we randomly generate points uniformly within the given amplitude range
@@ -127,7 +129,7 @@ class Vodscillator:
     s.ccc = s.d_R + 1j*s.d_I
 
     # Numerically integrate our ODE from ti to tf with sample rate 1/h
-    s.tpoints = np.arange(s.ti, s.tf, s.h) # array of time points
+    s.tpoints = np.arange(s.ti, s.tf, s.delta_t) # array of time points
     s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y
     # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
     # so s.sol[2, 1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
@@ -181,7 +183,7 @@ class Vodscillator:
     """
     # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_ss), 
     # and sample spacing (h) tells it what these frequencies correspond to in terms of real time 
-    s.fft_freq = rfftfreq(s.n_ss, s.h)
+    s.fft_freq = rfftfreq(s.n_ss, s.delta_t)
     s.num_freq_points = len(s.fft_freq)
     
     # compute the (r)fft for all oscillators individually and store them in "every_fft"

@@ -145,7 +145,7 @@ def phase_portrait(wf, wf_title="Sum of Oscillators"):
     plt.show()
 
 def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=None, ymax=None, wf_comp="re", 
-                    wf_ss=False, fig_num=1):
+                    wf_ss=False, show_plot=True, fig_num=1):
   """
   Plots various plots
   Parameters
@@ -153,10 +153,11 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
   vod: Vodscillator
     input vodscillator
   plot_type: String
-    "coherence" plots phase coherence,
-    "cluster" plots V&D style frequency clustering plots,
-    "PSD" plots power spectral density,
-    "superimpose" plots phase coherence and PSD
+    "coherence" plots phase coherence;
+    "cluster" plots V&D style frequency clustering plots;
+    "psd" plots power spectral density (if osc=-1, adds up fft of each oscillator and then takes PSD);
+    "pre_psd" takes PSD of each oscillator and then plots the sum of the PSDs;
+    "superimpose" plots phase coherence and PSD;
     "wf" plots a waveform
   
   osc: int, Optional
@@ -169,6 +170,8 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
     Which component of waveform signal to plot: "re" or "im" for real or imaginary, respectively
   wf_ss: boolean, Optional
     If you only want the steady state part of the waveform solution
+  show_plot: boolean , Optional
+    Gives the ability to suppress the plt.show()
   fig_num: int, Optional
     Only required if plotting multiple figures
     
@@ -236,7 +239,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
     else:
       plt.title(f"Phase Coherence and PSD of Oscillator #{osc}")
 
-  if plot_type == "PSD":
+  if plot_type == "psd":
     y = 10*np.log10(get_psd(osc))
     plt.plot(f, y, color = "red", lw=1)
     plt.ylabel('Density')
@@ -246,6 +249,19 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
       plt.title("Power Spectral Density of Summed Response")
     else:
       plt.title(f"Power Spectral Density of Oscillator #{osc}")
+  
+  if plot_type == "pre_psd":
+    sum = 0
+    for k in range(vod.num_osc):
+      sum += get_psd(k)
+    y = 10*np.log10(sum)
+    plt.plot(f, y, color = "red", lw=1)
+    plt.ylabel('Density')
+    plt.xlabel('Frequency')
+    # set title
+    plt.title("Summed Power Spectral Density of Each Oscillator")
+
+
 
   if plot_type == "coherence":
     y = get_coherence(osc)
@@ -317,7 +333,8 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
   plt.xlim(left = xmin, right = xmax)
   plt.ylim(bottom = ymin, top = ymax)
   # and show plot!
-  plt.show()
+  if show_plot:
+    plt.show()
 
 
 

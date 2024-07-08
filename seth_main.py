@@ -6,8 +6,8 @@ import pickle
 import plots
 import scipy.io
 
-
-if 1 == 0:
+# psd + coherence of vodscillators with 4 window sizes
+if 1==0:
     # Open pickled vodscillator
     filename = "V&D fig 2A.pkl"
     with open(filename, 'rb') as picklefile:
@@ -33,6 +33,10 @@ if 1==0:
     wf = noise
     for freq in freqs:
         wf = wf + np.sin(2*np.pi*freq*t)
+    plots.coherence_vs_PSD(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
+
+#psd + coherence of generated data
+if 1==0:
     plots.coherence_vs_PSD(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
 
 #psd + coherence of soae anolis data
@@ -156,7 +160,9 @@ if 1==0:
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
 
 #freq cluster of vodscillator
-if 1==1:
+if 1==0:
+
+
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
@@ -170,3 +176,30 @@ if 1==1:
     plt.subplot(2, 1, 2)
     plots.heat_map(v, min_freq=1, max_freq=5, db=False)
     plt.show()
+
+#psd pre or post summing oscillators of vodscillator
+if 1==0:
+    # Open pickled vodscillator
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
+    with open(filepath + filename, 'rb') as picklefile:
+        v = pickle.load(picklefile)
+        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+        assert isinstance(v, Vodscillator)
+    xmin = 0
+    xmax = 10
+    plt.subplot(2, 1, 1)
+    plots.vlodder(v, "psd", xmin = xmin, xmax = xmax, show_plot=False)
+    plt.subplot(2, 1, 2)
+    plots.vlodder(v, "pre_psd", xmin = xmin, xmax = xmax)
+
+# plot waveform of vodscillator
+if 1==1:
+    # Open pickled vodscillator
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
+    with open(filepath + filename, 'rb') as picklefile:
+        v = pickle.load(picklefile)
+        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+        assert isinstance(v, Vodscillator)
+    plots.vlodder(v, "wf", xmin=0, xmax=200)
