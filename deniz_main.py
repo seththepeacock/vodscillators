@@ -25,13 +25,13 @@ if 0==1:
 
 if 1==1:
 # Open pickled vodscillator
-    with open("FB oscillator.pkl", 'rb') as picklefile:
+    with open("F&B fig 2D.pkl", 'rb') as picklefile:
         v = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(v, Vodscillator)
 
 
-
-#heat_map(v)
+vlodder(v, "cluster")
+heat_map(v)
 plt.show()
 
