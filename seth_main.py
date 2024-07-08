@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import timeit
 import pickle
-import plots
+from plots import *
 import scipy.io
 
 # psd + coherence of vodscillators with 4 window sizes
@@ -209,11 +209,12 @@ if 1==0:
 if 1==1:
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    filename = "F&B fig 2D.pkl"
+    filename = "F&B fig 2D NEW FREQS.pkl"
     with open(filepath + filename, 'rb') as picklefile:
         v = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(v, Vodscillator)
-    plots.vlodder(v, "cluster")
+    vlodder(v, "cluster")
+
     
     
