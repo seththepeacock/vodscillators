@@ -170,12 +170,13 @@ if 1==0:
         v = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(v, Vodscillator)
-    plt.subplot(2, 1, 1)
-    plots.heat_map(v, min_freq=1, max_freq=5)
+    # plt.subplot(2, 1, 1)
+    # plots.heat_map(v, min_freq=1, max_freq=5)
 
-    plt.subplot(2, 1, 2)
-    plots.heat_map(v, min_freq=1, max_freq=5, db=False)
-    plt.show()
+    # plt.subplot(2, 1, 2)
+    # plots.heat_map(v, min_freq=1, max_freq=5, db=False)
+    # plt.show()
+    plots.vlodder(v, "cluster")
 
 #psd pre or post summing oscillators of vodscillator
 if 1==0:
@@ -194,7 +195,7 @@ if 1==0:
     plots.vlodder(v, "pre_psd", xmin = xmin, xmax = xmax)
 
 # plot waveform of vodscillator
-if 1==1:
+if 1==0:
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
@@ -203,3 +204,13 @@ if 1==1:
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(v, Vodscillator)
     plots.vlodder(v, "wf", xmin=0, xmax=200)
+
+#freq cluster of F&B vodscillator
+if 1==1:
+    # Open pickled vodscillator
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    filename = "F&B fig 2D.pkl"
+    with open(filepath + filename, 'rb') as picklefile:
+        v = pickle.load(picklefile)
+        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+        assert isinstance(v, Vodscillator)
