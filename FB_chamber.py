@@ -16,8 +16,8 @@ p = {
 #set_freq
 "freq_dist" : "exp", #linear or exp
 "roughness_amp" : 0,
-"omega_0" : 5, # char radial frequency of lowest oscillator [default = 2*np.pi] 
-"omega_N" : 25, # char radial frequency of highest oscillator [default = 5*(2*np.pi)] 
+"omega_0" : 5/(2*np.pi), # char radial frequency of lowest oscillator [default = 2*np.pi] 
+"omega_N" : 25/(2*np.pi), # char radial frequency of highest oscillator [default = 5*(2*np.pi)] 
 
 #set_ICs
 "IC_method" : "rand", #rand or const
