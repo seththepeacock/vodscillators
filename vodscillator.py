@@ -28,7 +28,7 @@ class Vodscillator:
 
   def initialize(s, **p):
     """
-    Generates frequency distribution (omegas[]), initial conditions (ICs[]), and betas[]
+    Generates frequency distribution omegas[], initial conditions ICs[], imaginary nonlinearity coefficients betas[], and sets other ODE parameters 
     """
 
     # NECESSARY PARAMETERS
@@ -38,6 +38,10 @@ class Vodscillator:
     s.omega_N = p["omega_N"]  # char frequency of highest oscillator [default = 5*(2*np.pi)] 
     s.IC_method = p["IC_method"]  # set to "rand" for randomized initial conditions, set to "const" for constant initial conditions
     s.beta_sigma = p["beta_sigma"] # standard deviation for imaginary coefficient for cubic nonlinearity
+    s.epsilon = p["epsilon"] # [default = 1.0] --> control parameter
+    s.d_R = p["d_R"]  # [default = 0.15] --> real part of coupling coefficient
+    s.d_I = p["d_I"]  # [default = -1.0] --> imaginary part of coupling coefficient
+    s.alpha = p["alpha"] # [default = 1.0] --> real coefficient for cubic nonlinearity
 
     # Tonotopic Frequency Distribution
     # Now we set the frequencies of each oscillator in our chain - linear or exponential
@@ -77,6 +81,8 @@ class Vodscillator:
     # generate beta_j using a gaussian centered at 0 with std deviation beta_sigma (as in Faber & Bozovic)
     s.betas = np.random.normal(loc=0.0, scale=s.beta_sigma, size=s.num_osc)
 
+    # Define complex coupling coefficient ccc (will be used in ODE)
+    s.ccc = s.d_R + 1j*s.d_I
 
   def gen_noise(s, **p):
     # Generating Noise - creates s.xi_glob and s.xi_loc[]
@@ -116,18 +122,7 @@ class Vodscillator:
       s.xi_loc[k] = CubicSpline(s.tpoints, local_noise)
 
 
-  def solve_ODE(s, **p):
-    # Setting parameters and integrating ODE system
-
-    # NECESSARY PARAMETERS
-    s.epsilon = p["epsilon"] # [default = 1.0] --> control parameter
-    s.d_R = p["d_R"]  # [default = 0.15] --> real part of coupling coefficient
-    s.d_I = p["d_I"]  # [default = -1.0] --> imaginary part of coupling coefficient
-    s.alpha = p["alpha"] # [default = 1.0] --> real coefficient for cubic nonlinearity
-
-    # Define complex coupling coefficient ccc
-    s.ccc = s.d_R + 1j*s.d_I
-
+  def solve_ODE(s):
     # Numerically integrate our ODE from ti to tf with sample rate 1/h
     s.tpoints = np.arange(s.ti, s.tf, s.delta_t) # array of time points
     s.sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y
