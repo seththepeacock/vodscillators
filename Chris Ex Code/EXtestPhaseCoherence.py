@@ -208,5 +208,10 @@ if 1==1:
     fig5= plt.grid()
     fig5= plt.xlim(fPlot)
 
+<<<<<<< HEAD:Chris Ex Code/EXtestPhaseCoherence.py
 plt.show()
 
+=======
+
+plt.show()
+>>>>>>> 34f991d (y):EXtestPhaseCoherence.py
