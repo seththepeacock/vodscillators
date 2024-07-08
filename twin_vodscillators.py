@@ -26,19 +26,21 @@ class TwinVodscillators:
     vod_params = np.empty(2, 10)
     i = 0
     for v in [s.vl, s.vr]:
-      vod_params[i, 0] = v.sample_rate
-      vod_params[i, 1] = v.ti
-      vod_params[i, 2] = v.tf
-      vod_params[i, 3] = v.t_ss
-      vod_params[i, 4] = v.num_intervals
+        vod_params[i, 0] = v.sample_rate
+        vod_params[i, 1] = v.ti
+        vod_params[i, 2] = v.tf
+        vod_params[i, 3] = v.t_ss
+        vod_params[i, 4] = v.num_intervals
     if all(vod_params[0, :] == vod_params[1, :]):
         print("Vods agree!")
     else:
-       print("Parameter mismatch!")
+        print("Parameter mismatch!")
 
 
   def gen_noise(s, twin_glob_noise_amp):
-
+     print()
+     
+    
 
      
 
