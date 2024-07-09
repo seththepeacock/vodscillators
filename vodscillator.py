@@ -253,7 +253,7 @@ class Vodscillator:
       # take "derivatives" to get instantaenous frequencies
       inst_freqs = (np.diff(inst_phases) / (2.0*np.pi) * s.sample_rate)
       # initialize cluster matrix (2D indices, list at each location so "3D")    
-      clusters = np.empty(shape=(num_t_wins, num_freqs), dtype=list)
+      clusters = np.full([], shape=(num_t_wins, num_freqs), dtype=list)
       # pick a window
       for win in range(num_t_wins):
         # find average frequency for each oscillator
