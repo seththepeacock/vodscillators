@@ -21,7 +21,7 @@ if 1==1:
     v.t_transient = v.n_transient / v.sample_rate
     v.analytic_phase_coherence(cluster_width=0.05, f_min=0, f_max=6, delta_f=0.01, duration=100, t_win_size=1, amp_weights=True)
     stop = timeit.default_timer()
-    v.save("V&D fig 2A + APC")
+    # v.save("V&D fig 2A + APC")
     plt.plot(v.apc_freqs, v.apc)
     print(f"Whew... that took {stop-start} seconds, {(stop-start)/60} minutes!")
     plt.show()
