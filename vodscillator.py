@@ -244,21 +244,28 @@ class Vodscillator:
     # get # points in window
     n_win = t_win_size * s.sample_rate
     # generate frequency array
-    s.apc_freqs = np.arange(f_min, f_max, delta_f)
+    s.apc_freqs = np.arange(f_min, f_max, delta_f) #apc stands for analytic phase coherence
     num_freqs = len(s.apc_freqs)
 
     def cluster(cluster_type="on_window"):
 
-      instantaneous_frequency = (np.diff(inst_phases) / (2.0*np.pi) * fs)
+      instantaneous_frequency = (np.diff(inst_phases) / (2.0*np.pi) * s.sample_rate)
       win_duration = (s.tf - s.t_transient) / n_win            
       
-      s.clusters = np.empty(shape=(n_win, num_freqs))
+      clusters = np.empty(shape=(num_t_wins, num_freqs), dtype=list)
 
-      for win in range(n_win):
-        avg_freqs = np.average(instantaneous_frequency[], axis=1)
-        fs = 400.0
-        samples = int(fs*win_duration)
-        t = np.arange(samples) / fs
+      for win in range(num_t_wins):
+        avg_freqs = np.average(instantaneous_frequency[:, win*n_win:(win+1)*n_win], axis=1)
+        #fs = 400.0
+        #samples = int(fs*win_duration)
+        #t = np.arange(samples) / fs
+        for f in range(len(s.apc_freqs)):
+          for v in range(len(avg_freqs)):
+            if abs(avg_freqs[v] - s.apc[f]) < cluster_width:
+                clusters[win, f].append(v)
+      
+      return clusters
+
 
     # get all clusters
     clusters = cluster()
