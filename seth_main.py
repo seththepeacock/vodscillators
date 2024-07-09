@@ -35,9 +35,9 @@ if 1==1:
     ax2 = ax1.twinx()
     # plot
     ax1.plot(apc_freqs, p, label="APC", color='b')
-    ax1.plot(v.fft_freq, (get_coherence_vod(v)), label="Coherence", color='purple')
+    ax1.plot(vod.fft_freq, (get_coherence_vod(vod)), label="Coherence", color='purple')
     ax2.plot(vod.fft_freq, 10*np.log10(get_psd_vod(vod)), label="PSD", color='r')
-    
+
     # set labels
     ax1.set_ylabel('Phase Coherence', color='b')
     ax2.set_xlabel('Freq')
