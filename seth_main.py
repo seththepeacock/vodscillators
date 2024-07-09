@@ -10,7 +10,7 @@ import scipy.io
 
 
 # NEW Coherence of vodscillator
-if 1==0:
+if 1==1:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
     with open(filepath + filename, 'rb') as picklefile:
@@ -19,9 +19,8 @@ if 1==0:
         assert isinstance(v, Vodscillator)
     start = timeit.default_timer()
     v.t_transient = v.n_transient / v.sample_rate
-    v.analytic_phase_coherence(cluster_width=0.05, f_min=0, f_max=10, delta_f=0.1, duration=100, t_win_size=1, amp_weights=False)
+    v.analytic_phase_coherence(cluster_width=0.05, f_min=0, f_max=6, delta_f=0.01, duration=100, t_win_size=1, amp_weights=True)
     stop = timeit.default_timer()
-    print(v.clusters)
     v.save("V&D fig 2A + APC")
     plt.plot(v.apc_freqs, v.apc)
     print(f"Whew... that took {stop-start} seconds, {(stop-start)/60} minutes!")

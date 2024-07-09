@@ -252,11 +252,7 @@ class Vodscillator:
     def cluster(cluster_type="on_window"):
       # take "derivatives" to get instantaenous frequencies
       inst_freqs = (np.diff(inst_phases) / (2.0*np.pi) * s.sample_rate)
-      
-      # # initialize cluster matrix (2D indices, list at each location so "3D")    
-      # clusters = np.empty(shape=(num_t_wins, num_freqs), dtype=list)
-      # clusters.fill([])
-      clusters = np.full((num_t_wins, num_freqs, s.num_osc), fill_value=-1)
+      clusters = np.zeros((num_t_wins, num_freqs, s.num_osc))
 
       # pick a window
       for win in range(num_t_wins):
@@ -265,13 +261,12 @@ class Vodscillator:
         # for each frequency box we look through each oscillator to see which oscillators are close enough to that frequency
         for f in range(num_freqs):
           for osc in range(s.num_osc):
-            # keep track of how many oscillators we've found in the cluster
-            i = 0
+            # # keep track of how many oscillators we've found in the cluster
+            # osc_in_clusters = 0
             if abs(avg_freqs[osc] - s.apc_freqs[f]) < cluster_width:
                 # put the oscillator's index in the ith position
-                print("YAY")
-                clusters[win, f, i] = osc
-                i += 1
+                clusters[win, f, osc] = 1
+                # i += 1
       return clusters
     
     # get all clusters
@@ -281,52 +276,50 @@ class Vodscillator:
 
     for win in range(num_t_wins):
         for f in range(len(s.apc_freqs)):
-            # print(f"Window {win}: Finding PC for {s.apc_freqs[f]}Hz")
-            # create list of osc_indices in the cluster
-            osc_indices = []
-            for i in range(s.num_osc):
-              osc_index = s.clusters[win, f, i]
-              # if we get to a -1 then we have reached the end of the cluster
-              if osc_index == -1:
-                break
-              # otherwise add the index to the list
-              else:
-                osc_indices.append(s.clusters[win, f, i])
-            # generate all possible pairs of oscillators in our cluster
-            pairs = list(combinations(osc_indices, 2))
-            # init temp arrays to store vector strengths for each pair
-            num_pairs = len(pairs)
-            pairwise_vec_strengths = np.zeros(num_pairs)
-            # if amp_weights is on, we also need to store the average amplitude for the pair over the window 
-            if amp_weights:
-              pairwise_amp_weights = np.zeros(num_pairs)
-            
-            # this variable will help us index the pairwise_ arrays:
-            k = 0
-            for pair in pairs:
-                # get the inst phases for each oscillator over the window
-                win_phases_osc1 = inst_phases[pair[0], win*n_win:(win+1)*n_win]
-                win_phases_osc2 = inst_phases[pair[1], win*n_win:(win+1)*n_win]
-                #calculate vector strength of the difference over the window
-                xx = np.average(np.sin(win_phases_osc1 - win_phases_osc2))
-                yy = np.average(np.cos(win_phases_osc1 - win_phases_osc2))
-                # do final calculation and store away
-                pairwise_vec_strengths[k] = np.sqrt(xx**2 + yy**2)
-                # if we want to weight by amplitude
-                if amp_weights:
-                  # get the inst amps for each oscillator over the window
-                  win_amps_osc1 = inst_amps[pair[0], win*n_win:(win+1)*n_win]
-                  win_amps_osc2 = inst_amps[pair[1], win*n_win:(win+1)*n_win]
-                  # average between the two oscillators and then average over time
-                  pairwise_amp_weights[k] = np.mean((win_amps_osc1 + win_amps_osc2)/2)
-                # get ready for next loop
-                k+=1
-            # average over all pairs (possibly weighting by pairwise_amp_weights) and store away
-            if amp_weights:
-              all_phase_coherences[win, f] = np.average(pairwise_vec_strengths, weights=pairwise_amp_weights)
-            else:
-              all_phase_coherences[win, f] = np.mean(pairwise_vec_strengths)
-    
+          print(f"Window {win}: Finding PC for {s.apc_freqs[f]}Hz")
+          # create list of osc_indices in the cluster
+          osc_indices = np.where(s.clusters[win, f] == 1)[0]
+          print(osc_indices)
+          # if there's no oscillators in here, set the PC for this freq to 0 and break
+          if len(osc_indices) <= 1:
+            # all_phase_coherences[win, f] = 0
+            print("NOTHIN HERE")
+            continue
+          # generate all possible pairs of oscillators in our cluster
+          pairs = list(combinations(osc_indices, 2))
+          # init temp arrays to store vector strengths for each pair
+          num_pairs = len(pairs)
+          pairwise_vec_strengths = np.zeros(num_pairs)
+          # if amp_weights is on, we also need to store the average amplitude for the pair over the window 
+          if amp_weights:
+            pairwise_amp_weights = np.zeros(num_pairs)
+          
+          # this variable will help us index the pairwise_ arrays:
+          k = 0
+          for pair in pairs:
+              # get the inst phases for each oscillator over the window
+              win_phases_osc1 = inst_phases[pair[0], win*n_win:(win+1)*n_win]
+              win_phases_osc2 = inst_phases[pair[1], win*n_win:(win+1)*n_win]
+              #calculate vector strength of the difference over the window
+              xx = np.average(np.sin(win_phases_osc1 - win_phases_osc2))
+              yy = np.average(np.cos(win_phases_osc1 - win_phases_osc2))
+              # do final calculation and store away
+              pairwise_vec_strengths[k] = np.sqrt(xx**2 + yy**2)
+              # if we want to weight by amplitude
+              if amp_weights:
+                # get the inst amps for each oscillator over the window
+                win_amps_osc1 = inst_amps[pair[0], win*n_win:(win+1)*n_win]
+                win_amps_osc2 = inst_amps[pair[1], win*n_win:(win+1)*n_win]
+                # average between the two oscillators and then average over time
+                pairwise_amp_weights[k] = np.mean((win_amps_osc1 + win_amps_osc2)/2)
+              # get ready for next loop
+              k+=1
+          # average over all pairs (possibly weighting by pairwise_amp_weights) and store away
+          if amp_weights:
+            all_phase_coherences[win, f] = np.average(pairwise_vec_strengths, weights=pairwise_amp_weights)
+          else:
+            all_phase_coherences[win, f] = np.mean(pairwise_vec_strengths)
+  
     # average over all t_wins
     s.apc = np.mean(all_phase_coherences, 0)
             
