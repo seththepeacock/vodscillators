@@ -23,9 +23,9 @@ if 1==1:
         p = pickle.load(picklefile)
     vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\V&D fig 2A, loc=0.1, glob=0.pkl"
     with open(vod_file, 'rb') as picklefile:
-        v = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(v, Vodscillator)
+        assert isinstance(vod, Vodscillator)
 
     # get freqs for new phase coherence
     apc_freqs = np.arange(f_min, f_max, delta_f)
@@ -34,72 +34,79 @@ if 1==1:
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     # plot
-    ax1.plot(v.fft_freq, 10*np.log10(get_psd_vod(v)), label="PSD", color='r')
-    ax2.plot(apc_freqs, p, label="APC")
-    ax2.plot(v.fft_freq, (get_coherence_vod(v)), label="Coherence")
+    ax1.plot(vod.fft_freq, 10*np.log10(get_psd_vod(vod)), label="PSD", color='r')
+    ax2.plot(apc_freqs, p, label="APC", color='b')
+    # ax2.plot(v.fft_freq, (get_coherence_vod(v)), label="Coherence", color='purple')
     # set labels
     ax1.set_xlabel('Freq')
     ax1.set_ylabel('PSD [dB]', color='r')
-    ax2.set_ylabel('Phase Coherence')
+    ax2.set_ylabel('Phase Coherence', color='b')
     # set title, show legend, set xlims
     plt.title(f"APC: cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}")
     ax1.legend()
     ax2.legend()
+    ax1.set_ylim(-10, 30)
     plt.xlim(f_min, f_max)
     plt.show()
 # Generate and save APC data for vodscillator
 if 1==0:
+    # calculates APC and then save to file
+    def apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights):
+        # calculate the apc, and it'll be (temporarily) saved to the vod object
+        vod.analytic_phase_coherence(cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+        # pickle the apc into its own file
+        with open(f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
+            pickle.dump(vod.apc, outp, pickle.HIGHEST_PROTOCOL)
+
+    # open up a vod
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
     with open(filepath + filename, 'rb') as picklefile:
-        v = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(v, Vodscillator)
-    start = timeit.default_timer()
-    v.t_transient = v.n_transient / v.sample_rate
+        assert isinstance(vod, Vodscillator)
+
+    # any new vod pickles will have this predefined, but you'll have to calculate it by hand for now!
+    vod.t_transient = vod.n_transient / vod.sample_rate
+
+    # define your parameters
     cluster_width=0.01
     f_min=1
     f_max=5
     delta_f=0.001
     duration=50
+    # t_win_size has to be s.t. t_win_size * vod.sample_rate(=128) is an integer!!!
     t_win_size=1/2
     amp_weights=True
-    v.analytic_phase_coherence(cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
-    ""
-    with open(f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
-        pickle.dump(v.apc, outp, pickle.HIGHEST_PROTOCOL)
-    
+
+    # run fx to get apc and save to a lil pickle
+    apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+        
+    # change any parameters you want and rerun (note you can copy and paste the same list of args)
     amp_weights=False
-    with open(f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
-        pickle.dump(v.apc, outp, pickle.HIGHEST_PROTOCOL)
+    apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
     
+    # let's chang some more params!
     amp_weights=True
     t_win_size=1/16
-    with open(f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
-        pickle.dump(v.apc, outp, pickle.HIGHEST_PROTOCOL)
-
-    plt.plot(v.apc_freqs, v.apc)
-    stop = timeit.default_timer()
-    
-    print(f"Whew... that took {stop-start} seconds, {(stop-start)/60} minutes!")
-    plt.show()
-    
+    apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+   
 
 # psd + coherence of vodscillators with 4 window sizes
 if 1==0:
     # Open pickled vodscillator
     filename = "V&D fig 2A.pkl"
     with open(filename, 'rb') as picklefile:
-        v = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(v, Vodscillator)
+        assert isinstance(vod, Vodscillator)
 
     max_vec_strength = 20
     xmax = 10
-    plots.coherence_vs_PSD(np.sum(v.ss_sol, 0), v.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=8, max_vec_strength=max_vec_strength, fig_num=1)
-    plots.coherence_vs_PSD(np.sum(v.ss_sol, 0), v.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=16, max_vec_strength=max_vec_strength, fig_num=2)
-    plots.coherence_vs_PSD(np.sum(v.ss_sol, 0), v.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=32, max_vec_strength=max_vec_strength, fig_num=3)
-    plots.coherence_vs_PSD(np.sum(v.ss_sol, 0), v.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=40, max_vec_strength=max_vec_strength, fig_num=4)
+    plots.coherence_vs_PSD(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=8, max_vec_strength=max_vec_strength, fig_num=1)
+    plots.coherence_vs_PSD(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=16, max_vec_strength=max_vec_strength, fig_num=2)
+    plots.coherence_vs_PSD(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=32, max_vec_strength=max_vec_strength, fig_num=3)
+    plots.coherence_vs_PSD(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=40, max_vec_strength=max_vec_strength, fig_num=4)
     plt.show()
 
 #psd + coherence of generated data
@@ -206,12 +213,12 @@ if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
     with open(filepath + filename, 'rb') as picklefile:
-        v = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(v, Vodscillator)
+        assert isinstance(vod, Vodscillator)
     
-    wf = v.SOO_ss_sol.flatten()
-    wf_title = v.name
+    wf = vod.SOO_ss_sol.flatten()
+    wf_title = vod.name
     fig_num=1
     win_size=6
     show_plot=True
@@ -246,16 +253,16 @@ if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
     with open(filepath + filename, 'rb') as picklefile:
-        v = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(v, Vodscillator)
+        assert isinstance(vod, Vodscillator)
     # plt.subplot(2, 1, 1)
     # plots.heat_map(v, min_freq=1, max_freq=5)
 
     # plt.subplot(2, 1, 2)
     # plots.heat_map(v, min_freq=1, max_freq=5, db=False)
     # plt.show()
-    plots.vlodder(v, "cluster")
+    plots.vlodder(vod, "cluster")
 
 #psd pre or post summing oscillators of vodscillator
 if 1==0:
@@ -263,15 +270,15 @@ if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
     with open(filepath + filename, 'rb') as picklefile:
-        v = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(v, Vodscillator)
+        assert isinstance(vod, Vodscillator)
     xmin = 0
     xmax = 10
     plt.subplot(2, 1, 1)
-    plots.vlodder(v, "psd", xmin = xmin, xmax = xmax, show_plot=False)
+    plots.vlodder(vod, "psd", xmin = xmin, xmax = xmax, show_plot=False)
     plt.subplot(2, 1, 2)
-    plots.vlodder(v, "pre_psd", xmin = xmin, xmax = xmax)
+    plots.vlodder(vod, "pre_psd", xmin = xmin, xmax = xmax)
 
 # plot waveform of vodscillator
 if 1==0:
@@ -279,10 +286,10 @@ if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
     with open(filepath + filename, 'rb') as picklefile:
-        v = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(v, Vodscillator)
-    plots.vlodder(v, "wf", xmin=0, xmax=200)
+        assert isinstance(vod, Vodscillator)
+    plots.vlodder(vod, "wf", xmin=0, xmax=200)
 
 #freq cluster of F&B vodscillator
 if 1==0:
@@ -290,10 +297,10 @@ if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "F&B fig 2D NEW FREQS.pkl"
     with open(filepath + filename, 'rb') as picklefile:
-        v = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(v, Vodscillator)
-    vlodder(v, "cluster")
+        assert isinstance(vod, Vodscillator)
+    vlodder(vod, "cluster")
 
 
     
