@@ -217,11 +217,13 @@ class Vodscillator:
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
 
 
-  def analytic_phase_coherence(s, f_min=0.0, f_max=10.0, delta_f=0.1, t_win_size=1, amp_weights=True):
+  def analytic_phase_coherence(s, cluster_width=0.05, f_min=0.0, f_max=10.0, delta_f=0.1, t_win_size=1, amp_weights=True):
     """ Calculates phase coherence using the instantaneous information from the analytic signal
  
     Parameters
     ------------
+        cluster_width: float
+          Defines how close an oscillator's avg freq can be to the target frequency to count in that freq's cluster
         f_min: float, Optional
         f_max: float, Optional
         delta_f: float, Optional
