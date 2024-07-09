@@ -5,6 +5,47 @@ import timeit
 from vodscillator import *
 from scipy.fft import rfft, rfftfreq
 
+# define helper functions
+def get_windowed_fft(wf, sample_rate, win_size):
+  """ Plots the power spectral density and phase coherence of an input waveform
+  
+  Parameters
+  ------------
+      wf: array
+        waveform input array
+      sample_rate:
+        defaults to 44100 
+      win_size: float, Optional
+        The # points in each window will be 128 * window_size
+  """
+  
+  # get length and spacing of window
+  num_win_pts = win_size * 128
+  sample_spacing = 1/sample_rate
+  # calculate number of windows 
+  num_win = int(np.floor(len(wf) / num_win_pts))
+  # initialize matrix which will hold the windowed waveform
+  windowed_wf = np.zeros((num_win, num_win_pts))
+  for win in range(num_win):
+      win_start = win*num_win_pts
+      win_end = (win+1)*num_win_pts
+      # grab the (real part of the) waveform in this window
+      windowed_wf[win, :] = wf[win_start:win_end].real
+
+  # Now we do the ffts!
+
+  # get frequency axis 
+  freq_pts = rfftfreq(num_win_pts, sample_spacing)
+  num_freq_pts = len(freq_pts)
+  # get fft of each window
+  windowed_fft = np.zeros((num_win, num_freq_pts), dtype=complex)
+  for win in range(num_win):
+    windowed_fft[win, :] = rfft(windowed_wf[win, :])
+  
+  return windowed_fft, num_win_pts
+
+def get_psd(windowed_fft, num_win_pts):
+
 
 def coherence_vs_PSD(wf, sample_rate=44100, win_size=64, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
                      ymin=None, ymax=None, wf_title=None, show_plot=True, do_psd = True, do_coherence = True, fig_num=1):
@@ -17,7 +58,7 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=64, max_vec_strength=1, psd
       sample_rate:
         defaults to 44100 
       win_size: float, Optional
-        The # points in each window will be 512 * window_size
+        The # points in each window will be 128 * window_size
         Defaults to 64, which gives a total window size of 8192 which is the standard Vodscillator averaging window
       max_vec_strength: int, Optional
         multiplier on the vector strength of phase coherence; defaults to 1
@@ -42,28 +83,10 @@ def coherence_vs_PSD(wf, sample_rate=44100, win_size=64, max_vec_strength=1, psd
       fig_num: Any, Optional
 
   """
-  # get length and spacing of window
-  num_win_pts = win_size * 128
-  sample_spacing = 1/sample_rate
-  # calculate number of windows 
-  num_win = int(np.floor(len(wf) / num_win_pts))
-  # initialize matrix which will hold the windowed waveform
-  windowed_wf = np.zeros((num_win, num_win_pts))
-  for win in range(num_win):
-      win_start = win*num_win_pts
-      win_end = (win+1)*num_win_pts
-      # grab the (real part of the) waveform in this window
-      windowed_wf[win, :] = wf[win_start:win_end].real
+  windowed_fft, num_win_pts = get_windowed_fft(wf, sample_rate, win_size)
 
-  # Now we do the ffts!
-
-  # get frequency axis 
-  freq_pts = rfftfreq(num_win_pts, sample_spacing)
-  num_freq_pts = len(freq_pts)
-  # get fft of each window
-  windowed_fft = np.zeros((num_win, len(freq_pts)), dtype=complex)
-  for win in range(num_win):
-    windowed_fft[win, :] = rfft(windowed_wf[win, :])
+  num_win = np.size(windowed_fft, 0)
+  num_freq_pts = np.size(windowed_fft, 1)
 
   # POWER SPECTRAL DENSITY
 
@@ -145,7 +168,7 @@ def phase_portrait(wf, wf_title="Sum of Oscillators"):
     plt.show()
 
 # Plotter helper functions:
-def get_coherence(vod: Vodscillator, osc=-1):
+def get_coherence_vod(vod: Vodscillator, osc=-1):
   # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
   # defaults to osc = -1 which is the sum of oscillators
   if osc == -1:
@@ -169,7 +192,7 @@ def get_coherence(vod: Vodscillator, osc=-1):
   # finally, output the vector strength (for each frequency)
   return np.sqrt(xx**2 + yy**2)
 
-def get_psd(vod: Vodscillator, osc=-1):
+def get_psd_vod(vod: Vodscillator, osc=-1):
   # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
   if osc == -1:
     # if osc = -1 (the default) we want the summed (SOO) response!
@@ -225,9 +248,9 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
   plt.figure(fig_num)
 
   if plot_type == "superimpose":
-    y1 = 10*np.log10(get_psd(vod, osc))
+    y1 = 10*np.log10(get_psd_vod(vod, osc))
     phase_coherence_max = 10
-    y2 = phase_coherence_max*get_coherence(vod, osc)
+    y2 = phase_coherence_max*get_coherence_vod(vod, osc)
     plt.plot(f, y1, color = "red", lw=1, label="Power")
     plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence')
     plt.xlabel('Frequency [Hz]')  
@@ -241,7 +264,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
       plt.title(f"Phase Coherence and PSD of Oscillator #{osc}")
 
   if plot_type == "psd":
-    y = 10*np.log10(get_psd(vod, osc))
+    y = 10*np.log10(get_psd_vod(vod, osc))
     plt.plot(f, y, color = "red", lw=1)
     plt.ylabel('Density')
     plt.xlabel('Frequency')
@@ -254,7 +277,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
   if plot_type == "pre_psd":
     sum = 0
     for k in range(vod.num_osc):
-      sum += get_psd(vod, k)
+      sum += get_psd_vod(vod, k)
     y = 10*np.log10(sum)
     plt.plot(f, y, color = "red", lw=1)
     plt.ylabel('Density')
@@ -265,7 +288,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
 
 
   if plot_type == "coherence":
-    y = get_coherence(vod, osc)
+    y = get_coherence_vod(vod, osc)
     plt.plot(f, y1, color = "purple", lw=5)
     plt.xlabel('Frequency [Hz]')  
     plt.ylabel('Power / Vector Strength')
@@ -290,7 +313,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
       avg_position_amplitudes[osc] = np.sqrt(np.mean((vod.ss_sol[osc].real)**2))
       # get the average cluster frequency
       # first get the psd of this oscillator
-      psd = get_psd(vod, osc)
+      psd = get_psd_vod(vod, osc)
       # Now, the paper seems to indicate a proper average over each frequency's PSD:
       #avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
       # But Beth's way was just to use the frequency which has the highest PSD peak

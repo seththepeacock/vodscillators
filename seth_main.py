@@ -7,7 +7,7 @@ from plots import *
 import scipy.io
 
 # Open APC and plot
-if 1==0:
+if 1==1:
     cluster_width=0.01
     f_min=1
     f_max=5
@@ -34,9 +34,9 @@ if 1==0:
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     # plot
-    ax1.plot(v.fft_freq, 10*np.log10(get_psd(v)), label="PSD", color='r')
+    ax1.plot(v.fft_freq, 10*np.log10(get_psd_vod(v)), label="PSD", color='r')
     ax2.plot(apc_freqs, p, label="APC")
-    ax2.plot(v.fft_freq, (get_coherence(v)), label="Coherence")
+    ax2.plot(v.fft_freq, (get_coherence_vod(v)), label="Coherence")
     # set labels
     ax1.set_xlabel('Freq')
     ax1.set_ylabel('PSD [dB]', color='r')
@@ -47,8 +47,8 @@ if 1==0:
     ax2.legend()
     plt.xlim(f_min, f_max)
     plt.show()
-# Generate APC of vodscillator
-if 1==1:
+# Generate and save APC data for vodscillator
+if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
     with open(filepath + filename, 'rb') as picklefile:
