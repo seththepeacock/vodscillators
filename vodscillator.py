@@ -250,25 +250,20 @@ class Vodscillator:
     num_freqs = len(s.apc_freqs)
 
     def cluster(cluster_type="on_window"):
-
-      instantaneous_frequency = (np.diff(inst_phases) / (2.0*np.pi) * s.sample_rate)
-      win_duration = (s.tf - s.t_transient) / n_win            
-      
+      # take "derivatives" to get instantaenous frequencies
+      inst_freqs = (np.diff(inst_phases) / (2.0*np.pi) * s.sample_rate)
+      # initialize cluster matrix (2D indices, list at each location so "3D")    
       clusters = np.empty(shape=(num_t_wins, num_freqs), dtype=list)
-
+      # pick a window
       for win in range(num_t_wins):
-        avg_freqs = np.average(instantaneous_frequency[:, win*n_win:(win+1)*n_win], axis=1)
-        #fs = 400.0
-        #samples = int(fs*win_duration)
-        #t = np.arange(samples) / fs
+        # find average frequency for each oscillator
+        avg_freqs = np.average(inst_freqs[:, win*n_win:(win+1)*n_win], axis=1)
+        # for each frequency box we look through each oscillator to see which oscillators are close enough to that frequency
         for f in range(len(s.apc_freqs)):
           for v in range(len(avg_freqs)):
             if abs(avg_freqs[v] - s.apc[f]) < cluster_width:
                 clusters[win, f].append(v)
-      
       return clusters
-
-
     # get all clusters
     clusters = cluster()
     # initialize array to store all phase coherences
