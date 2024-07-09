@@ -6,6 +6,26 @@ import pickle
 from plots import *
 import scipy.io
 
+
+# NEW Coherence of vodscillator
+if 1==1:
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
+    with open(filepath + filename, 'rb') as picklefile:
+        v = pickle.load(picklefile)
+        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+        assert isinstance(v, Vodscillator)
+    start = timeit.default_timer()
+    v.t_transient = v.n_transient / v.sample_rate
+    v.analytic_phase_coherence(cluster_width=0.05, f_min=0, f_max=10, delta_f=0.1, t_win_size=1, amp_weights=True)
+    stop = timeit.default_timer()
+    plt.plot(v.apc_freqs, v.apc)
+    print(f"Whew... that took {stop-start} seconds, {(stop-start)/60} minutes!")
+    plt.show()
+    v.save("V&D fig 2A + APC")
+    
+
+
 # psd + coherence of vodscillators with 4 window sizes
 if 1==0:
     # Open pickled vodscillator
@@ -206,7 +226,7 @@ if 1==0:
     plots.vlodder(v, "wf", xmin=0, xmax=200)
 
 #freq cluster of F&B vodscillator
-if 1==1:
+if 1==0:
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "F&B fig 2D NEW FREQS.pkl"
@@ -216,7 +236,5 @@ if 1==1:
         assert isinstance(v, Vodscillator)
     vlodder(v, "cluster")
 
-test = [5, 6, 7, 8]
-print(test[0:2])
-    
+
     

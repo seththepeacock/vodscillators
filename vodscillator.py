@@ -237,7 +237,7 @@ class Vodscillator:
     # get SS part of solution
     ss_sol = s.sol[:, s.n_transient:]
     #get analytic signals of each oscillator
-    analytic_signals = hilbert(ss_sol, 1)
+    analytic_signals = hilbert(ss_sol.real, 1)
     # get phases and amps
     inst_phases = np.unwrap(np.angle(analytic_signals))
     inst_amps = np.abs(analytic_signals)
@@ -253,33 +253,37 @@ class Vodscillator:
       # take "derivatives" to get instantaenous frequencies
       inst_freqs = (np.diff(inst_phases) / (2.0*np.pi) * s.sample_rate)
       # initialize cluster matrix (2D indices, list at each location so "3D")    
-      clusters = np.full([], shape=(num_t_wins, num_freqs), dtype=list)
+      clusters = np.empty(shape=(num_t_wins, num_freqs), dtype=list)
+      clusters.fill([])
       # pick a window
       for win in range(num_t_wins):
+        print(f"Clustering Window {win}")
         # find average frequency for each oscillator
         avg_freqs = np.average(inst_freqs[:, win*n_win:(win+1)*n_win], axis=1)
         # for each frequency box we look through each oscillator to see which oscillators are close enough to that frequency
         for f in range(len(s.apc_freqs)):
           for v in range(len(avg_freqs)):
-            if abs(avg_freqs[v] - s.apc[f]) < cluster_width:
+            if abs(avg_freqs[v] - s.apc_freqs[f]) < cluster_width:
                 clusters[win, f].append(v)
       return clusters
     # get all clusters
     clusters = cluster()
     # initialize array to store all phase coherences
-    all_phase_coherences = np.zeros(num_t_wins, num_freqs)
+    all_phase_coherences = np.zeros((num_t_wins, num_freqs))
 
     for win in range(num_t_wins):
         for freq in s.apc_freqs:
+            print("Window {win}: Finding PC for {freq}Hz")
             # generate all possible pairs of oscillators in our cluster
             pairs = list(combinations(clusters[win, freq], 2))
-            # init temp arrays to store vector strengths afor each pair
+            # init temp arrays to store vector strengths for each pair
             num_pairs = len(pairs)
             pairwise_vec_strengths = np.zeros(num_pairs)
             # if amp_weights is on, we also need to store the average amplitude for the pair over the window 
             if amp_weights:
               pairwise_amp_weights = np.zeros(num_pairs)
-              
+            
+            # this variable will help us index the pairwise_ arrays:
             k = 0
             for pair in pairs:
                 # get the inst phases for each oscillator over the window
