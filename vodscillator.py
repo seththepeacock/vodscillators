@@ -4,6 +4,8 @@ from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
 from scipy.fft import rfft, rfftfreq
 from scipy.signal import hilbert
+from itertools import combinations
+   
 
 class Vodscillator:
   """
@@ -219,18 +221,36 @@ class Vodscillator:
     return hilbert(s.ss_sol)
   
   def cluster(s, n_t_wins, delta=0.1, cluster_type="on_window"):
-    s.clusters = np.array([])
+    #s.clusters = np.zeros((n_t_wins, n_))
     for win in windows:
       analytic_signals = s.get_analytic()
       instant_freq = np.angle(analytic_signals)
 
-  def analytic_phase_coherence(s, n_t_wins, delta=0.1):
-    freqlist = np.arange(0, 20, delta)
-    clusters = s.cluster(n_t_wins)
-    for f in freqlist:
-      for oscillator in range(s.num_osc):
-        s_a_osc = s.ss_sol[oscillator]
-        avg_freq
+  def analytic_phase_coherence(s, f_min=0, f_max=10, delta_f=0.1, t_win_size=1):
+    # get SS part of solution
+    ss_sol = s.sol[:, s.n_transient:]
+    # generate analytic signals for each solution
+    analytic_signals = hilbert(ss_sol)
+    # calculate # t_wins
+    num_t_wins = int((s.tf - s.t_transient) / t_win_size)
+    # get # points in window
+    n_win = t_win_size * s.sample_rate
+    # generate frequency and time window arrays
+    freqs = np.arange(f_min, f_max, delta_f)
+    # get all clusters
+    clusters = s.cluster()
+
+    for win in range(num_t_wins):
+        for freq in freqs:
+            # generate all possible pairs of oscillators in our cluster
+            pairs = list(combinations(clusters[win, freq], 2))
+            for pair in pairs:
+                win_analytic_sig1 = analytic_signals[win*n_win:(win+1)*n_win]
+                xx = np.average(np.sin(win_sol))
+            
+
+
+      
 
 
 
