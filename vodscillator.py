@@ -217,7 +217,7 @@ class Vodscillator:
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
 
 
-  def analytic_phase_coherence(s, cluster_width=0.05, f_min=0.0, f_max=10.0, delta_f=0.1, duration=1000, t_win_size=1, amp_weights=True):
+  def analytic_phase_coherence(s, cluster_width=0.05, f_min=0.0, f_max=10.0, delta_f=0.1, num_t_wins=100, t_win_size=1, amp_weights=True):
     """ Calculates phase coherence using the instantaneous information from the analytic signal
  
     Parameters
@@ -242,15 +242,14 @@ class Vodscillator:
     # get phases and amps
     inst_phases = np.unwrap(np.angle(analytic_signals))
     inst_amps = np.abs(analytic_signals)
-    # calculate # t_wins
-    num_t_wins = int(duration / t_win_size)
     # get # points in window
     n_win = int(t_win_size * s.sample_rate)
     # generate frequency array
     s.apc_freqs = np.arange(f_min, f_max, delta_f) #apc stands for analytic phase coherence
     num_freqs = len(s.apc_freqs)
 
-    def cluster(cluster_type="on_window"):
+    # get clusters
+    def cluster():
       # take "derivatives" to get instantaenous frequencies
       inst_freqs = (np.diff(inst_phases) / (2.0*np.pi) * s.sample_rate)
       clusters = np.zeros((num_t_wins, num_freqs, s.num_osc))

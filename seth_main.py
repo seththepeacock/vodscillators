@@ -7,17 +7,17 @@ from plots import *
 import scipy.io
 
 # Open APC and plot
-if 1==1:
+if 1==0:
     cluster_width=0.01
     delta_f=0.001
-    duration=50
+    num_t_wins=100
     t_win_size=1/2
-    amp_weights=True
+    amp_weights=False
     f_min=1
     f_max=5
 
     #open our stuff
-    filename = f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl"
+    filename = f"cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC V&D fig 2A, loc=0.1, glob=0\\"
     with open(filepath + filename, 'rb') as picklefile:
         p = pickle.load(picklefile)
@@ -42,7 +42,7 @@ if 1==1:
     ax1.set_ylabel('PSD [dB]', color='r')
     ax2.set_ylabel('Phase Coherence', color='b')
     # set title, show legend, set xlims
-    plt.title(f"APC: cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}")
+    plt.title(f"APC: cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}")
     ax1.legend()
     ax2.legend()
     ax1.set_ylim(-10, 30)
@@ -50,13 +50,13 @@ if 1==1:
     plt.show()
 
 # Generate and save APC data for vodscillator
-if 1==0:
+if 1==1:
     # calculates APC and then save to file
-    def apc_and_save(vod=Vodscillator, cluster_width=float, f_min=float, f_max=float, delta_f=float, duration=float, t_win_size=float, amp_weights=bool):
+    def apc_and_save(vod=Vodscillator, cluster_width=float, f_min=float, f_max=float, delta_f=float, num_t_wins=float, t_win_size=float, amp_weights=bool):
         # calculate the apc, and it'll be (temporarily) saved to the vod object
-        vod.analytic_phase_coherence(cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+        vod.analytic_phase_coherence(cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
         # pickle the apc into its own file
-        with open(f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
+        with open(f"cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
             pickle.dump(vod.apc, outp, pickle.HIGHEST_PROTOCOL)
 
     # open up a vod
@@ -75,22 +75,22 @@ if 1==0:
     f_min=1
     f_max=5
     delta_f=0.001
-    duration=50
+    num_t_wins=100
     # t_win_size has to be s.t. t_win_size * vod.sample_rate(=128) is an integer!!!
     t_win_size=1/2
     amp_weights=True
 
     # run fx to get apc and save to a lil pickle
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
         
     # change any parameters you want and rerun (note you can copy and paste the same list of args)
     amp_weights=False
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
     
     # let's chang some more params!
     amp_weights=True
     t_win_size=1/16
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
    
 # psd + coherence of vodscillators with 4 window sizes
 if 1==0:
