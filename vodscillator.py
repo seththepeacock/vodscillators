@@ -229,7 +229,6 @@ class Vodscillator:
         delta_f: float, Optional
           These define the min, max, and size of the frequency boxes
         t_win_size: float, Optional
-          THIS * SAMPLERATE MUST BE AN INT
           Size of the window (in t) to calculate phase coherence over (should be small or else all phases will drift over the window)
         amp_weights: bool, Optional
           For each frequency box, the average vector strength over all pairs is weighted by the pairs' instantaneous amplitude (averaged over the window)

@@ -7,7 +7,7 @@ from plots import *
 import scipy.io
 
 # Open APC and plot
-if 1==0:
+if 1==1:
     cluster_width=0.01
     delta_f=0.001
     num_t_wins=100
@@ -50,7 +50,7 @@ if 1==0:
     plt.show()
 
 # Generate and save APC data for vodscillator
-if 1==1:
+if 1==0:
     # calculates APC and then save to file
     def apc_and_save(vod=Vodscillator, cluster_width=float, f_min=float, f_max=float, delta_f=float, num_t_wins=float, t_win_size=float, amp_weights=bool):
         # calculate the apc, and it'll be (temporarily) saved to the vod object
@@ -76,7 +76,6 @@ if 1==1:
     f_max=5
     delta_f=0.001
     num_t_wins=100
-    # t_win_size has to be s.t. t_win_size * vod.sample_rate(=128) is an integer!!!
     t_win_size=1/2
     amp_weights=True
 
@@ -91,7 +90,10 @@ if 1==1:
     amp_weights=True
     t_win_size=1/16
     apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
-   
+    
+    amp_weight=False
+    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
+    
 # psd + coherence of vodscillators with 4 window sizes
 if 1==0:
     # Open pickled vodscillator
