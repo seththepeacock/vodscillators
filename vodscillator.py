@@ -131,13 +131,7 @@ class Vodscillator:
     # so s.sol[2, 1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
 
     # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators)
-    s.SOO_sol = np.zeros(len(s.tpoints), dtype=complex)
-    for k in range(s.num_osc):
-      s.SOO_sol += s.sol[k]
-
-    # It will also be useful to have versions of these solutions restricted to after the system has entered steady state (ss).
-    s.ss_sol = s.sol[:, s.n_transient:]
-    s.SOO_ss_sol = s.SOO_sol[s.n_transient:]
+    s.SOO_sol = np.sum(s.sol, 0)
 
   def ODE(s, t, z):
     # This function will only be called by the ODE solver
@@ -186,12 +180,14 @@ class Vodscillator:
       # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
     s.every_fft = np.zeros((s.num_osc, s.num_intervals, s.num_freq_points), dtype=complex) # every_fft[osc index, which ss interval, fft output]
 
+    # truncate to the ss solution (all points after n_transient)
+    ss_sol = s.sol[:, s.n_transient:]
     for interval in range(s.num_intervals):
       for osc in range(s.num_osc):
         # calculate fft
         n_start = interval * s.n_ss
         n_stop = (interval + 1) * s.n_ss
-        s.every_fft[osc, interval, :] = rfft((s.ss_sol[osc, n_start:n_stop]).real)
+        s.every_fft[osc, interval, :] = rfft((ss_sol[osc, n_start:n_stop]).real)
 
     # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
     s.SOO_fft = np.sum(s.every_fft, 0)
