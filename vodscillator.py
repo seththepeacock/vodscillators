@@ -215,35 +215,15 @@ class Vodscillator:
 
   def __str__(s):
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
- 
-  
-  def get_analytic(s):
-    return hilbert(s.ss_sol)
-  
-  def cluster(s, t_win_size, n_freqs, delta=0.1, cluster_type="on_window"):
-    analytic_signals = s.get_analytic()
-    #amplitude_envelopes = np.abs(analytic_signals)
-    instantaneous_phase = np.unwrap(np.angle(analytic_signals))
-    instantaneous_frequency = (np.diff(instantaneous_phase) / (2.0*np.pi) * fs)
-    
-    n_windows = int((s.tf - s.t_transient) / t_win_size)
-    win_duration = (s.tf - s.t_transient) / n_windows            
-    window_pts = np.linspace(s.t_transient, s.tf, n_windows + 1)
-    
-    s.clusters = np.empty(shape=(n_windows, n_freqs))
-    
-    for win in window_pts[1:]:
-      avg_freqs = np.average(instantaneous_frequency[], axis=1)
-      fs = 400.0
-      samples = int(fs*win_duration)
-      t = np.arange(samples) / fs
 
 
   def analytic_phase_coherence(s, f_min=0, f_max=10, delta_f=0.1, t_win_size=1):
     # get SS part of solution
     ss_sol = s.sol[:, s.n_transient:]
-    # generate analytic signals for each solution
-    inst_phases = np.angle(hilbert(ss_sol, 1))
+    #get analytic signals of each oscillator
+    analytic_signals = hilbert(ss_sol, 1)
+
+    inst_phases = np.unwrap(np.angle(analytic_signals))
     # calculate # t_wins
     num_t_wins = int((s.tf - s.t_transient) / t_win_size)
     # get # points in window
@@ -251,6 +231,29 @@ class Vodscillator:
     # generate frequency array
     s.apc_freqs = np.arange(f_min, f_max, delta_f)
     num_freqs = len(s.apc_freqs)
+
+    def cluster(cluster_type="on_window"):
+
+      instantaneous_frequency = (np.diff(inst_phases) / (2.0*np.pi) * fs)
+      win_duration = (s.tf - s.t_transient) / n_win            
+      
+      s.clusters = np.empty(shape=(n_win, num_freqs))
+
+      for win in range(n_win):
+        avg_freqs = np.average(instantaneous_frequency[], axis=1)
+        fs = 400.0
+        samples = int(fs*win_duration)
+        t = np.arange(samples) / fs
+
+      
+
+
+
+
+
+
+
+
     # get all clusters
     clusters = s.cluster()
     # initialize array to store all phase coherences
