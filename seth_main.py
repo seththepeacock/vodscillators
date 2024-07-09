@@ -81,16 +81,16 @@ if 1==1:
     amp_weights=True
 
     # run fx to get apc and save to a lil pickle
-    apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
         
     # change any parameters you want and rerun (note you can copy and paste the same list of args)
     amp_weights=False
-    apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
     
     # let's chang some more params!
     amp_weights=True
     t_win_size=1/16
-    apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
    
 # psd + coherence of vodscillators with 4 window sizes
 if 1==0:
