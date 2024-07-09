@@ -226,23 +226,44 @@ class Vodscillator:
     # get SS part of solution
     ss_sol = s.sol[:, s.n_transient:]
     # generate analytic signals for each solution
-    analytic_signals = hilbert(ss_sol)
+    inst_phases = np.angle(hilbert(ss_sol, 1))
     # calculate # t_wins
     num_t_wins = int((s.tf - s.t_transient) / t_win_size)
     # get # points in window
     n_win = t_win_size * s.sample_rate
-    # generate frequency and time window arrays
-    freqs = np.arange(f_min, f_max, delta_f)
+    # generate frequency array
+    s.apc_freqs = np.arange(f_min, f_max, delta_f)
+    num_freqs = len(s.apc_freqs)
     # get all clusters
     clusters = s.cluster()
+    # initialize array to store all phase coherences
+    all_phase_coherences = np.zeros(num_t_wins, num_freqs)
 
     for win in range(num_t_wins):
-        for freq in freqs:
+        for freq in s.apc_freqs:
             # generate all possible pairs of oscillators in our cluster
             pairs = list(combinations(clusters[win, freq], 2))
+            # init temp array to store vector strengths for each pairs
+            pairwise_vec_strengths = np.zeros(len(pairs))
+            k = 0
             for pair in pairs:
-                win_analytic_sig1 = analytic_signals[win*n_win:(win+1)*n_win]
-                xx = np.average(np.sin(win_sol))
+                # get the inst phases for each oscillator over the window
+                win_phases_osc1 = inst_phases[pair[0], win*n_win:(win+1)*n_win]
+                win_phases_osc2 = inst_phases[pair[1], win*n_win:(win+1)*n_win]
+                #calculate vector strength of the difference over the window
+                xx = np.average(np.sin(win_phases_osc1 - win_phases_osc2))
+                yy = np.average(np.cos(win_phases_osc1 - win_phases_osc2))
+                # do final calculation and store away
+                pairwise_vec_strengths[k] = np.sqrt(xx**2 + yy**2)
+                # get ready for next loop
+                k+=1
+            # average over all pairs and store away
+            all_phase_coherences[win, freq] = np.mean(pairwise_vec_strengths)
+    
+    # average over all t_wins
+    s.apc = np.mean(all_phase_coherences, 0)
+            
+
             
 
 
