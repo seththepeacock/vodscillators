@@ -7,14 +7,14 @@ from plots import *
 import scipy.io
 
 # Open APC and plot
-if 1==0:
+if 1==1:
     cluster_width=0.01
-    f_min=1
-    f_max=5
     delta_f=0.001
     duration=50
     t_win_size=1/2
     amp_weights=True
+    f_min=1
+    f_max=5
 
     #open our stuff
     filename = f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl"
@@ -50,7 +50,7 @@ if 1==0:
     plt.show()
 
 # Generate and save APC data for vodscillator
-if 1==1:
+if 1==0:
     # calculates APC and then save to file
     def apc_and_save(vod=Vodscillator, cluster_width=float, f_min=float, f_max=float, delta_f=float, duration=float, t_win_size=float, amp_weights=bool):
         # calculate the apc, and it'll be (temporarily) saved to the vod object
