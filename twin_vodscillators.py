@@ -21,6 +21,7 @@ class TwinVodscillators:
         s.vr = vr #right Vodscillator
         s.name = p["name"] # name your vodscillator! (also will be used as a filename)
         s.glob_glob_noise_amp = p["glob_glob_noise_amp"] # amplitude of (uniformly generated) noise
+        s.iaccc = [["iaccc"]] # interaural complex coupling constant
         # check that our time parameters are the same for both or we might have some issues!
         vod_params = np.empty(2, 7)
         i = 0
@@ -46,6 +47,8 @@ class TwinVodscillators:
         global_global_noise = np.random.uniform(-s.glob_glob_noise_amp, s.glob_glob_noise_amp, len(s.tpoints)) 
         # then interpolate between (using a cubic spline) for ODE solving adaptive step purposes
         s.xi_glob_glob = CubicSpline(s.tpoints, global_global_noise)
+        # define some useful parameters
+        s.total_num_osc = s.vl.num_osc + s.vr.num_osc
 
     def solve_ODE(s):
         # NOTE WE ALWAYS PUT LEFT BEFORE RIGHT
@@ -59,15 +62,15 @@ class TwinVodscillators:
         # so s.sol[2, 1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
 
         # lets add a dimension at the beginning to track if its the left or right ear
-        # in case each has different oscillators, we'll use the max of the two
+            # in case each has different # oscillators, we'll use the max of the two
         max_num_osc = max(s.vl.num_osc, s.vr.num_osc)
-        s.sol = np.zeros((2, max_num_osc, s.tpoints), dtype=complex)
+        s.sol = np.zeros((2, max_num_osc, len(s.tpoints)), dtype=complex)
         s.sol[0, :, :] = sol[0:s.vl.num_osc, :]
         s.sol[1, :, :] = sol[s.vl.num_osc:(s.vl.num_osc+s.vr.num_osc), :]
 
         # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators)
-        s.left_SOO_sol = np.sum(s.sol[0, :, :], )
-        s.right_SOO_sol = np.sum(s.sol)
+        s.left_SOO_sol = np.sum(s.sol[0, :, :], 1)
+        s.right_SOO_sol = np.sum(s.sol[1, :, :], 2)
 
     def ODE(s, t, z):
         # This function will only be called by the ODE solver
@@ -76,25 +79,49 @@ class TwinVodscillators:
         print(f"Time = {int(t)}/{int(s.tf)}")
 
         # First make an array to represent the current (complex) derivative of each oscillator
-        ddt = np.zeros(s.num_osc, dtype=complex)
+        ddt = np.zeros(s.total_num_osc, dtype=complex)
 
-        # We are using equation (11) in Vilfan & Duke 2008
-        for k in range(s.num_osc):
-            # This "universal" part of the equation is the same for all oscillators. 
-            # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
-            universal = (1j*s.omegas[k] + s.epsilon)*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - (s.alpha + s.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
+        # (We are adapting equation (11) in Vilfan & Duke 2008)
+        
+        # Define the interaural coupling expressions (interaural complex coupling constant * summed response of the opposite ear)
+        interaural_left = s.iaccc * (np.sum(z[s.vl.num_osc:s.vr.num_osc]))
+        interaural_right = s.iaccc * (np.sum(z[0:s.vr.num_osc]))
 
-            # COUPLING
-
+        # Now define our derivatives!
+        # First, do the left ear. 
+        for k in range(s.vl.num_osc):
+            # The "universal" part of the equation is the same for all oscillators (in each ear). 
+            # Note it's the same as for a single vodscillator, just with the interaural coupling!
+            universal = interaural_left + (1j*s.vl.omegas[k] + s.vl.epsilon)*z[k] + ...
+            s.vl.xi_glob(t) + s.vl.xi_loc[k](t) - (s.vl.alpha + s.vl.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
+            
+            # Coupling within each ear
             # if we're at an endpoint, we only have one oscillator to couple with
             if k == 0:
-            ddt[k] = universal + s.ccc*(z[k+1] - z[k])
-            elif k == s.num_osc - 1:
-            ddt[k] = universal + s.ccc*(z[k-1] - z[k])
+                ddt[k] = universal + s.vl.ccc*(z[k+1] - z[k])
+            elif k == s.vl.num_osc - 1:
+                ddt[k] = universal + s.vl.ccc*(z[k-1] - z[k])
             # but if we're in the middle of the chain, we couple with the oscillator on either side
             else:
-            ddt[k] = universal + s.ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
+                ddt[k] = universal + s.vl.ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
 
+        # Now, do the right ear.
+        for k in np.arange(s.vl.num_osc, s.total_num_osc):
+            # The "universal" part of the equation is the same for all oscillators (in each ear). 
+            # Note it's the same as for a single vodscillator, just with the interaural coupling!
+            universal = interaural_right + (1j*s.vr.omegas[k] + s.vr.epsilon)*z[k] + ...
+            s.vr.xi_glob(t) + s.vr.xi_loc[k](t) - (s.vr.alpha + s.vr.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
+            
+            # Coupling within each ear
+            # if we're at an endpoint, we only have one oscillator to couple with
+            if k == 0:
+                ddt[k] = universal + s.vr.ccc*(z[k+1] - z[k])
+            elif k == s.vr.num_osc - 1:
+                ddt[k] = universal + s.vr.ccc*(z[k-1] - z[k])
+            # but if we're in the middle of the chain, we couple with the oscillator on either side
+            else:
+                ddt[k] = universal + s.vr.ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
+                
         return ddt
 
     def do_fft(s):
