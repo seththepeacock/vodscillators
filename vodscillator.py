@@ -3,6 +3,7 @@ import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
 from scipy.fft import rfft, rfftfreq
+from scipy.signal import hilbert
 
 class Vodscillator:
   """
@@ -221,13 +222,24 @@ class Vodscillator:
 
   def __str__(s):
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
-
+ 
   
-
-    
-
+  def get_analytic(s):
+    return hilbert(s.ss_sol)
   
+  def cluster(s, n_t_wins, delta=0.1, cluster_type="on_window"):
+    s.clusters = np.array([])
+    for win in windows:
+      analytic_signals = s.get_analytic()
+      instant_freq = np.angle(analytic_signals)
 
+  def analytic_phase_coherence(s, delta=0.1, n_t_wins):
+    freqlist = np.arange(0, 20, delta)
+    clusters = s.cluster(n_t_wins)
+    for f in freqlist:
+      for oscillator in range(s.num_osc):
+        s_a_osc = s.ss_sol[oscillator]
+        avg_freq
 
 
 
