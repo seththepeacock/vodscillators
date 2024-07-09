@@ -19,10 +19,11 @@ if 1==1:
         assert isinstance(v, Vodscillator)
     start = timeit.default_timer()
     v.t_transient = v.n_transient / v.sample_rate
-    v.analytic_phase_coherence(cluster_width=0.05, f_min=0, f_max=6, delta_f=0.01, duration=100, t_win_size=1, amp_weights=True)
+    v.analytic_phase_coherence(cluster_width=0.01, f_min=0, f_max=6, delta_f=0.001, duration=50, t_win_size=1, amp_weights=True)
     stop = timeit.default_timer()
-    # v.save("V&D fig 2A + APC")
+    v.save("V&D fig 2A + APC")
     plt.plot(v.apc_freqs, v.apc)
+    vlodder(v, "psd")
     print(f"Whew... that took {stop-start} seconds, {(stop-start)/60} minutes!")
     plt.show()
     

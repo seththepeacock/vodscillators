@@ -256,6 +256,7 @@ class Vodscillator:
 
       # pick a window
       for win in range(num_t_wins):
+        print(f"Clustering Window {win}")
         # find average frequency for each oscillator
         avg_freqs = np.average(inst_freqs[:, win*n_win:(win+1)*n_win], axis=1)
         # for each frequency box we look through each oscillator to see which oscillators are close enough to that frequency
@@ -279,11 +280,8 @@ class Vodscillator:
           print(f"Window {win}: Finding PC for {s.apc_freqs[f]}Hz")
           # create list of osc_indices in the cluster
           osc_indices = np.where(s.clusters[win, f] == 1)[0]
-          print(osc_indices)
           # if there's no oscillators in here, set the PC for this freq to 0 and break
           if len(osc_indices) <= 1:
-            # all_phase_coherences[win, f] = 0
-            print("NOTHIN HERE")
             continue
           # generate all possible pairs of oscillators in our cluster
           pairs = list(combinations(osc_indices, 2))
