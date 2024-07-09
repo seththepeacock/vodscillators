@@ -48,7 +48,7 @@ def get_psd(windowed_fft, num_win_pts):
   print()
 
 
-def coherence_vs_PSD(wf, sample_rate=44100, win_size=64, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
+def coherence_vs_psd(wf, sample_rate=44100, win_size=64, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
                      ymin=None, ymax=None, wf_title=None, show_plot=True, do_psd = True, do_coherence = True, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
