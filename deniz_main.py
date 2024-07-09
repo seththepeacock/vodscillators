@@ -31,7 +31,9 @@ if 1==1:
         assert isinstance(v, Vodscillator)
 
 
-vlodder(v, "cluster")
-heat_map(v)
+#vlodder(v, "cluster")
+#heat_map(v)
+
+v.analytic_phase_coherence()
 plt.show()
 

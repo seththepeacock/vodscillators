@@ -10,14 +10,14 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 #General Initializing Params
-"name" : "F&B fig 2D NEW FREQS",
+"name" : "F&B fig 2D iso",
 "num_osc" : 50, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
 "freq_dist" : "exp", #linear or exp
 "roughness_amp" : 0,
-"omega_0" : (2*np.pi), # char radial frequency of lowest oscillator [default = 2*np.pi] 
-"omega_N" : 5*(2*np.pi), # char radial frequency of highest oscillator [default = 5*(2*np.pi)] 
+"omega_0" : 5, # char radial frequency of lowest oscillator [default = 2*np.pi] 
+"omega_N" : 25, # char radial frequency of highest oscillator [default = 5*(2*np.pi)] 
 
 #set_ICs
 "IC_method" : "rand", #rand or const
@@ -36,13 +36,13 @@ p = {
 "d_R" : 2.0, # [default = 0.15] --> real part of coupling coefficient
 "d_I" : -2.0, # [default = -1.0] --> imaginary part of coupling coefficient
 "alpha" : 1.0, # [default = 1.0] --> real coefficient for cubic nonlinearity
-"beta_sigma" : 2.0 # [0 = isochronous as in V&D] --> std dev for imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
+"beta_sigma" : 0.0 # [0 = isochronous as in V&D] --> std dev for imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
 }
 
 v = Vodscillator(**p)
 v.initialize(**p)
 v.gen_noise(**p)
-v.solve_ODE(**p)
+v.solve_ODE()
 v.do_fft()
 v.save()
 
