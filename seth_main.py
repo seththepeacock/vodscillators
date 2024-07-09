@@ -7,7 +7,7 @@ from plots import *
 import scipy.io
 
 # Open APC and plot
-if 1==1:
+if 1==0:
     cluster_width=0.01
     f_min=1
     f_max=5
@@ -48,10 +48,11 @@ if 1==1:
     ax1.set_ylim(-10, 30)
     plt.xlim(f_min, f_max)
     plt.show()
+
 # Generate and save APC data for vodscillator
-if 1==0:
+if 1==1:
     # calculates APC and then save to file
-    def apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights):
+    def apc_and_save(vod=Vodscillator, cluster_width=float, f_min=float, f_max=float, delta_f=float, duration=float, t_win_size=float, amp_weights=bool):
         # calculate the apc, and it'll be (temporarily) saved to the vod object
         vod.analytic_phase_coherence(cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
         # pickle the apc into its own file
@@ -91,7 +92,6 @@ if 1==0:
     t_win_size=1/16
     apc_and_save(vod=Vodscillator, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
    
-
 # psd + coherence of vodscillators with 4 window sizes
 if 1==0:
     # Open pickled vodscillator
