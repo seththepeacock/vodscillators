@@ -255,7 +255,6 @@ class Vodscillator:
       s.clusters = np.empty(shape=(n_win, num_freqs))
 
       for win in range(n_win):
-        #inst_freqs[osc_index, win*n_win:(win+1)*n_win]
         avg_freqs = np.average(instantaneous_frequency[], axis=1)
         fs = 400.0
         samples = int(fs*win_duration)
