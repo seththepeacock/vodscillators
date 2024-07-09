@@ -11,7 +11,7 @@ if 1==1:
     cluster_width=0.01
     delta_f=0.001
     num_t_wins=100
-    t_win_size=1/2
+    t_win_size=1/16
     amp_weights=False
     f_min=1
     f_max=5
@@ -34,18 +34,20 @@ if 1==1:
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     # plot
-    ax1.plot(vod.fft_freq, 10*np.log10(get_psd_vod(vod)), label="PSD", color='r')
-    ax2.plot(apc_freqs, p, label="APC", color='b')
-    # ax2.plot(v.fft_freq, (get_coherence_vod(v)), label="Coherence", color='purple')
+    ax1.plot(apc_freqs, p, label="APC", color='b')
+    ax1.plot(v.fft_freq, (get_coherence_vod(v)), label="Coherence", color='purple')
+    ax2.plot(vod.fft_freq, 10*np.log10(get_psd_vod(vod)), label="PSD", color='r')
+    
     # set labels
-    ax1.set_xlabel('Freq')
-    ax1.set_ylabel('PSD [dB]', color='r')
-    ax2.set_ylabel('Phase Coherence', color='b')
+    ax1.set_ylabel('Phase Coherence', color='b')
+    ax2.set_xlabel('Freq')
+    ax2.set_ylabel('PSD [dB]', color='r')
+
     # set title, show legend, set xlims
     plt.title(f"APC: cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}")
     ax1.legend()
     ax2.legend()
-    ax1.set_ylim(-10, 30)
+    ax2.set_ylim(-10, 30)
     plt.xlim(f_min, f_max)
     plt.show()
 
@@ -80,18 +82,18 @@ if 1==0:
     amp_weights=True
 
     # run fx to get apc and save to a lil pickle
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
+    # apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
         
-    # change any parameters you want and rerun (note you can copy and paste the same list of args)
-    amp_weights=False
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
+    # # change any parameters you want and rerun (note you can copy and paste the same list of args)
+    # amp_weights=False
+    # apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
     
     # let's chang some more params!
     amp_weights=True
     t_win_size=1/16
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
+    # apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
     
-    amp_weight=False
+    amp_weights=False
     apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
     
 # psd + coherence of vodscillators with 4 window sizes

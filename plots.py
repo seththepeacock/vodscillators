@@ -42,10 +42,25 @@ def get_windowed_fft(wf, sample_rate, win_size):
   for win in range(num_win):
     windowed_fft[win, :] = rfft(windowed_wf[win, :])
   
+  # we'll also return num_win_pts since other fx will use this
   return windowed_fft, num_win_pts
 
-def get_psd(windowed_fft, num_win_pts):
-  print()
+def get_psd(windowed_fft, num_win_pts, sample_rate):
+  # calculate necessary params from the windowed_fft
+  num_win = np.size(windowed_fft, 0)
+  num_freq_pts = np.size(windowed_fft, 1)
+
+  # initialize array
+  windowed_psd = np.zeros((num_win, num_freq_pts))
+
+  # calculate the normalizing factor (canonical for discrete PSD)
+  normalizing_factor = sample_rate * num_win_pts
+  # get PSD for each window
+  for win in range(num_win):
+    windowed_psd[win, :] = ((np.abs(windowed_fft[win, :]))**2) / normalizing_factor
+  # average over all windows
+  psd = np.mean(windowed_psd, 0)
+  return psd
 
 
 def coherence_vs_psd(wf, sample_rate=44100, win_size=64, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
@@ -84,23 +99,11 @@ def coherence_vs_psd(wf, sample_rate=44100, win_size=64, max_vec_strength=1, psd
       fig_num: Any, Optional
 
   """
+  # get windowed_fft
   windowed_fft, num_win_pts = get_windowed_fft(wf, sample_rate, win_size)
 
-  num_win = np.size(windowed_fft, 0)
-  num_freq_pts = np.size(windowed_fft, 1)
-
+  # get PSD
   # POWER SPECTRAL DENSITY
-
-  # initialize array
-  windowed_psd = np.zeros((num_win, num_freq_pts))
-
-  # calculate the normalizing factor (canonical for discrete PSD)
-  normalizing_factor = sample_rate * num_win_pts
-  # get PSD for each window
-  for win in range(num_win):
-    windowed_psd[win, :] = ((np.abs(windowed_fft[win, :]))**2) / normalizing_factor
-  # average over all windows
-  psd = np.mean(windowed_psd, 0)
 
   # PHASE COHERENCE
 

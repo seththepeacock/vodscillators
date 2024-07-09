@@ -313,6 +313,9 @@ class Vodscillator:
               k+=1
           # average over all pairs (possibly weighting by pairwise_amp_weights) and store away
           if amp_weights:
+            # note that this way, the higher amp pairs contribute more to that cluster's average. 
+            # BUT frequencies whose clusters who have exceptionally high amp are NOT weighted any higher than the others!
+              # if they did, then we would just be artificially boosting PC for frequencies with lots of power!
             all_phase_coherences[win, f] = np.average(pairwise_vec_strengths, weights=pairwise_amp_weights)
           else:
             all_phase_coherences[win, f] = np.mean(pairwise_vec_strengths)
