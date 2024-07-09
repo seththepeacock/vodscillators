@@ -218,11 +218,21 @@ class Vodscillator:
   def get_analytic(s):
     return hilbert(s.ss_sol)
   
-  def cluster(s, n_t_wins, delta=0.1, cluster_type="on_window"):
-    s.clusters = np.array([])
-    for win in windows:
+  def cluster(s, t_win_size, n_freqs, delta=0.1, cluster_type="on_window"):
+    s.clusters = np.empty(shape=(n_t_wins, n_freqs))
+    n_windows = int((s.tf - s.t_transient) / t_win_size)
+    win_duration = (s.tf - s.t_transient) / n_windows            #window duration
+    window_pts = np.linspace(s.t_transient, s.tf, n_windows + 1)
+    for win in window_pts[1:]:
       analytic_signals = s.get_analytic()
       instant_freq = np.angle(analytic_signals)
+      amplitude_envelopes = np.abs(analytic_signals)
+      instantaneous_phase = np.unwrap(np.angle(analytic_signals))
+      fs = 400.0
+      samples = int(fs*win_duration)
+      t = np.arange(samples) / fs
+      instantaneous_frequency = (np.diff(instantaneous_phase) / (2.0*np.pi) * fs)
+
 
   def analytic_phase_coherence(s, n_t_wins, delta=0.1):
     freqlist = np.arange(0, 20, delta)
