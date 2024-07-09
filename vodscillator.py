@@ -228,7 +228,7 @@ class Vodscillator:
       analytic_signals = s.get_analytic()
       instant_freq = np.angle(analytic_signals)
 
-  def analytic_phase_coherence(s, n_t_winsdelta=0.1, demta=0.1):
+  def analytic_phase_coherence(s, n_t_wins, delta=0.1):
     freqlist = np.arange(0, 20, delta)
     clusters = s.cluster(n_t_wins)
     for f in freqlist:
