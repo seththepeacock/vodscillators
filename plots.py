@@ -144,6 +144,46 @@ def phase_portrait(wf, wf_title="Sum of Oscillators"):
     plt.grid()
     plt.show()
 
+# Plotter helper functions:
+def get_coherence(vod: Vodscillator, osc=-1):
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  # defaults to osc = -1 which is the sum of oscillators
+  if osc == -1:
+    y = vod.SOO_fft[:, :]
+  else:
+    y = vod.every_fft[osc, :, :]
+  
+  # get phases
+  phases = np.angle(y)
+  # initialize array for phase diffs
+  phase_diffs = np.zeros((vod.num_intervals - 1, vod.num_freq_points))
+  
+  for interval in range(0, vod.num_intervals - 1):
+    # take the difference between the phases in this current interval and the next
+    phase_diffs[interval] = phases[interval + 1] - phases[interval]
+
+  # get the average sin and cos of the phase diffs
+  xx= np.mean(np.sin(phase_diffs),axis=0)
+  yy= np.mean(np.cos(phase_diffs),axis=0)
+
+  # finally, output the vector strength (for each frequency)
+  return np.sqrt(xx**2 + yy**2)
+
+def get_psd(vod: Vodscillator, osc=-1):
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  if osc == -1:
+    # if osc = -1 (the default) we want the summed (SOO) response!
+    y = vod.SOO_fft[:, :]
+  else:
+    y = vod.every_fft[osc, :, :]
+
+  # take the amplitude squared and normalize
+  psd = ((np.abs(y))**2) / (vod.sample_rate * vod.n_ss)
+  # average over windows
+  avg_psd = np.mean(psd, 0)
+  
+  return avg_psd
+
 def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=None, ymax=None, wf_comp="re", 
                     wf_ss=False, show_plot=True, fig_num=1):
   """
@@ -176,45 +216,6 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
     Only required if plotting multiple figures
     
     """
-  # Plotter helper functions:
-  def get_coherence(osc=-1):
-    # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
-    # defaults to osc = -1 which is the sum of oscillators
-    if osc == -1:
-      y = vod.SOO_fft[:, :]
-    else:
-      y = vod.every_fft[osc, :, :]
-    
-    # get phases
-    phases = np.angle(y)
-    # initialize array for phase diffs
-    phase_diffs = np.zeros((vod.num_intervals - 1, vod.num_freq_points))
-    
-    for interval in range(0, vod.num_intervals - 1):
-      # take the difference between the phases in this current interval and the next
-      phase_diffs[interval] = phases[interval + 1] - phases[interval]
-
-    # get the average sin and cos of the phase diffs
-    xx= np.mean(np.sin(phase_diffs),axis=0)
-    yy= np.mean(np.cos(phase_diffs),axis=0)
-
-    # finally, output the vector strength (for each frequency)
-    return np.sqrt(xx**2 + yy**2)
-
-  def get_psd(osc=-1):
-    # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
-    if osc == -1:
-      # if osc = -1 (the default) we want the summed (SOO) response!
-      y = vod.SOO_fft[:, :]
-    else:
-      y = vod.every_fft[osc, :, :]
-
-    # take the amplitude squared and normalize
-    psd = ((np.abs(y))**2) / (vod.sample_rate * vod.n_ss)
-    # average over windows
-    avg_psd = np.mean(psd, 0)
-    
-    return avg_psd
 
   # get frequency and time axes
   f = vod.fft_freq
@@ -224,9 +225,9 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
   plt.figure(fig_num)
 
   if plot_type == "superimpose":
-    y1 = 10*np.log10(get_psd(osc))
+    y1 = 10*np.log10(get_psd(vod, osc))
     phase_coherence_max = 10
-    y2 = phase_coherence_max*get_coherence(osc)
+    y2 = phase_coherence_max*get_coherence(vod, osc)
     plt.plot(f, y1, color = "red", lw=1, label="Power")
     plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence')
     plt.xlabel('Frequency [Hz]')  
@@ -240,7 +241,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
       plt.title(f"Phase Coherence and PSD of Oscillator #{osc}")
 
   if plot_type == "psd":
-    y = 10*np.log10(get_psd(osc))
+    y = 10*np.log10(get_psd(vod, osc))
     plt.plot(f, y, color = "red", lw=1)
     plt.ylabel('Density')
     plt.xlabel('Frequency')
@@ -253,7 +254,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
   if plot_type == "pre_psd":
     sum = 0
     for k in range(vod.num_osc):
-      sum += get_psd(k)
+      sum += get_psd(vod, k)
     y = 10*np.log10(sum)
     plt.plot(f, y, color = "red", lw=1)
     plt.ylabel('Density')
@@ -264,7 +265,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
 
 
   if plot_type == "coherence":
-    y = get_coherence(osc)
+    y = get_coherence(vod, osc)
     plt.plot(f, y1, color = "purple", lw=5)
     plt.xlabel('Frequency [Hz]')  
     plt.ylabel('Power / Vector Strength')
@@ -289,7 +290,7 @@ def vlodder(vod: Vodscillator, plot_type: str, osc=-1, xmin=0, xmax=None, ymin=N
       avg_position_amplitudes[osc] = np.sqrt(np.mean((vod.ss_sol[osc].real)**2))
       # get the average cluster frequency
       # first get the psd of this oscillator
-      psd = get_psd(osc)
+      psd = get_psd(vod, osc)
       # Now, the paper seems to indicate a proper average over each frequency's PSD:
       #avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
       # But Beth's way was just to use the frequency which has the highest PSD peak

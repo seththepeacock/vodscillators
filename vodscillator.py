@@ -229,6 +229,7 @@ class Vodscillator:
         delta_f: float, Optional
           These define the min, max, and size of the frequency boxes
         t_win_size: float, Optional
+          THIS * SAMPLERATE MUST BE AN INT
           Size of the window (in t) to calculate phase coherence over (should be small or else all phases will drift over the window)
         amp_weights: bool, Optional
           For each frequency box, the average vector strength over all pairs is weighted by the pairs' instantaneous amplitude (averaged over the window)
@@ -244,7 +245,7 @@ class Vodscillator:
     # calculate # t_wins
     num_t_wins = int(duration / t_win_size)
     # get # points in window
-    n_win = t_win_size * s.sample_rate
+    n_win = int(t_win_size * s.sample_rate)
     # generate frequency array
     s.apc_freqs = np.arange(f_min, f_max, delta_f) #apc stands for analytic phase coherence
     num_freqs = len(s.apc_freqs)

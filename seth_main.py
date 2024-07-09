@@ -6,10 +6,48 @@ import pickle
 from plots import *
 import scipy.io
 
+# Open APC and plot
+if 1==0:
+    cluster_width=0.01
+    f_min=1
+    f_max=5
+    delta_f=0.001
+    duration=50
+    t_win_size=1/2
+    amp_weights=True
 
+    #open our stuff
+    filename = f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC V&D fig 2A, loc=0.1, glob=0\\"
+    with open(filepath + filename, 'rb') as picklefile:
+        p = pickle.load(picklefile)
+    vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\V&D fig 2A, loc=0.1, glob=0.pkl"
+    with open(vod_file, 'rb') as picklefile:
+        v = pickle.load(picklefile)
+        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+        assert isinstance(v, Vodscillator)
 
+    # get freqs for new phase coherence
+    apc_freqs = np.arange(f_min, f_max, delta_f)
 
-# NEW Coherence of vodscillator
+    # get 2 axes for double y axis
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    # plot
+    ax1.plot(v.fft_freq, 10*np.log10(get_psd(v)), label="PSD", color='r')
+    ax2.plot(apc_freqs, p, label="APC")
+    ax2.plot(v.fft_freq, (get_coherence(v)), label="Coherence")
+    # set labels
+    ax1.set_xlabel('Freq')
+    ax1.set_ylabel('PSD [dB]', color='r')
+    ax2.set_ylabel('Phase Coherence')
+    # set title, show legend, set xlims
+    plt.title(f"APC: cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}")
+    ax1.legend()
+    ax2.legend()
+    plt.xlim(f_min, f_max)
+    plt.show()
+# Generate APC of vodscillator
 if 1==1:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
@@ -19,16 +57,33 @@ if 1==1:
         assert isinstance(v, Vodscillator)
     start = timeit.default_timer()
     v.t_transient = v.n_transient / v.sample_rate
-    v.analytic_phase_coherence(cluster_width=0.01, f_min=0, f_max=6, delta_f=0.001, duration=50, t_win_size=1, amp_weights=True)
-    stop = timeit.default_timer()
-    v.save("V&D fig 2A + APC")
+    cluster_width=0.01
+    f_min=1
+    f_max=5
+    delta_f=0.001
+    duration=50
+    t_win_size=1/2
+    amp_weights=True
+    v.analytic_phase_coherence(cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, duration=duration, t_win_size=t_win_size, amp_weights=amp_weights)
+    ""
+    with open(f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
+        pickle.dump(v.apc, outp, pickle.HIGHEST_PROTOCOL)
+    
+    amp_weights=False
+    with open(f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
+        pickle.dump(v.apc, outp, pickle.HIGHEST_PROTOCOL)
+    
+    amp_weights=True
+    t_win_size=1/16
+    with open(f"cluster_width={cluster_width}, delta_f={delta_f}, duration={duration}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
+        pickle.dump(v.apc, outp, pickle.HIGHEST_PROTOCOL)
+
     plt.plot(v.apc_freqs, v.apc)
-    vlodder(v, "psd")
+    stop = timeit.default_timer()
+    
     print(f"Whew... that took {stop-start} seconds, {(stop-start)/60} minutes!")
     plt.show()
     
-    
-
 
 # psd + coherence of vodscillators with 4 window sizes
 if 1==0:
