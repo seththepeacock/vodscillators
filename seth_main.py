@@ -216,5 +216,7 @@ if 1==1:
         assert isinstance(v, Vodscillator)
     vlodder(v, "cluster")
 
+test = [5, 6, 7, 8]
+print(test[0:2])
     
     
