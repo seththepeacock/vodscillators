@@ -7,17 +7,17 @@ from plots import *
 import scipy.io
 
 # Open APC and plot
-if 1==1:
+if 1==0:
     cluster_width=0.01
-    delta_f=0.001
-    num_t_wins=100
-    t_win_size=1/16
+    f_resolution=0.001
+    num_wins=100
+    t_win=1/2
     amp_weights=False
     f_min=1
     f_max=5
 
     #open our stuff
-    filename = f"cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl"
+    filename = f"cluster_width={cluster_width}, num_wins={num_wins}, t_win={t_win}, amp_weights={amp_weights}.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC V&D fig 2A, loc=0.1, glob=0\\"
     with open(filepath + filename, 'rb') as picklefile:
         p = pickle.load(picklefile)
@@ -26,16 +26,19 @@ if 1==1:
         vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
         assert isinstance(vod, Vodscillator)
+        # any new vod pickles will have this predefined, but you'll have to calculate it by hand for now!
+        vod.t_transient = vod.n_transient / vod.sample_rate
 
     # get freqs for new phase coherence
-    apc_freqs = np.arange(f_min, f_max, delta_f)
+    apc_freqs = np.arange(f_min, f_max, f_resolution)
 
     # get 2 axes for double y axis
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     # plot
     ax1.plot(apc_freqs, p, label="APC", color='b')
-    ax1.plot(vod.fft_freq, (get_coherence_vod(vod)), label="Classic Coherence", color='purple')
+    classic_coherence = get_coherence(vod.SOO_sol[vod.t_transient])
+    ax1.plot(vod.fft_freq, classic_coherence, label="Classic Coherence", color='purple')
     ax2.plot(vod.fft_freq, 10*np.log10(get_psd_vod(vod)), label="PSD", color='r')
 
     # set labels
@@ -44,7 +47,7 @@ if 1==1:
     ax2.set_ylabel('PSD [dB]', color='r')
 
     # set title, show legend, set xlims
-    plt.title(f"APC: cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}")
+    plt.title(f"APC: cluster_width={cluster_width}, num_wins={num_wins}, t_win={t_win}, amp_weights={amp_weights}")
     ax1.legend()
     ax2.legend()
     ax2.set_ylim(-10, 30)
@@ -52,13 +55,13 @@ if 1==1:
     plt.show()
 
 # Generate and save APC data for vodscillator
-if 1==0:
+if 1==1:
     # calculates APC and then save to file
-    def apc_and_save(vod=Vodscillator, cluster_width=float, f_min=float, f_max=float, delta_f=float, num_t_wins=float, t_win_size=float, amp_weights=bool):
+    def apc_and_save(vod=Vodscillator, cluster_width=float, t_win=float, amp_weights=bool, num_wins=float, f_min=float, f_max=float, f_resolution=float):
         # calculate the apc, and it'll be (temporarily) saved to the vod object
-        vod.analytic_phase_coherence(cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
+        vod.analytic_phase_coherence(cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
         # pickle the apc into its own file
-        with open(f"cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
+        with open(f"cluster_width={cluster_width}, num_wins={num_wins}, t_win={t_win}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
             pickle.dump(vod.apc, outp, pickle.HIGHEST_PROTOCOL)
 
     # open up a vod
@@ -73,30 +76,131 @@ if 1==0:
     vod.t_transient = vod.n_transient / vod.sample_rate
 
     # define your parameters
-    cluster_width=0.01
+    f_resolution=0.001
     f_min=1
     f_max=5
-    delta_f=0.001
-    num_t_wins=100
-    t_win_size=1/2
-    amp_weights=True
-
-    # run fx to get apc and save to a lil pickle
-    # apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
-        
-    # # change any parameters you want and rerun (note you can copy and paste the same list of args)
-    # amp_weights=False
-    # apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
+    num_wins=100
     
-    # let's chang some more params!
+    # start with a pretty big cluster_width
+    cluster_width=0.1
+
+    t_win=1
     amp_weights=True
-    t_win_size=1/16
-    # apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
+    # run fx to get apc and save to a lil pickle
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    # change any parameters you want and rerun (note you can copy and paste the same list of args)
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    t_win=8
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
     
     amp_weights=False
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
     
-# psd + coherence of vodscillators with 4 window sizes
+    t_win=32
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    t_win=1/8
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    t_win=1/32
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    # change cluster_width then run it all again
+    cluster_width=0.01
+
+    t_win=1
+    amp_weights=True
+    # run fx to get apc and save to a lil pickle
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    # change any parameters you want and rerun (note you can copy and paste the same list of args)
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    t_win=8
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    t_win=32
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    t_win=1/8
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    t_win=1/32
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    # change cluster_width then run it all again
+    cluster_width=0.001
+
+    t_win=1
+    amp_weights=True
+    # run fx to get apc and save to a lil pickle
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    # change any parameters you want and rerun (note you can copy and paste the same list of args)
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    t_win=8
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    t_win=32
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    
+    t_win=1/8
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    t_win=1/32
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+        
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+# psd + coherence of vodscillators with
 if 1==0:
     # Open pickled vodscillator
     filename = "V&D fig 2A.pkl"
@@ -107,10 +211,9 @@ if 1==0:
 
     max_vec_strength = 20
     xmax = 10
-    coherence_vs_psd(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=8, max_vec_strength=max_vec_strength, fig_num=1)
-    coherence_vs_psd(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=16, max_vec_strength=max_vec_strength, fig_num=2)
-    coherence_vs_psd(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=32, max_vec_strength=max_vec_strength, fig_num=3)
-    coherence_vs_psd(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=40, max_vec_strength=max_vec_strength, fig_num=4)
+    wf = np.sum(vod.sol[:, vod.n_transient:], 0), vod.sample_rate
+    t_win = 64
+    coherence_vs_psd(wf, vod.sample_rate, t_win, num_wins=None, xmax = xmax, ymin=0, ymax = 30, max_vec_strength=max_vec_strength, fig_num=1)
     plt.show()
 
 #psd + coherence of generated data

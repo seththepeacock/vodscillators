@@ -217,7 +217,7 @@ class Vodscillator:
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
 
 
-  def analytic_phase_coherence(s, cluster_width=0.05, f_min=0.0, f_max=10.0, delta_f=0.1, num_t_wins=100, t_win_size=1, amp_weights=True):
+  def analytic_phase_coherence(s, cluster_width=0.005, f_min=0.0, f_max=10.0, f_resolution=0.001, num_wins=100, t_win=1, amp_weights=True):
     """ Calculates phase coherence using the instantaneous information from the analytic signal
  
     Parameters
@@ -226,9 +226,9 @@ class Vodscillator:
           Defines how close an oscillator's avg freq can be to the target frequency to count in that freq's cluster
         f_min: float, Optional
         f_max: float, Optional
-        delta_f: float, Optional
+        f_resolution: float, Optional
           These define the min, max, and size of the frequency boxes
-        t_win_size: float, Optional
+        t_win: float, Optional
           Size of the window (in t) to calculate phase coherence over (should be small or else all phases will drift over the window)
         amp_weights: bool, Optional
           For each frequency box, the average vector strength over all pairs is weighted by the pairs' instantaneous amplitude (averaged over the window)
@@ -242,19 +242,19 @@ class Vodscillator:
     inst_phases = np.unwrap(np.angle(analytic_signals))
     inst_amps = np.abs(analytic_signals)
     # get # points in window
-    n_win = int(t_win_size * s.sample_rate)
+    n_win = int(t_win * s.sample_rate)
     # generate frequency array
-    s.apc_freqs = np.arange(f_min, f_max, delta_f) #apc stands for analytic phase coherence
+    s.apc_freqs = np.arange(f_min, f_max, f_resolution) #apc stands for analytic phase coherence
     num_freqs = len(s.apc_freqs)
 
     # get clusters
     def cluster():
       # take "derivatives" to get instantaenous frequencies
       inst_freqs = (np.diff(inst_phases) / (2.0*np.pi) * s.sample_rate)
-      clusters = np.zeros((num_t_wins, num_freqs, s.num_osc))
+      clusters = np.zeros((num_wins, num_freqs, s.num_osc))
 
       # pick a window
-      for win in range(num_t_wins):
+      for win in range(num_wins):
         print(f"Clustering Window {win}")
         # find average frequency for each oscillator
         avg_freqs = np.average(inst_freqs[:, win*n_win:(win+1)*n_win], axis=1)
@@ -272,9 +272,9 @@ class Vodscillator:
     # get all clusters
     s.clusters = cluster()
     # initialize array to store all phase coherences
-    all_phase_coherences = np.zeros((num_t_wins, num_freqs))
+    all_phase_coherences = np.zeros((num_wins, num_freqs))
 
-    for win in range(num_t_wins):
+    for win in range(num_wins):
         for f in range(len(s.apc_freqs)):
           print(f"Window {win}: Finding PC for {s.apc_freqs[f]}Hz")
           # create list of osc_indices in the cluster
