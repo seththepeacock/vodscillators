@@ -5,20 +5,21 @@ import timeit
 import pickle
 from plots import *
 
+#/home/deniz/Dropbox/vodscillators/cluster_width=0.1, num_wins=100, t_win=0.5, amp_weights=False.pkl
 
 cluster_width=0.1
 f_resolution=0.001
 num_wins=100
-t_win=1
+t_win=0.5
 amp_weights=False
-f_min=1
+f_min=0
 f_max=5
 
 classic_coherence_t_win = 16
 
 #open our stuff
 filename = f"cluster_width={cluster_width}, num_wins={num_wins}, t_win={t_win}, amp_weights={amp_weights}.pkl"
-filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC V&D fig 2A, loc=0.1, glob=0\\"
+filepath = "/home/deniz/Dropbox/vodscillators/"
 # load apc data
 with open(filepath + filename, 'rb') as picklefile:
     apc = pickle.load(picklefile)
@@ -26,7 +27,7 @@ with open(filepath + filename, 'rb') as picklefile:
 apc_freq_ax = np.arange(f_min, f_max, f_resolution)
 
 # load vodscillator for PSD and classic phase coherence
-vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\V&D fig 2A, loc=0.1, glob=0.pkl"
+vod_file= "/home/deniz/Dropbox/vodscillators/F&B fig 2D iso.pkl"
 with open(vod_file, 'rb') as picklefile:
     vod = pickle.load(picklefile)
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
@@ -58,6 +59,6 @@ ax2.set_ylabel('PSD [dB]', color='r')
 plt.title("Comparison of PSD and PC for V&D Fig 2A (Local Noise=0.1, Global=0)")
 ax1.legend()
 ax2.legend()
-ax2.set_ylim(-15, 60)
-plt.xlim(f_min, f_max)
+#ax2.set_ylim(-15, 60)
+#plt.xlim(f_min, f_max)
 plt.show()

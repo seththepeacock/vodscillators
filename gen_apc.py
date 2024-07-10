@@ -23,7 +23,7 @@ with open(filepath + filename, 'rb') as picklefile:
 
 # define your parameters
 f_resolution=0.001
-f_min=1
+f_min=0
 f_max=5
 num_wins=100
 
