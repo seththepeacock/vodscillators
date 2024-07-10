@@ -6,6 +6,13 @@ import pickle
 from plots import *
 import scipy.io
 
+filename = "F&B fig 2D noniso.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# load apc data
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
+
+print(vod.glob_noise_amp)
 
 # psd + coherence of vodscillators with
 if 1==0:
