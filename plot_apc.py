@@ -8,18 +8,18 @@ from plots import *
 
 cluster_width=0.1
 f_resolution=0.01
-num_wins=50
+num_wins=100
 t_win=1
-amp_weights=False
+amp_weights= True
 f_min=0
 f_max=5
 
-classic_coherence_t_win = 16
+classic_coherence_t_win = 8
 
 #open our stuff
 filename = f"cluster_width={cluster_width}, num_wins={num_wins}, t_win={t_win}, amp_weights={amp_weights}.pkl"
-# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC V&D fig 2A, loc=0.1, glob=0\\"
-filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC F&B fig 2D, iso, loc=0.1, glob=0\\"
+# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC V&D fig 2A, loc=0, glob=0\\"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC F&B fig 2D, noniso, loc=0.1, glob=0\\"
 # load apc data
 with open(filepath + filename, 'rb') as picklefile:
     apc = pickle.load(picklefile)
@@ -27,6 +27,7 @@ with open(filepath + filename, 'rb') as picklefile:
 apc_freq_ax = np.arange(f_min, f_max, f_resolution)
 
 # load vodscillator for PSD and classic phase coherence
+# vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\V&D fig 2A, loc=0, glob=0.pkl"
 # vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\V&D fig 2A, loc=0.1, glob=0.pkl"
 vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
 
@@ -48,7 +49,7 @@ cc_freq_ax, classic_coherence = get_coherence(vod.SOO_sol[vod.n_transient:], vod
 psd = get_psd_vod(vod)
 
 # plot
-# ax1.plot(apc_freq_ax, apc, label=f"APC: cluster_width={cluster_width}, num_wins={num_wins}, t_win={t_win}, amp_weights={amp_weights}", color='b')
+ax1.plot(apc_freq_ax, apc, label=f"APC: cluster_width={cluster_width}, num_wins={num_wins}, t_win={t_win}, amp_weights={amp_weights}", color='b')
 ax1.plot(cc_freq_ax, classic_coherence, label="Classic Coherence", color='purple')
 ax2.plot(vod.fft_freq, 20*np.log10(psd), label="PSD", color='r')
 
@@ -58,7 +59,7 @@ ax2.set_xlabel('Freq')
 ax2.set_ylabel('PSD [dB]', color='r')
 
 # set title, show legend, set xlims
-plt.title("Comparison of PSD and PC for F&B Fig 2D Iso (Local Noise=0.1, Global=0)")
+plt.title("Comparison of PSD and PC for F&B fig 2D, noniso, loc=0.1, glob=0")
 ax1.legend()
 ax2.legend()
 # ax2.set_ylim(-15, 60)

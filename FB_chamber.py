@@ -10,7 +10,7 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 #General Initializing Params
-"name" : "F&B fig 2D, iso, loc=0.1, glob=0.1, sr=512",
+"name" : "F&B fig 2D, iso, loc=0.1, glob=0, sr=512",
 "num_osc" : 50, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
