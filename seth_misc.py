@@ -6,7 +6,7 @@ import pickle
 from plots import *
 import scipy.io
 
-filename = "F&B fig 2D noniso.pkl"
+filename = "F&B fig 2D iso.pkl"
 filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
 # load apc data
 with open(filepath + filename, 'rb') as picklefile:
