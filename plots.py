@@ -43,14 +43,14 @@ def get_windowed_fft(wf, sample_rate, t_win, num_wins=None):
   # Now we do the ffts!
 
   # get frequency axis 
-  fft_freqs = rfftfreq(num_win_pts, sample_spacing)
-  num_freq_pts = len(fft_freqs)
+  freq_ax = rfftfreq(num_win_pts, sample_spacing)
+  num_freq_pts = len(freq_ax)
   # get fft of each window
   windowed_fft = np.zeros((num_wins, num_freq_pts), dtype=complex)
   for win in range(num_wins):
     windowed_fft[win, :] = rfft(windowed_wf[win, :])
   
-  return windowed_fft, fft_freqs
+  return freq_ax, windowed_fft
 
 def get_psd(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
   """ Gets the PSD of the given waveform with the given window size
@@ -68,10 +68,14 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
       windowed_fft: any, Optional
         If you want to avoide recalculating the windowed fft, pass it in here!
   """
-  # if you passed this in, we'll can skip this step
+  # if you passed the windowed_fft in then we'll skip over to the else statement
   if not windowed_fft:
-    windowed_fft, _ = get_windowed_fft(wf, sample_rate, t_win)
-    
+    freq_ax, windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
+  else:
+    # ...and we'll calculate the fft_freq manually
+    num_win_pts = sample_rate * t_win
+    sample_spacing = 1/sample_rate
+    freq_ax = rfftfreq(num_win_pts, sample_spacing)
     
   # calculate necessary params from the windowed_fft
   num_wins = np.size(windowed_fft, 0)
@@ -90,7 +94,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
     windowed_psd[win, :] = ((np.abs(windowed_fft[win, :]))**2) / normalizing_factor
   # average over all windows
   psd = np.mean(windowed_psd, 0)
-  return psd
+  return freq_ax, psd
 
 def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
   """ Gets the PSD of the given waveform with the given window size
@@ -108,13 +112,20 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
       windowed_fft: any, Optional
         If you want to avoide recalculating the windowed fft, pass it in here!
   """
-  # if you passed this in, we'll can skip this step
+  # if you passed the windowed_fft in then we'll skip over to the else statement
   if not windowed_fft:
-    windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
+    freq_ax, windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
+  else:
+    # ...and we'll calculate the fft_freq manually
+    num_win_pts = sample_rate * t_win
+    sample_spacing = 1/sample_rate
+    freq_ax = rfftfreq(num_win_pts, sample_spacing)
+
   
   # calculate necessary params from the windowed_fft
-  num_win = np.size(windowed_fft, 0)
-  num_freq_pts = np.size(windowed_fft, 1)
+  wfft_size = np.shape(windowed_fft)
+  num_win = wfft_size[0]
+  num_freq_pts = wfft_size[1]
 
   # get phases
   phases = np.angle(windowed_fft)
@@ -135,7 +146,7 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
   # finally, output the vector strength (for each frequency)
   coherence = np.sqrt(xx**2 + yy**2)
 
-  return coherence
+  return freq_ax, coherence
 
 def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
                      ymin=None, ymax=None, wf_title=None, show_plot=True, do_psd = True, do_coherence = True, fig_num=1):
@@ -177,10 +188,10 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
   windowed_fft, fft_freqs = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
 
   # get PSD
-  psd = get_psd(wf, sample_rate, t_win, windowed_fft = windowed_fft)
+  psd = get_psd(wf, sample_rate, t_win, windowed_fft=windowed_fft)
 
   # get coherence
-  coherence = get_coherence(wf, sample_rate, t_win, windowed_fft = windowed_fft)
+  coherence = get_coherence(wf, sample_rate, t_win, windowed_fft=windowed_fft)
 
   # PLOT!
   f = fft_freqs / 1000
@@ -229,7 +240,7 @@ def phase_portrait(wf, wf_title="Sum of Oscillators"):
     plt.grid()
     plt.show()
 
-# Plotter helper functions:
+# Vlodder helper functions:
 def get_coherence_vod(vod: Vodscillator, osc=-1):
   # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
   # defaults to osc = -1 which is the sum of oscillators
