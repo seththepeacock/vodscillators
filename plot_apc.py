@@ -19,7 +19,7 @@ classic_coherence_t_win = 8
 #open our stuff
 filename = f"cluster_width={cluster_width}, num_wins={num_wins}, t_win={t_win}, amp_weights={amp_weights}.pkl"
 # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC V&D fig 2A, loc=0, glob=0\\"
-filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC F&B fig 2D, noniso, loc=0.1, glob=0\\"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC F&B fig 2D, iso, loc=0.1, glob=0\\"
 # load apc data
 with open(filepath + filename, 'rb') as picklefile:
     apc = pickle.load(picklefile)
@@ -29,7 +29,7 @@ apc_freq_ax = np.arange(f_min, f_max, f_resolution)
 # load vodscillator for PSD and classic phase coherence
 # vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\V&D fig 2A, loc=0, glob=0.pkl"
 # vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\V&D fig 2A, loc=0.1, glob=0.pkl"
-vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
+vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\F&B fig 2D, iso, loc=0.1, glob=0.pkl"
 
 with open(vod_file, 'rb') as picklefile:
     vod = pickle.load(picklefile)
