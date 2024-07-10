@@ -6,93 +6,15 @@ import pickle
 from plots import *
 import scipy.io
 
-# Open APC and plot
-if 1==0:
-    cluster_width=0.01
-    delta_f=0.001
-    num_t_wins=100
-    t_win_size=1/2
-    amp_weights=False
-    f_min=1
-    f_max=5
+filename = "F&B fig 2D noniso.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# load apc data
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
 
-    #open our stuff
-    filename = f"cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl"
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\APC V&D fig 2A, loc=0.1, glob=0\\"
-    with open(filepath + filename, 'rb') as picklefile:
-        p = pickle.load(picklefile)
-    vod_file= "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\V&D fig 2A, loc=0.1, glob=0.pkl"
-    with open(vod_file, 'rb') as picklefile:
-        vod = pickle.load(picklefile)
-        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(vod, Vodscillator)
+print(vod.glob_noise_amp)
 
-    # get freqs for new phase coherence
-    apc_freqs = np.arange(f_min, f_max, delta_f)
-
-    # get 2 axes for double y axis
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-    # plot
-    ax1.plot(vod.fft_freq, 10*np.log10(get_psd_vod(vod)), label="PSD", color='r')
-    ax2.plot(apc_freqs, p, label="APC", color='b')
-    # ax2.plot(v.fft_freq, (get_coherence_vod(v)), label="Coherence", color='purple')
-    # set labels
-    ax1.set_xlabel('Freq')
-    ax1.set_ylabel('PSD [dB]', color='r')
-    ax2.set_ylabel('Phase Coherence', color='b')
-    # set title, show legend, set xlims
-    plt.title(f"APC: cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}")
-    ax1.legend()
-    ax2.legend()
-    ax1.set_ylim(-10, 30)
-    plt.xlim(f_min, f_max)
-    plt.show()
-
-# Generate and save APC data for vodscillator
-if 1==1:
-    # calculates APC and then save to file
-    def apc_and_save(vod=Vodscillator, cluster_width=float, f_min=float, f_max=float, delta_f=float, num_t_wins=float, t_win_size=float, amp_weights=bool):
-        # calculate the apc, and it'll be (temporarily) saved to the vod object
-        vod.analytic_phase_coherence(cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
-        # pickle the apc into its own file
-        with open(f"cluster_width={cluster_width}, delta_f={delta_f}, num_t_wins={num_t_wins}, t_win_size={t_win_size}, amp_weights={amp_weights}.pkl", 'wb') as outp:  # Overwrites any existing file with this filename!.
-            pickle.dump(vod.apc, outp, pickle.HIGHEST_PROTOCOL)
-
-    # open up a vod
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
-    with open(filepath + filename, 'rb') as picklefile:
-        vod = pickle.load(picklefile)
-        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(vod, Vodscillator)
-
-    # any new vod pickles will have this predefined, but you'll have to calculate it by hand for now!
-    vod.t_transient = vod.n_transient / vod.sample_rate
-
-    # define your parameters
-    cluster_width=0.01
-    f_min=1
-    f_max=5
-    delta_f=0.001
-    num_t_wins=100
-    # t_win_size has to be s.t. t_win_size * vod.sample_rate(=128) is an integer!!!
-    t_win_size=1/2
-    amp_weights=True
-
-    # run fx to get apc and save to a lil pickle
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
-        
-    # change any parameters you want and rerun (note you can copy and paste the same list of args)
-    amp_weights=False
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
-    
-    # let's chang some more params!
-    amp_weights=True
-    t_win_size=1/16
-    apc_and_save(vod=vod, cluster_width=cluster_width, f_min=f_min, f_max=f_max, delta_f=delta_f, num_t_wins=num_t_wins, t_win_size=t_win_size, amp_weights=amp_weights)
-   
-# psd + coherence of vodscillators with 4 window sizes
+# psd + coherence of vodscillators with
 if 1==0:
     # Open pickled vodscillator
     filename = "V&D fig 2A.pkl"
@@ -103,10 +25,9 @@ if 1==0:
 
     max_vec_strength = 20
     xmax = 10
-    coherence_vs_psd(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=8, max_vec_strength=max_vec_strength, fig_num=1)
-    coherence_vs_psd(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=16, max_vec_strength=max_vec_strength, fig_num=2)
-    coherence_vs_psd(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=32, max_vec_strength=max_vec_strength, fig_num=3)
-    coherence_vs_psd(np.sum(vod.ss_sol, 0), vod.sample_rate, xmax = xmax, ymin=0, ymax = 30, win_size=40, max_vec_strength=max_vec_strength, fig_num=4)
+    wf = np.sum(vod.sol[:, vod.n_transient:], 0), vod.sample_rate
+    t_win = 64
+    coherence_vs_psd(wf, vod.sample_rate, t_win, num_wins=None, xmax = xmax, ymin=0, ymax = 30, max_vec_strength=max_vec_strength, fig_num=1)
     plt.show()
 
 #psd + coherence of generated data

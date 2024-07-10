@@ -24,7 +24,7 @@ p = {
 
 #gen_noise
 "loc_noise_amp" : 0.1, #amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
-"glob_noise_amp" : 0.1, #amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
+"glob_noise_amp" : 0, #amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
 "ti" : 0, # start time; [default = 0]
 "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_ss" : 64, # length of an interval of ss observation [default = 64 --> n.transient = 8192]
@@ -36,7 +36,7 @@ p = {
 "d_R" : 2.0, # [default = 0.15] --> real part of coupling coefficient
 "d_I" : -2.0, # [default = -1.0] --> imaginary part of coupling coefficient
 "alpha" : 1.0, # [default = 1.0] --> real coefficient for cubic nonlinearity
-"beta_sigma" : 0.0 # [0 = isochronous as in V&D] --> std dev for imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
+"beta_sigma" : 0 # [0 = isochronous as in V&D] --> std dev for imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
 }
 
 v = Vodscillator(**p)
