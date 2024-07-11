@@ -62,8 +62,8 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
     ax1.set_ylabel('Phase Coherence', color='purple')
     ax2.set_xlabel('Freq')
     ax2.set_ylabel('PSD [dB]', color='r')
-    ax1.legend()
-    ax2.legend()
+    ax1.legend(loc="upper left")
+    ax2.legend(loc="upper right")
 
     # set title
     if wf_title:

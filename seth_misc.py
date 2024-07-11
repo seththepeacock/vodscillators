@@ -11,7 +11,7 @@ import scipy.io
 
 # comparing sample rate effect on classic phase coherence
 if 1==1:
-    t_win = 4
+    t_win = 16
     filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     # load vod
@@ -21,17 +21,17 @@ if 1==1:
 
     wf = vod.SOO_sol[vod.n_transient:]
     coherence_vs_psd(wf, sample_rate=128, t_win=t_win, show_plot=False, fig_num=1, wf_title="128", xmin=0, xmax=10)
+    coherence_vs_psd(wf, sample_rate=128, t_shift=4, t_win=t_win, show_plot=True, fig_num=2, wf_title="128", xmin=0, xmax=10)
 
-    filename = "V&D fig 2A, loc=0.1, glob=0, sr=512.pkl"
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    # load vod
-    with open(filepath + filename, 'rb') as picklefile:
-        vod = pickle.load(picklefile)
-        assert isinstance(vod, Vodscillator)
+    # filename = "V&D fig 2A, loc=0.1, glob=0, sr=512.pkl"
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # # load vod
+    # with open(filepath + filename, 'rb') as picklefile:
+    #     vod = pickle.load(picklefile)
+    #     assert isinstance(vod, Vodscillator)
 
-    wf = vod.SOO_sol[vod.n_transient:]
-    coherence_vs_psd(wf, sample_rate=512, t_win=t_win, show_plot=True, fig_num=2, wf_title="512", xmin=0, xmax=10)
-
+    # wf = vod.SOO_sol[vod.n_transient:]
+    # coherence_vs_psd(wf, sample_rate=512, t_win=t_win, show_plot=True, fig_num=2, wf_title="512")
 
 
 # OLD comparing sample rate effect on classic phase coherence

@@ -5,7 +5,7 @@ from scipy.fft import rfft, rfftfreq
 
 # define helper functions
 def get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
-  """ Gets the windowed fft of the given waveform with given window size
+  """ Gets the windowed fft of the given waveform with given window size and given t_shift
 
   Parameters
   ------------
@@ -15,6 +15,8 @@ def get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
         defaults to 44100 
       t_win: float
         length (in time) of each window
+      t_shift: float
+        length (in time) between the start of successive windows
       num_wins: int, Optional
         If this isn't passed, then just get the maximum number of windows of the given size
 
@@ -137,11 +139,11 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
       windowed_fft: any, Optional
         If you want to avoide recalculating the windowed fft, pass it in here!
   """
-  # if you passed the windowed_fft in then we'll skip over to the else statement
+  # if we don't already have windowed_fft we'll calculate it:
   if windowed_fft is None:
     freq_ax, windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
   else:
-    # ...and we'll calculate the fft_freq manually
+    # if we do, then we'll go ahead and calculate the fft_freq manually
     num_win_pts = sample_rate * t_win
     sample_spacing = 1/sample_rate
     freq_ax = rfftfreq(num_win_pts, sample_spacing)
@@ -173,7 +175,7 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
 
   return freq_ax, coherence
 
-def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
+def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
                      ymin=None, ymax=None, wf_title=None, show_plot=True, do_coherence=True, do_psd=True, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
@@ -212,7 +214,7 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
 
   """
   # get windowed_fft so we don't have to do it twice below
-  fft_freqs, windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
+  fft_freqs, windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_shift=t_shift, t_win=t_win, num_wins=num_wins)
 
   # get PSD
   psd = get_psd(wf, sample_rate, t_win, windowed_fft=windowed_fft)[1]
@@ -244,8 +246,8 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
   ax1.set_ylabel('Phase Coherence', color='purple')
   ax2.set_xlabel('Freq')
   ax2.set_ylabel('PSD [dB]', color='r')
-  ax1.legend()
-  ax2.legend()
+  ax1.legend(loc="upper left")
+  ax2.legend(loc="upper right")
 
   # set title
   if wf_title:
