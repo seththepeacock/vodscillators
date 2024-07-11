@@ -11,15 +11,22 @@ filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle
 # load apc data
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
+    assert isinstance(vod, Vodscillator)
 
-print(vod)
 # vlodder(vod, "psd", xmin=0, xmax=5, show_plot=False, fig_num=1)
+print(vod)
+print(vod.omega_0)
+print(vod.omega_N)
 
-# filename = "F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
-# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-# # load apc data
-# with open(filepath + filename, 'rb') as picklefile:
-#     vod = pickle.load(picklefile)
+filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# load apc data
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
+    
+print(vod)
+print(vod.omega_0)
+print(vod.omega_N)
 
 # vlodder(vod, "psd", xmin=0, xmax=5, show_plot=True, fig_num=2)
 

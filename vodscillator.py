@@ -215,7 +215,7 @@ class Vodscillator:
 
   def __str__(s):
     string = f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
-    return 
+    return string
 
 
   def analytic_phase_coherence(s, cluster_width=0.005, f_min=0.0, f_max=10.0, f_resolution=0.001, num_wins=100, t_win=1, amp_weights=True):
