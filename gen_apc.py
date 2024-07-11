@@ -14,8 +14,9 @@ def apc_and_save(vod=Vodscillator, cluster_width=float, t_win=float, amp_weights
         pickle.dump(vod.apc, outp, pickle.HIGHEST_PROTOCOL)
 
 # open up a vod
-filepath = "/home/deniz/Dropbox/vodscillators/"
-filename = "F&B fig 2D noniso.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+filename = "F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
+# filename = "V&D fig 2A, loc=0, glob=0.pkl"
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
@@ -40,7 +41,7 @@ amp_weights=False
 apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
 
 
-if 1==0:
+if 1==1:
     t_win=8
     amp_weights=True
     apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
@@ -54,6 +55,14 @@ if 1==0:
 
     amp_weights=False
     apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+
+    t_win=1/2
+    amp_weights=True
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+
+    amp_weights=False
+    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+
 
     t_win=1/8
     amp_weights=True
@@ -70,7 +79,7 @@ if 1==0:
     apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
 
     # change cluster_width then run it all again
-    cluster_width=0.01
+    cluster_width=0.05
 
     t_win=1
     amp_weights=True
@@ -110,7 +119,7 @@ if 1==0:
     apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
 
     # change cluster_width then run it all again
-    cluster_width=0.001
+    cluster_width=0.2
 
     t_win=1
     amp_weights=True

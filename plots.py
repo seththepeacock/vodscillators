@@ -265,7 +265,7 @@ def get_coherence_vod(vod: Vodscillator, osc=-1):
   # finally, output the vector strength (for each frequency)
   return np.sqrt(xx**2 + yy**2)
 
-def get_psd_vod(vod: Vodscillator, osc=-1):
+def get_psd_vod(vod: Vodscillator, osc=-1, window=-1):
   # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
   if osc == -1:
     # if osc = -1 (the default) we want the summed (SOO) response!
@@ -275,12 +275,17 @@ def get_psd_vod(vod: Vodscillator, osc=-1):
 
   # take the amplitude squared and normalize
   psd = ((np.abs(wf))**2) / (vod.sample_rate * vod.n_ss)
-  # average over windows
-  avg_psd = np.mean(psd, 0)
   
-  return avg_psd
+  if window == -1:
+    # average over windows
+    psd = np.mean(psd, 0)
+  else:
+    psd = psd[window]
+    
+  
+  return psd
 
-def vlodder(vod: Vodscillator, plot_type:str, osc=-1, xmin=0, xmax=None, ymin=None, ymax=None, wf_comp="re", 
+def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=None, ymin=None, ymax=None, wf_comp="re", 
                     wf_ss=False, show_plot=True, fig_num=1):
   """ Plots various plots from Vodscillator
 
@@ -291,7 +296,9 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, xmin=0, xmax=None, ymin=No
   plot_type: String
     "coherence" plots phase coherence;
     "cluster" plots V&D style frequency clustering plots;
-    "psd" plots power spectral density (if osc=-1, adds up fft of each oscillator and then takes PSD);
+    "psd" plots power spectral density 
+      (if window=-1, takes the average over all windows, otherwise just takes the psd of that window)
+      (if osc=-1, adds up fft of each oscillator and then takes PSD);
     "pre_psd" takes PSD of each oscillator and THEN plots the sum of the PSDs;
     "superimpose" plots phase coherence and PSD;
     "wf" plots a waveform
@@ -337,7 +344,7 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, xmin=0, xmax=None, ymin=No
       plt.title(f"Phase Coherence and PSD of Oscillator #{osc}")
 
   if plot_type == "psd":
-    y = 10*np.log10(get_psd_vod(vod, osc))
+    y = 10*np.log10(get_psd_vod(vod=vod, osc=osc, window=window))
     plt.plot(f, y, color = "red", lw=1)
     plt.ylabel('Density')
     plt.xlabel('Frequency')
@@ -388,9 +395,9 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, xmin=0, xmax=None, ymin=No
       # first get the psd of this oscillator
       psd = get_psd_vod(vod, osc)
       # Now, the paper seems to indicate a proper average over each frequency's PSD:
-      #avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
+      avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
       # But Beth's way was just to use the frequency which has the highest PSD peak
-      avg_cluster_freqs[osc] = vod.fft_freq[np.argmax(psd)]
+      # avg_cluster_freqs[osc] = vod.fft_freq[np.argmax(psd)]
     
     plt.plot(avg_cluster_freqs, '-o', label="Average frequency")
     plt.plot(avg_position_amplitudes, label="Amplitude")
