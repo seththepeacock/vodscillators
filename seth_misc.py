@@ -6,29 +6,42 @@ import pickle
 from plots import *
 import scipy.io
 
-filename = "F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
-filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-# load apc data
-with open(filepath + filename, 'rb') as picklefile:
-    vod = pickle.load(picklefile)
-    assert isinstance(vod, Vodscillator)
+# filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
+# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# # load apc data
+# with open(filepath + filename, 'rb') as picklefile:
+#     vod = pickle.load(picklefile)
+#     assert isinstance(vod, Vodscillator)
 
-# vlodder(vod, "psd", xmin=0, xmax=5, show_plot=False, fig_num=1)
-print(vod)
-print(vod.omega_0)
-print(vod.omega_N)
+# print(vod.d_R)
+# print(vod.d_I)
 
-filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
-filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-# load apc data
-with open(filepath + filename, 'rb') as picklefile:
-    vod = pickle.load(picklefile)
-    
-print(vod)
-print(vod.omega_0)
-print(vod.omega_N)
 
-# vlodder(vod, "psd", xmin=0, xmax=5, show_plot=True, fig_num=2)
+# comparing F&B sample rate 128 vs 512
+if 1==0:
+    xmin = 0
+    xmax = 5
+    t_win=32
+    filename = "F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # load apc data
+    with open(filepath + filename, 'rb') as picklefile:
+        vod = pickle.load(picklefile)
+        assert isinstance(vod, Vodscillator)
+
+    # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=False, fig_num=1)
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=128, t_win=32, show_plot=False, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 128")
+
+
+    filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # load apc data
+    with open(filepath + filename, 'rb') as picklefile:
+        vod = pickle.load(picklefile)
+
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=32, fig_num=2, xmin=xmin, xmax=xmax, wf_title="SR = 512")
+
+    # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=True, fig_num=2)
 
 # psd + coherence of vodscillators
 if 1==0:

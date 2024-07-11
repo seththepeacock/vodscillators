@@ -25,7 +25,7 @@ def get_windowed_fft(wf, sample_rate, t_win, num_wins=None):
   # get sample_spacing
   sample_spacing = 1/sample_rate
   # calculate number of windows (unless it's passed in)
-  if not num_wins:
+  if num_wins is None:
     wf_tf = len(wf) / sample_rate
     num_wins = int(wf_tf / t_win)
 
@@ -69,7 +69,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
         If you want to avoide recalculating the windowed fft, pass it in here!
   """
   # if you passed the windowed_fft in then we'll skip over to the else statement
-  if not windowed_fft:
+  if windowed_fft is None:
     freq_ax, windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
   else:
     # ...and we'll calculate the fft_freq manually
@@ -78,8 +78,9 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
     freq_ax = rfftfreq(num_win_pts, sample_spacing)
     
   # calculate necessary params from the windowed_fft
-  num_wins = np.size(windowed_fft, 0)
-  num_freq_pts = np.size(windowed_fft, 1)
+  wfft_size = np.shape(windowed_fft)
+  num_wins = wfft_size[0]
+  num_freq_pts = wfft_size[1]
 
   # get num_win_pts
   num_win_pts = sample_rate * t_win
@@ -113,7 +114,7 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
         If you want to avoide recalculating the windowed fft, pass it in here!
   """
   # if you passed the windowed_fft in then we'll skip over to the else statement
-  if not windowed_fft:
+  if windowed_fft is None:
     freq_ax, windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
   else:
     # ...and we'll calculate the fft_freq manually
@@ -149,7 +150,7 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
   return freq_ax, coherence
 
 def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
-                     ymin=None, ymax=None, wf_title=None, show_plot=True, do_psd = True, do_coherence = True, fig_num=1):
+                     ymin=None, ymax=None, wf_title=None, show_plot=True, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
   Parameters
@@ -171,50 +172,50 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
         Defaults to 0
       xmax: float, Optional
       ymin: float, Optional
+        Sets the PSD axis
       ymax: float, Optional
+        Sets the PSD axis
       wf_title: String, Optional
         Plot title is: "Phase Coherence and PSD of {wf_title}"
       wf_comp: str, Optional
       show_plot: bool, Optional
         Repress showing plot
-      do_psd: bool, Optional
-        Repress psd part of plot
-      do_coherence: bool, Optional
-        Repress coherence part of plot
-      fig_num: Any, Optional
+      fig_num: int, Optional
 
   """
   # get windowed_fft so we don't have to do it twice below
-  windowed_fft, fft_freqs = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
+  fft_freqs, windowed_fft = get_windowed_fft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
 
   # get PSD
-  psd = get_psd(wf, sample_rate, t_win, windowed_fft=windowed_fft)
+  psd = get_psd(wf, sample_rate, t_win, windowed_fft=windowed_fft)[1]
 
   # get coherence
-  coherence = get_coherence(wf, sample_rate, t_win, windowed_fft=windowed_fft)
+  coherence = get_coherence(wf, sample_rate, t_win, windowed_fft=windowed_fft)[1]
 
   # PLOT!
-  f = fft_freqs / 1000
+  f = fft_freqs
   
-  y1 = psd
   if (db == True):
-    y1 = 10*np.log10(y1)
-  y1 = y1 + psd_shift
-  y2 = max_vec_strength*coherence
+    psd = 20*np.log10(psd)
+  psd = psd + psd_shift
+  coherence = max_vec_strength*coherence
 
-  plt.figure(fig_num)
+  # plt.figure(fig_num)
 
-  if do_psd:
-    # plt.axes().fill_between(f, y1, 0, color='green', alpha=.2)
-    plt.plot(f, y1, color = "green", lw=1, label="Power", alpha=0.7)
+  # get 2 axes for double y axis
+  fig, ax1 = plt.subplots()
+  ax2 = ax1.twinx()
 
-  if do_coherence:
-    plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence')
-  plt.xlabel('Frequency [kHz]')  
-  plt.ylabel(f'Power [dB] / Vector Strength [max = {max_vec_strength}]')
-  if psd_shift:
-    plt.ylabel(f'Power [dB] + {psd_shift} / Vector Strength [max = {max_vec_strength}]')
-  plt.legend() 
+  # plot
+  ax1.plot(f, coherence, label=f"Coherence: t_win={t_win}", color='purple')
+  ax2.plot(f, psd, label="PSD", color='r')
+
+  # set labels
+  ax1.set_ylabel('Phase Coherence', color='purple')
+  ax2.set_xlabel('Freq')
+  ax2.set_ylabel('PSD [dB]', color='r')
+  ax1.legend()
+  ax2.legend()
 
   # set title
   if wf_title:
@@ -224,10 +225,12 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
 
   # finally, overwrite any default x and y lims (this does nothing if none were inputted)
   plt.xlim(left = xmin, right = xmax)
-  plt.ylim(bottom = ymin, top = ymax)
+  ax2.set_ylim(bottom = ymin, top = ymax)
   
   if show_plot:
     plt.show()
+
+  
 
   return f, coherence, psd
 
@@ -369,7 +372,7 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
 
   if plot_type == "coherence":
     y = get_coherence_vod(vod, osc)
-    plt.plot(f, y1, color = "purple", lw=5)
+    plt.plot(f, y, color = "purple", lw=1)
     plt.xlabel('Frequency [Hz]')  
     plt.ylabel('Power / Vector Strength')
 
