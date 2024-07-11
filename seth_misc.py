@@ -6,33 +6,34 @@ from plots import *
 from vlodder import *
 import scipy.io
 
-# vod.t_win = vod.t_ss
-# vod.n_win = vod.n_ss
-# vod.save()
+filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# load apc data
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
+    assert isinstance(vod, Vodscillator)
 
+vlodder(vod, "coherence", show_plot=False, fig_num=1, wf_title="128")
 
-# filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
-# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-# # load apc data
-# with open(filepath + filename, 'rb') as picklefile:
-#     vod = pickle.load(picklefile)
-#     assert isinstance(vod, Vodscillator)
-# # nf=1000000
-# # plt.figure(1)
-# # plt.plot(vod.fft_freq, np.log10(vod.SOO_fft[0]/nf))
-# # plt.xlim(0, 10)
-# # plt.ylim(-5, 5)
-# # nf=64
-# # plt.figure(2)
-# # plt.plot(vod.fft_freq, np.log10(vod.SOO_fft[0]/nf))
-# # plt.xlim(0, 10)
+filename = "V&D fig 2A, loc=0.1, glob=0, sr=512.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# load apc data
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
+    assert isinstance(vod, Vodscillator)
 
-# # plt.ylim(-5, 5)
-# # plt.show()
+vlodder(vod, "coherence", show_plot=True, fig_num=2, wf_title="512")
 
-    
-# vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, db=True, wf_title="V&D fig 3A, loc=0.1, glob=0, sr=128, n_factor=1/T")
+# plotting V&D 3A to get sharp peaks
+if 1==0:
+    filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # load apc data
+    with open(filepath + filename, 'rb') as picklefile:
+        vod = pickle.load(picklefile)
+        assert isinstance(vod, Vodscillator)
 
+    vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, db=True, wf_title="V&D fig 3A, loc=0.1, glob=0, sr=128")
 
 # comparing V&D sample rate 128 vs 512
 if 1==0:

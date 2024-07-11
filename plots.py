@@ -2,66 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from vodscillator import *
 from scipy.fft import rfft, rfftfreq
+
 # define helper functions
-
-def NEW_get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
-  """ Gets the windowed fft of the given waveform with given window size
-
-  Parameters
-  ------------
-      wf: array
-        waveform input array
-      sample_rate: int
-        defaults to 44100 
-      t_win: float
-        length (in time) of each window
-      num_wins: int, Optional
-        If this isn't passed, then just get the maximum number of windows of the given size
-
-  """
-  # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
-  if t_shift is None:
-    t_shift=t_win
-  
-  # calculate the 
-  
-  win_starts = np.arange(0, stop, t_shift)
-
-  # if number of windows is passed in, we make sure it's less than the length of win_starts
-  if num_wins is not None:
-    if num_wins > len(win_starts):
-      raise Exception("That's more windows than we can manage! Decrease num_wins!")
-  else:
-    # if no num_wins is passed in, we'll just use the max number of windows
-    num_wins = len(win_starts)
-
-
-  # get sample_spacing
-  sample_spacing = 1/sample_rate
-
-  # calculate num_win_pts
-  num_win_pts = sample_rate * t_win
-
-  # initialize matrix which will hold the windowed waveform
-  windowed_wf = np.zeros((num_wins, num_win_pts))
-  for win in range(num_wins):
-      win_start = win*num_win_pts
-      win_end = (win+1)*num_win_pts
-      # grab the (real part of the) waveform in this window
-      windowed_wf[win, :] = wf[win_start:win_end].real
-
-  # Now we do the ffts!
-
-  # get frequency axis 
-  freq_ax = rfftfreq(num_win_pts, sample_spacing)
-  num_freq_pts = len(freq_ax)
-  # get fft of each window
-  windowed_fft = np.zeros((num_wins, num_freq_pts), dtype=complex)
-  for win in range(num_wins):
-    windowed_fft[win, :] = rfft(windowed_wf[win, :])
-  
-  return freq_ax, windowed_fft
-
 def get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
   """ Gets the windowed fft of the given waveform with given window size
 
@@ -80,37 +22,59 @@ def get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
   # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
   if t_shift is None:
     t_shift=t_win
+  
+  # calculate the number of samples in the window
+    # + 1 is because if you have SR=2 and you want a two second window, this will take 5 samples!
+  n_win = t_win*sample_rate + 1
 
-  # calculate number of windows (unless it's passed in)
-  if num_wins is None:
-    wf_tf = len(wf) / sample_rate
-    num_wins = int(wf_tf / t_win)
+  # and the number of samples to shift
+    # no + 1 here; if you want to shift it over one second and SR=2, that will be two samples
+  n_shift = t_shift*sample_rate
 
   # get sample_spacing
   sample_spacing = 1/sample_rate
 
-  # calculate num_win_pts
-  num_win_pts = sample_rate * t_win
+  # first, get the last index of the waveform
+  final_wf_index = len(wf) - 1
+    # - 1 is because of zero-indexing!
+  # next, we get what we would be the largest potential win_start_index
+  final_win_start_index = final_wf_index - (n_win-1)
+    # start at the final_wf_index. we need to collect n_win points. this final index is our first one, and then we need n_win - 1 more. 
+    # So we march back n_win-1 points, and then THAT is the last_potential_win_start_index!
+  win_start_indices = np.arange(0, final_win_start_index + 1, n_shift)
+    # the + 1 here is because np.arange won't ever include the "stop" argument in the output array... but it could include (stop - 1) which is just our final_win_start_index!
 
-  # initialize matrix which will hold the windowed waveform
-  windowed_wf = np.zeros((num_wins, num_win_pts))
-  for win in range(num_wins):
-      win_start = win*num_win_pts
-      win_end = (win+1)*num_win_pts
-      # grab the (real part of the) waveform in this window
-      windowed_wf[win, :] = wf[win_start:win_end].real
+  # if number of windows is passed in, we make sure it's less than the length of win_start_indices
+  if num_wins is not None:
+    if num_wins > len(win_start_indices):
+      raise Exception("That's more windows than we can manage! Decrease num_wins!")
+  else:
+    # if no num_wins is passed in, we'll just use the max number of windows
+    num_wins = len(win_start_indices)
+
+  windowed_wf = np.zeros((num_wins, n_win))
+
+  for k in range(num_wins):
+        win_start = win_start_indices[k]
+        win_end = win_start + n_win
+        # grab the (real part of the) waveform in this window
+        windowed_wf[k, :] = wf[win_start:win_end].real
+        # note this grabs the wf at indices win_start, win_start+1, ..., win_end-1
+          # if there are 4 samples and t_win=t_shift=1 and SR=1, then n_win=2, n_shift=1 and
+          # Thus the first window will be samples 0 and 1, the next 1 and 2...
 
   # Now we do the ffts!
 
   # get frequency axis 
-  freq_ax = rfftfreq(num_win_pts, sample_spacing)
+  freq_ax = rfftfreq(n_win, sample_spacing)
   num_freq_pts = len(freq_ax)
   # get fft of each window
   windowed_fft = np.zeros((num_wins, num_freq_pts), dtype=complex)
-  for win in range(num_wins):
-    windowed_fft[win, :] = rfft(windowed_wf[win, :])
+  for k in range(num_wins):
+    windowed_fft[k, :] = rfft(windowed_wf[k, :])
   
   return freq_ax, windowed_fft
+
 
 def get_psd(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
   """ Gets the PSD of the given waveform with the given window size

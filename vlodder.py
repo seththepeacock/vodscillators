@@ -270,6 +270,7 @@ def get_psd_vod(vod: Vodscillator, osc=-1, window=-1):
 
   # take the amplitude squared and normalize
   psd = ((np.abs(fft))**2) / (vod.n_win*vod.sample_rate)
+  # hmmm this seems to be what V&D do:
   # psd = ((np.abs(fft))**2) / (vod.t_win)
   
   if window == -1:

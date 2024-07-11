@@ -14,7 +14,7 @@ p = {
 "num_osc" : 80, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
-"freq_dist" : "exp", #linear or exp
+"freq_dist" : "linear", #linear or exp
 "roughness_amp" : 0,
 "omega_0" : 2*np.pi, # char frequency of lowest oscillator [default = 2*np.pi] 
 "omega_N" : 5*(2*np.pi), # char frequency of highest oscillator [default = 5*(2*np.pi)] 
