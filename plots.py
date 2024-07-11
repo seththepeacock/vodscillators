@@ -6,7 +6,7 @@ from vodscillator import *
 from scipy.fft import rfft, rfftfreq
 
 # define helper functions
-def get_windowed_fft(wf, sample_rate, t_win, num_wins=None):
+def get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
   """ Gets the windowed fft of the given waveform with given window size
 
   Parameters
@@ -21,13 +21,17 @@ def get_windowed_fft(wf, sample_rate, t_win, num_wins=None):
         If this isn't passed, then just get the maximum number of windows of the given size
 
   """
-  
-  # get sample_spacing
-  sample_spacing = 1/sample_rate
+  # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
+  if t_shift is None:
+    t_shift=t_win
+
   # calculate number of windows (unless it's passed in)
   if num_wins is None:
     wf_tf = len(wf) / sample_rate
     num_wins = int(wf_tf / t_win)
+
+  # get sample_spacing
+  sample_spacing = 1/sample_rate
 
   # calculate num_win_pts
   num_win_pts = sample_rate * t_win
