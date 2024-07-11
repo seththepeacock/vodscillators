@@ -10,7 +10,9 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 #General Initializing Params
-"name" : "F&B fig 2D, iso, loc=0.1, glob=0, sr=512",
+"name" : "F&B fig 2D, iso, 'beta_sigma': 0.0, 'glob_noise_amp': 0.1, 'loc_noise_amp': 0.1, 'num_intervals': 30, 'num_osc': 50, 'sample_rate': 128",
+
+
 "num_osc" : 50, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
@@ -36,7 +38,7 @@ p = {
 "d_R" : 2.0, # [default = 0.15] --> real part of coupling coefficient
 "d_I" : -2.0, # [default = -1.0] --> imaginary part of coupling coefficient
 "alpha" : 1.0, # [default = 1.0] --> real coefficient for cubic nonlinearity
-"beta_sigma" : 2.0 # [0 = isochronous as in V&D] --> std dev for imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
+"beta_sigma" : 0.0 # [0 = isochronous as in V&D] --> std dev for imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
 }
 
 v = Vodscillator(**p)
