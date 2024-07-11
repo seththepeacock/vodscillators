@@ -10,7 +10,7 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 #General Initializing Params
-"name" : "newpickle",
+"name" : "F&B fig 2D noniso",
 "num_osc" : 50, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 #set_freq
@@ -29,7 +29,7 @@ p = {
 "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_ss" : 64, # length of an interval of ss observation [default = 64 --> n.transient = 8192]
 "num_intervals" : 30, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
-"sample_rate" : 512, #[default = 128]
+"sample_rate" : 128, #[default = 128]
 
 #set_ODE"
 "epsilon" : 1.0, # [default = 1.0] --> control parameter

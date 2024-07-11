@@ -15,7 +15,7 @@ def apc_and_save(vod=Vodscillator, cluster_width=float, t_win=float, amp_weights
 
 # open up a vod
 filepath = "/home/deniz/Dropbox/vodscillators/"
-filename = "F&B fig 2D iso.pkl"
+filename = "F&B fig 2D noniso.pkl"
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
@@ -30,7 +30,7 @@ num_wins=100
 # start with a pretty big cluster_width (THIS IS BETTER THAN 0.01 or 0.001)
 cluster_width=0.1
 
-t_win=1/2
+t_win=1
 amp_weights=True
 # run fx to get apc and save to a lil pickle
 apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
