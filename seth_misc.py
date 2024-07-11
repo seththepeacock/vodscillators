@@ -12,9 +12,18 @@ filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
 
-vlodder(vod, "psd", xmin=0, xmax=5)
+print(vod)
+# vlodder(vod, "psd", xmin=0, xmax=5, show_plot=False, fig_num=1)
 
-# psd + coherence of vodscillators with
+# filename = "F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
+# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# # load apc data
+# with open(filepath + filename, 'rb') as picklefile:
+#     vod = pickle.load(picklefile)
+
+# vlodder(vod, "psd", xmin=0, xmax=5, show_plot=True, fig_num=2)
+
+# psd + coherence of vodscillators
 if 1==0:
     # Open pickled vodscillator
     filename = "V&D fig 2A.pkl"
