@@ -19,4 +19,17 @@ with open(filepath + filename, 'rb') as picklefile:
     assert isinstance(vod, Vodscillator)
 
 
+
+filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
+filename = "F&B fig 2D noniso.pkl"
+
+with open(filepath + filename, 'rb') as picklefile:
+    vod2 = pickle.load(picklefile)
+    # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+    assert isinstance(vod, Vodscillator)
+
+
+
+#toprint = [(i, vod.params()[i], vod2.params()[i]) for i in vod.params().keys() if vod.params()[i] != vod2.params()[i]]
+
 pp.pprint(vod.params())

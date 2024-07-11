@@ -24,12 +24,12 @@ p = {
 
 #gen_noise
 "loc_noise_amp" : 0.1, #amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
-"glob_noise_amp" : 0, #amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
+"glob_noise_amp" : 0.1, #amplitude (sigma value) for global noise [0 --> off, default = 0.1-5]
 "ti" : 0, # start time; [default = 0]
 "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_ss" : 64, # length of an interval of ss observation [default = 64 --> n.transient = 8192]
-"num_intervals" : 30, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
-"sample_rate" : 512, #[default = 128]
+"num_intervals" : 15, # [default for no noise is 1; when we have noise we average over multiple intervals, default = 30]
+"sample_rate" : 1024, #[default = 128]
 
 #set_ODE"
 "epsilon" : 1.0, # [default = 1.0] --> control parameter
