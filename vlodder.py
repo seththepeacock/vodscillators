@@ -18,7 +18,7 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
       (if window=-1, takes the average over all windows, otherwise just takes the psd of that window)
       (if osc=-1, adds up fft of each oscillator and then takes PSD);
     "pre_psd" takes PSD of each oscillator and THEN plots the sum of the PSDs;
-    "superimpose" plots phase coherence and PSD;
+    "coherence_vs_psd" plots phase coherence and PSD;
     "wf" plots a waveform
   osc: int, Optional
   xmin: float, Optional
@@ -49,24 +49,44 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
   # initialize figure (with fig_num if you're making multiple plots)
   plt.figure(fig_num)
 
-  if plot_type == "superimpose":
-    y1 = 10*np.log10(get_psd_vod(vod, osc))
-    y2 = get_coherence_vod(vod, osc)
-    plt.plot(f, y1, color = "red", lw=1, label="Power")
-    plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence')
-    plt.xlabel('Frequency [Hz]')  
-    plt.ylabel(f'Power [dB] / Vector Strength]')
-    plt.legend() 
+  if plot_type == "coherence_vs_psd":
+    psd = get_psd_vod(vod=vod, osc=osc, window=window)
+    coherence = get_coherence_vod(vod=vod, osc=osc)
+    # get 2 axes for double y axis
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    ax1.plot(f, coherence, label=f"Coherence", color='purple')
+    ax2.plot(f, psd, label="PSD", color='r')
+
+    # set labels
+    ax1.set_ylabel('Phase Coherence', color='purple')
+    ax2.set_xlabel('Freq')
+    ax2.set_ylabel('PSD [dB]', color='r')
+    ax1.legend()
+    ax2.legend()
 
     # set title
-    title = "Phase Coherence and PSD of "
-    if osc == -1:
-      title = title + "Summed Response"
-    else:
-      title = title (f"Oscillator #{osc}")
     if wf_title:
-      title = title + f": {wf_title}"
-    plt.title(title)
+      plt.title(f"Phase Coherence and PSD of {wf_title}")
+    else:
+      plt.title("Phase Coherence and PSD of Waveform")
+      y1 = 10*np.log10(get_psd_vod(vod, osc))
+      y2 = get_coherence_vod(vod, osc)
+      plt.plot(f, y1, color = "red", lw=1, label="Power")
+      plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence')
+      plt.xlabel('Frequency [Hz]')  
+      plt.ylabel(f'Power [dB] / Vector Strength]')
+      plt.legend() 
+
+      # set title
+      title = "Phase Coherence and PSD of "
+      if osc == -1:
+        title = title + "Summed Response"
+      else:
+        title = title (f"Oscillator #{osc}")
+      if wf_title:
+        title = title + f": {wf_title}"
+      plt.title(title)
 
   if plot_type == "psd":
     y = get_psd_vod(vod=vod, osc=osc, window=window)

@@ -231,7 +231,7 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
   plt.figure(fig_num)
 
   # get 2 axes for double y axis
-  fig, ax1 = plt.subplots()
+  ax1 = plt.subplots()[1]
   ax2 = ax1.twinx()
 
   # plot
