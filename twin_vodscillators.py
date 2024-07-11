@@ -26,7 +26,7 @@ class TwinVodscillators:
         vod_params = np.empty(2, 7)
         i = 0
         for v in [s.vl, s.vr]:
-            vod_params[i, :] = [v.sample_rate, v.ti, v.tf, v.t_transient, v.t_ss, v.num_intervals, v.tpoints]
+            vod_params[i, :] = [v.sample_rate, v.ti, v.tf, v.t_transient, v.t_win, v.num_intervals, v.tpoints]
             i = 1
         # if they agree, set all of the TV's parameters to them
         if all(vod_params[0, :] == vod_params[1, :]):
@@ -35,9 +35,9 @@ class TwinVodscillators:
             s.ti = vl.ti
             s.tf = vl.tf
             s.t_transient = vl.t_transient
-            s.t_ss = vl.t_ss
+            s.t_ss = vl.t_win
             s.n_transient = vl.n_transient
-            s.n_ss = vl.n_ss
+            s.n_win = vl.n_win
             s.num_intervals = vl.num_intervals
             s.tpoints = vl.tpoints
         else:
@@ -134,9 +134,9 @@ class TwinVodscillators:
         AOI = Averaged Over Intervals (for noise)
 
         """
-        # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_ss), 
+        # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_win), 
         # and sample spacing (h) tells it what these frequencies correspond to in terms of real time 
-        s.fft_freq = rfftfreq(s.n_ss, s.delta_t)
+        s.fft_freq = rfftfreq(s.n_win, s.delta_t)
         s.num_freq_points = len(s.fft_freq)
         
         # compute the (r)fft for all oscillators individually and store them in "every_fft"
@@ -146,8 +146,8 @@ class TwinVodscillators:
         for interval in range(s.num_intervals):
             for osc in range(s.num_osc):
                 # calculate fft
-                n_start = interval * s.n_ss
-                n_stop = (interval + 1) * s.n_ss
+                n_start = interval * s.n_win
+                n_stop = (interval + 1) * s.n_win
                 s.every_fft[osc, interval, :] = rfft((s.ss_sol[osc, n_start:n_stop]).real)
 
         # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
