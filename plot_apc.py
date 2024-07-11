@@ -4,6 +4,7 @@ import numpy as np
 import timeit
 import pickle
 from plots import *
+from vlodder import *
 
 #/home/deniz/Dropbox/vodscillators/cluster_width=0.1, num_wins=100, t_win=0.5, amp_weights=False.pkl
 

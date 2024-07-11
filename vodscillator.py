@@ -103,7 +103,8 @@ class Vodscillator:
     # Calculate other params
     s.delta_t = 1/s.sample_rate #delta t between time points
     s.n_transient = s.t_transient * s.sample_rate # num of time points corresponding to t_transient
-    s.n_win = s.t_win * s.sample_rate # num of time points corresponding to t_win
+    s.n_win = s.t_win * s.sample_rate + 1 # num of time points corresponding to t_win 
+      # NOTE the + 1 is a recent addition! if sample_rate=1, we need 2 samples to describe a 1 second
     s.tf = s.t_transient + s.num_intervals * s.t_win
     
     # We want a global xi(t) and then one for each oscillator. 

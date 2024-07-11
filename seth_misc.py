@@ -6,33 +6,34 @@ from plots import *
 from vlodder import *
 import scipy.io
 
-# vod.t_win = vod.t_ss
-# vod.n_win = vod.n_ss
-# vod.save()
+filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# load apc data
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
+    assert isinstance(vod, Vodscillator)
 
+vlodder(vod, "coherence", show_plot=False, fig_num=1, wf_title="128")
 
-# filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
-# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-# # load apc data
-# with open(filepath + filename, 'rb') as picklefile:
-#     vod = pickle.load(picklefile)
-#     assert isinstance(vod, Vodscillator)
-# # nf=1000000
-# # plt.figure(1)
-# # plt.plot(vod.fft_freq, np.log10(vod.SOO_fft[0]/nf))
-# # plt.xlim(0, 10)
-# # plt.ylim(-5, 5)
-# # nf=64
-# # plt.figure(2)
-# # plt.plot(vod.fft_freq, np.log10(vod.SOO_fft[0]/nf))
-# # plt.xlim(0, 10)
+filename = "V&D fig 2A, loc=0.1, glob=0, sr=512.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# load apc data
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
+    assert isinstance(vod, Vodscillator)
 
-# # plt.ylim(-5, 5)
-# # plt.show()
+vlodder(vod, "coherence", show_plot=True, fig_num=2, wf_title="512")
 
-    
-# vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, db=True, wf_title="V&D fig 3A, loc=0.1, glob=0, sr=128, n_factor=1/T")
+# plotting V&D 3A to get sharp peaks
+if 1==0:
+    filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # load apc data
+    with open(filepath + filename, 'rb') as picklefile:
+        vod = pickle.load(picklefile)
+        assert isinstance(vod, Vodscillator)
 
+    vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, db=True, wf_title="V&D fig 3A, loc=0.1, glob=0, sr=128")
 
 # comparing V&D sample rate 128 vs 512
 if 1==0:
@@ -61,7 +62,7 @@ if 1==0:
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=True, fig_num=2)
 
 # comparing F&B sample rate 128 vs 512
-if 1==1:
+if 1==0:
     xmin = 0
     xmax = 5
     # ymin = -60
@@ -71,7 +72,7 @@ if 1==1:
     ymin = None
     ymax = None
     t_win=64
-    filename = "F&B fig 2D, iso, loc=0.1, glob=0.pkl"
+    filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=128.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     # load apc data
     with open(filepath + filename, 'rb') as picklefile:
@@ -81,14 +82,14 @@ if 1==1:
     coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=128, t_win=t_win, ymin=ymin, ymax=ymax, show_plot=True, do_coherence=False,fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's iso, loc=0.1, glob=0: SR = 128")
 
 
-    # filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
-    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    # # load apc data
-    # with open(filepath + filename, 'rb') as picklefile:
-    #     vod = pickle.load(picklefile)
-    #     assert isinstance(vod, Vodscillator)
+    filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # load apc data
+    with open(filepath + filename, 'rb') as picklefile:
+        vod = pickle.load(picklefile)
+        assert isinstance(vod, Vodscillator)
 
-    # coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=1, ymin=ymin, ymax=ymax,xmin=xmin, do_coherence=False,xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 512")
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=1, ymin=ymin, ymax=ymax,xmin=xmin, do_coherence=False,xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 512")
 
 # psd + coherence of vodscillators
 if 1==0:

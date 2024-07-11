@@ -3,67 +3,6 @@ import matplotlib.pyplot as plt
 from vodscillator import *
 
 # Vlodder helper functions:
-def get_coherence_vod(vod: Vodscillator, osc=-1):
-  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
-  # defaults to osc = -1 which is the sum of oscillators
-  if osc == -1:
-    wf = vod.SOO_fft[:, :]
-  else:
-    wf = vod.every_fft[osc, :, :]
-  
-  # get phases
-  phases = np.angle(wf)
-  # initialize array for phase diffs
-  phase_diffs = np.zeros((vod.num_intervals - 1, vod.num_freq_points))
-  
-  for interval in range(0, vod.num_intervals - 1):
-    # take the difference between the phases in this current interval and the next
-    phase_diffs[interval] = phases[interval + 1] - phases[interval]
-
-  # get the average sin and cos of the phase diffs
-  xx= np.mean(np.sin(phase_diffs),axis=0)
-  yy= np.mean(np.cos(phase_diffs),axis=0)
-
-  # finally, output the vector strength (for each frequency)
-  return np.sqrt(xx**2 + yy**2)
-
-def get_psd_vod(vod: Vodscillator, osc=-1, window=-1):
-  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
-  if osc == -1:
-    # if osc = -1 (the default) we want the summed (SOO) response!
-    fft = vod.SOO_fft[:, :]
-  else:
-    fft = vod.every_fft[osc, :, :]
-
-  # take the amplitude squared and normalize
-  psd = ((np.abs(fft))**2) / (vod.n_win*vod.sample_rate)
-  # psd = ((np.abs(fft))**2) / (vod.t_win)
-  
-  if window == -1:
-    # average over windows
-    psd = np.mean(psd, 0)
-  else:
-    psd = psd[window]
-  return psd
-
-
-def get_amps_vod(vod: Vodscillator, osc=-1, window=-1):
-  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
-  if osc == -1:
-    # if osc = -1 (the default) we want the summed (SOO) response!
-    wf = vod.SOO_fft[:, :]
-  else:
-    wf = vod.every_fft[osc, :, :]
-  # take the amplitude squared and normalize
-  amps = np.abs(wf)
-  if window == -1:
-    # average over windows
-    amps = np.mean(amps, 0)
-  else:
-    # pick a average
-    amps = amps[window]
-  return amps
-
 def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=None, ymin=None, ymax=None, db=True, psd_shift=0, wf_comp="re", 
                    wf_ss=False, show_plot=True, fig_num=1, wf_title=None):
   """ Plots various plots from Vodscillator
@@ -295,3 +234,66 @@ def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True):
   plt.xlabel("Oscillator index")
   plt.ylabel("Frequency (Hz)")
   plt.title("Heat Map of Frequency Clusters")
+
+
+def get_coherence_vod(vod: Vodscillator, osc=-1):
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  # defaults to osc = -1 which is the sum of oscillators
+  if osc == -1:
+    wf = vod.SOO_fft[:, :]
+  else:
+    wf = vod.every_fft[osc, :, :]
+  
+  # get phases
+  phases = np.angle(wf)
+  # initialize array for phase diffs
+  phase_diffs = np.zeros((vod.num_intervals - 1, vod.num_freq_points))
+  
+  for interval in range(0, vod.num_intervals - 1):
+    # take the difference between the phases in this current interval and the next
+    phase_diffs[interval] = phases[interval + 1] - phases[interval]
+
+  # get the average sin and cos of the phase diffs
+  xx= np.mean(np.sin(phase_diffs),axis=0)
+  yy= np.mean(np.cos(phase_diffs),axis=0)
+
+  # finally, output the vector strength (for each frequency)
+  return np.sqrt(xx**2 + yy**2)
+
+def get_psd_vod(vod: Vodscillator, osc=-1, window=-1):
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  if osc == -1:
+    # if osc = -1 (the default) we want the summed (SOO) response!
+    fft = vod.SOO_fft[:, :]
+  else:
+    fft = vod.every_fft[osc, :, :]
+
+  # take the amplitude squared and normalize
+  psd = ((np.abs(fft))**2) / (vod.n_win*vod.sample_rate)
+  # hmmm this seems to be what V&D do:
+  # psd = ((np.abs(fft))**2) / (vod.t_win)
+  
+  if window == -1:
+    # average over windows
+    psd = np.mean(psd, 0)
+  else:
+    psd = psd[window]
+  return psd
+
+
+def get_amps_vod(vod: Vodscillator, osc=-1, window=-1):
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  if osc == -1:
+    # if osc = -1 (the default) we want the summed (SOO) response!
+    wf = vod.SOO_fft[:, :]
+  else:
+    wf = vod.every_fft[osc, :, :]
+  # take the amplitude squared and normalize
+  amps = np.abs(wf)
+  if window == -1:
+    # average over windows
+    amps = np.mean(amps, 0)
+  else:
+    # pick a average
+    amps = amps[window]
+  return amps
