@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from vodscillator import *
 from scipy.fft import rfft, rfftfreq
-
-
 # define helper functions
 
 def NEW_get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
@@ -25,6 +23,7 @@ def NEW_get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
   if t_shift is None:
     t_shift=t_win
   
+  # calculate the 
   
   win_starts = np.arange(0, stop, t_shift)
 
@@ -35,11 +34,6 @@ def NEW_get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
   else:
     # if no num_wins is passed in, we'll just use the max number of windows
     num_wins = len(win_starts)
-
-
-
-
-
 
 
   # get sample_spacing
