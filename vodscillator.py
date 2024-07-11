@@ -216,11 +216,16 @@ class Vodscillator:
   def __str__(s):
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
   
-  def params(s):
+  def params(s, paramlist=None):
     params = vars(s)
     entries_to_remove = ('omegas', 'ICs', 'betas', 'tpoints', 'xi_glob', 'xi_loc', 'sol', 'SOO_sol', 'fft_freq', 'every_fft', 'SOO_fft')
     for k in entries_to_remove:
       params.pop(k, None)
+    if paramlist != None:
+      r = dict()
+      for k in paramlist:
+        r[k] = params[k]
+      return r
     return params
 
 
