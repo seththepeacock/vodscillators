@@ -96,15 +96,15 @@ class Vodscillator:
     s.sample_rate = p["sample_rate"] # [default = 128]
     s.ti = p["ti"] # start time; [default = 0]
     s.t_transient = p["t_transient"] # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
-    s.t_ss = p["t_ss"] # length of an interval of ss observation [default = 64 --> n.transient = 8192]
+    s.t_win = p["t_win"] # length of an interval of ss observation [default = 64 --> n.transient = 8192]
     s.num_intervals = p["num_intervals"] # [default for no noise is 1; with noise we must average over multiple intervals]
 
 
     # Calculate other params
     s.delta_t = 1/s.sample_rate #delta t between time points
     s.n_transient = s.t_transient * s.sample_rate # num of time points corresponding to t_transient
-    s.n_ss = s.t_ss * s.sample_rate # num of time points corresponding to t_ss
-    s.tf = s.t_transient + s.num_intervals * s.t_ss
+    s.n_win = s.t_win * s.sample_rate # num of time points corresponding to t_win
+    s.tf = s.t_transient + s.num_intervals * s.t_win
     
     # We want a global xi(t) and then one for each oscillator. 
 
@@ -173,9 +173,9 @@ class Vodscillator:
     AOI = Averaged Over Intervals (for noise)
 
     """
-    # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_ss), 
+    # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_win), 
     # and sample spacing (h) tells it what these frequencies correspond to in terms of real time 
-    s.fft_freq = rfftfreq(s.n_ss, s.delta_t)
+    s.fft_freq = rfftfreq(s.n_win, s.delta_t)
     s.num_freq_points = len(s.fft_freq)
     
     # compute the (r)fft for all oscillators individually and store them in "every_fft"
@@ -187,8 +187,8 @@ class Vodscillator:
     for interval in range(s.num_intervals):
       for osc in range(s.num_osc):
         # calculate fft
-        n_start = interval * s.n_ss
-        n_stop = (interval + 1) * s.n_ss
+        n_start = interval * s.n_win
+        n_stop = (interval + 1) * s.n_win
         s.every_fft[osc, interval, :] = rfft((ss_sol[osc, n_start:n_stop]).real)
 
     # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)

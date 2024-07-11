@@ -8,14 +8,14 @@ import scipy.io
 
 
 
-# filename = "V&D fig 2A, loc=0.1, glob=0.pkl"
-# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-# # load apc data
-# with open(filepath + filename, 'rb') as picklefile:
-#     vod = pickle.load(picklefile)
-#     assert isinstance(vod, Vodscillator)
+filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
+filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# load apc data
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
+    assert isinstance(vod, Vodscillator)
     
-# vlodder(vod, "psd", window=1)
+vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, ymin=0, ymax=20, db=True, real_wf_only=True)
 
 
 # comparing V&D sample rate 128 vs 512

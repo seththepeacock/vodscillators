@@ -5,8 +5,72 @@ import timeit
 from vodscillator import *
 from scipy.fft import rfft, rfftfreq
 
+
 # define helper functions
+
 def get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
+  """ Gets the windowed fft of the given waveform with given window size
+
+  Parameters
+  ------------
+      wf: array
+        waveform input array
+      sample_rate: int
+        defaults to 44100 
+      t_win: float
+        length (in time) of each window
+      num_wins: int, Optional
+        If this isn't passed, then just get the maximum number of windows of the given size
+
+  """
+  # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
+  if t_shift is None:
+    t_shift=t_win
+  
+  
+  win_starts = np.arange(0, stop, t_shift)
+
+  # if number of windows is passed in, we make sure it's less than the length of win_starts
+  if num_wins is not None:
+    if num_wins > len(win_starts):
+      raise Exception("That's more windows than we can manage! Decrease num_wins!")
+  else:
+    # if no num_wins is passed in, we'll just use the max number of windows
+    num_wins = len(win_starts)
+
+
+
+
+
+
+
+  # get sample_spacing
+  sample_spacing = 1/sample_rate
+
+  # calculate num_win_pts
+  num_win_pts = sample_rate * t_win
+
+  # initialize matrix which will hold the windowed waveform
+  windowed_wf = np.zeros((num_wins, num_win_pts))
+  for win in range(num_wins):
+      win_start = win*num_win_pts
+      win_end = (win+1)*num_win_pts
+      # grab the (real part of the) waveform in this window
+      windowed_wf[win, :] = wf[win_start:win_end].real
+
+  # Now we do the ffts!
+
+  # get frequency axis 
+  freq_ax = rfftfreq(num_win_pts, sample_spacing)
+  num_freq_pts = len(freq_ax)
+  # get fft of each window
+  windowed_fft = np.zeros((num_wins, num_freq_pts), dtype=complex)
+  for win in range(num_wins):
+    windowed_fft[win, :] = rfft(windowed_wf[win, :])
+  
+  return freq_ax, windowed_fft
+
+def OLD_get_windowed_fft(wf, sample_rate, t_win, t_shift=None, num_wins=None):
   """ Gets the windowed fft of the given waveform with given window size
 
   Parameters
@@ -240,8 +304,6 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
   if show_plot:
     plt.show()
 
-  
-
   return f, coherence, psd
 
 
@@ -282,23 +344,39 @@ def get_psd_vod(vod: Vodscillator, osc=-1, window=-1):
   # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
   if osc == -1:
     # if osc = -1 (the default) we want the summed (SOO) response!
-    wf = vod.SOO_fft[:, :]
+    fft = vod.SOO_fft[:, :]
   else:
-    wf = vod.every_fft[osc, :, :]
+    fft = vod.every_fft[osc, :, :]
 
   # take the amplitude squared and normalize
-  psd = ((np.abs(wf))**2) / (vod.sample_rate * vod.n_ss)
+  psd = ((np.abs(fft))**2) / (vod.t_win)
   
   if window == -1:
     # average over windows
     psd = np.mean(psd, 0)
   else:
     psd = psd[window]
-    
-  
   return psd
 
-def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=None, ymin=None, ymax=None, wf_comp="re", 
+
+def get_amps_vod(vod: Vodscillator, osc=-1, window=-1):
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  if osc == -1:
+    # if osc = -1 (the default) we want the summed (SOO) response!
+    wf = vod.SOO_fft[:, :]
+  else:
+    wf = vod.every_fft[osc, :, :]
+  # take the amplitude squared and normalize
+  amps = np.abs(wf)
+  if window == -1:
+    # average over windows
+    amps = np.mean(amps, 0)
+  else:
+    # pick a average
+    amps = amps[window]
+  return amps
+
+def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=None, ymin=None, ymax=None, db=True, wf_comp="re", 
                     wf_ss=False, show_plot=True, fig_num=1):
   """ Plots various plots from Vodscillator
 
@@ -322,6 +400,8 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
   xmax: float, Optional
   ymin: float, Optional
   ymax: float, Optional
+  db: bool, Optional
+    Choose whether PSD plots are on a dB scale
   wf_comp: str, Optional
     Which component of waveform signal to plot: "re" or "im" for real or imaginary, respectively
   wf_ss: boolean, Optional
@@ -342,12 +422,11 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
 
   if plot_type == "superimpose":
     y1 = 10*np.log10(get_psd_vod(vod, osc))
-    phase_coherence_max = 10
-    y2 = phase_coherence_max*get_coherence_vod(vod, osc)
+    y2 = get_coherence_vod(vod, osc)
     plt.plot(f, y1, color = "red", lw=1, label="Power")
     plt.plot(f, y2, color = "purple", lw=1, label='Phase Coherence')
     plt.xlabel('Frequency [Hz]')  
-    plt.ylabel(f'Power [dB] / Vector Strength [max = {phase_coherence_max}]')
+    plt.ylabel(f'Power [dB] / Vector Strength]')
     plt.legend() 
 
     # set title
@@ -357,21 +436,43 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
       plt.title(f"Phase Coherence and PSD of Oscillator #{osc}")
 
   if plot_type == "psd":
-    y = 10*np.log10(get_psd_vod(vod=vod, osc=osc, window=window))
+    y = get_psd_vod(vod=vod, osc=osc, window=window, real_wf_only=real_wf_only)
+    if db:              
+      y = 10*np.log10(y)
     plt.plot(f, y, color = "red", lw=1)
-    plt.ylabel('Density')
+    if db:
+      plt.ylabel('PSD [dB]')
+    else: 
+      plt.ylabel('PSD')
     plt.xlabel('Frequency')
     # set title
     if osc == -1:
       plt.title("Power Spectral Density of Summed Response")
     else:
       plt.title(f"Power Spectral Density of Oscillator #{osc}")
+
+  if plot_type == "amps":
+    y = get_amps_vod(vod=vod, osc=osc, window=window)
+    if db:              
+      y = 20*np.log10(y)
+    plt.plot(f, y, color = "red", lw=1)
+    if db:
+      plt.ylabel('Amplitude [dB]')
+    else: 
+      plt.ylabel('Amplitude')
+    plt.xlabel('Frequency')
+    # set title
+    if osc == -1:
+      plt.title("Amplitude Spectrum of Summed Response")
+    else:
+      plt.title(f"Amplitude Spectrum of Oscillator #{osc}")
   
   if plot_type == "pre_psd":
-    sum = 0
+    y = 0
     for k in range(vod.num_osc):
-      sum += get_psd_vod(vod, k)
-    y = 10*np.log10(sum)
+      y += get_psd_vod(vod, k)
+    if db:
+      y = 10*np.log10(y)
     plt.plot(f, y, color = "red", lw=1)
     plt.ylabel('Density')
     plt.xlabel('Frequency')
