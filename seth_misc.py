@@ -48,6 +48,12 @@ if 1==0:
 if 1==1:
     xmin = 0
     xmax = 5
+    # ymin = -60
+    # ymax = 60
+    # xmin = None
+    # xmax = None
+    ymin = None
+    ymax = None
     t_win=64
     filename = "F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
@@ -57,7 +63,7 @@ if 1==1:
         assert isinstance(vod, Vodscillator)
 
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=False, fig_num=1)
-    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=128, t_win=t_win, show_plot=False, fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's Non-Iso: SR = 128")
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=128, t_win=t_win, ymin=ymin, ymax=ymax, show_plot=False, do_coherence=False,fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 128")
 
 
     filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
@@ -67,7 +73,7 @@ if 1==1:
         vod = pickle.load(picklefile)
         assert isinstance(vod, Vodscillator)
 
-    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's Non-Iso: SR = 512")
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=1, ymin=ymin, ymax=ymax,xmin=xmin, do_coherence=False,xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 512")
 
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=True, fig_num=2)
 
