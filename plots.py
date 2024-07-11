@@ -436,7 +436,7 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
       plt.title(f"Phase Coherence and PSD of Oscillator #{osc}")
 
   if plot_type == "psd":
-    y = get_psd_vod(vod=vod, osc=osc, window=window, real_wf_only=real_wf_only)
+    y = get_psd_vod(vod=vod, osc=osc, window=window)
     if db:              
       y = 10*np.log10(y)
     plt.plot(f, y, color = "red", lw=1)

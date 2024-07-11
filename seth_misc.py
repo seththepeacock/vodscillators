@@ -14,8 +14,13 @@ filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
     assert isinstance(vod, Vodscillator)
+
+vod.t_win = vod.t_ss
+vod.n_win = vod.n_ss
+vod.save()
+
     
-vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, ymin=0, ymax=20, db=True, real_wf_only=True)
+vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, ymin=0, ymax=20, db=True)
 
 
 # comparing V&D sample rate 128 vs 512
