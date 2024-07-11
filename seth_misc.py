@@ -45,7 +45,7 @@ if 1==0:
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=True, fig_num=2)
 
 # comparing F&B sample rate 128 vs 512
-if 1==1:
+if 1==0:
     xmin = 0
     xmax = 5
     # ymin = -60
