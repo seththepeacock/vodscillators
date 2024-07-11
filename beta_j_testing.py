@@ -8,7 +8,7 @@ import scipy.io
 from vlodder import *
 
 filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
-filename = "F&B fig 2D noniso.pkl"
+filename = "FB_sr_512_noniso.pkl"
 
 
 with open(filepath + filename, 'rb') as picklefile:
@@ -27,5 +27,5 @@ plt.figure()
 plt.plot(oscillators, beta_j_list)
 plt.xlabel("Oscillator index")
 plt.ylabel("beta_j")
-plt.title(filename)
+plt.title("deniz " + filename)
 plt.show()
