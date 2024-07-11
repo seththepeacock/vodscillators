@@ -5,7 +5,7 @@ from scipy.integrate import solve_ivp
 from scipy.fft import rfft, rfftfreq
 from scipy.signal import hilbert
 from itertools import combinations
-   
+import pandas as pd   
 
 class Vodscillator:
   """
@@ -215,6 +215,13 @@ class Vodscillator:
 
   def __str__(s):
     return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
+  
+  def params(s):
+    params = vars(s)
+    entries_to_remove = ('omegas', 'ICs', 'betas', 'tpoints', 'xi_glob', 'xi_loc', 'sol', 'SOO_sol', 'fft_freq', 'every_fft', 'SOO_fft')
+    for k in entries_to_remove:
+      params.pop(k, None)
+    return params
 
 
   def analytic_phase_coherence(s, cluster_width=0.005, f_min=0.0, f_max=10.0, f_resolution=0.001, num_wins=100, t_win=1, amp_weights=True):
