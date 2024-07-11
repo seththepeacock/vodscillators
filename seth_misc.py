@@ -6,6 +6,9 @@ import pickle
 from plots import *
 import scipy.io
 
+# vod.t_win = vod.t_ss
+# vod.n_win = vod.n_ss
+# vod.save()
 
 
 filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
@@ -14,13 +17,21 @@ filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
     assert isinstance(vod, Vodscillator)
+# nf=1000000
+# plt.figure(1)
+# plt.plot(vod.fft_freq, np.log10(vod.SOO_fft[0]/nf))
+# plt.xlim(0, 10)
+# plt.ylim(-5, 5)
+# nf=64
+# plt.figure(2)
+# plt.plot(vod.fft_freq, np.log10(vod.SOO_fft[0]/nf))
+# plt.xlim(0, 10)
 
-vod.t_win = vod.t_ss
-vod.n_win = vod.n_ss
-vod.save()
+# plt.ylim(-5, 5)
+# plt.show()
 
     
-vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, ymin=0, ymax=20, db=True)
+vlodder(vod, "psd", window=-1, xmin=0.5, xmax=5.5, fig_num=1, db=True, wf_title="V&D fig 3A, loc=0.1, glob=0, sr=128, n_factor=1/T")
 
 
 # comparing V&D sample rate 128 vs 512
