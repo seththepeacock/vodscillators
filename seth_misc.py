@@ -67,7 +67,7 @@ if 1==1:
         vod = pickle.load(picklefile)
         assert isinstance(vod, Vodscillator)
 
-    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=2, xmin=xmin, xmax=xmax, wf_title="Seth's Non-Iso: SR = 512")
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's Non-Iso: SR = 512")
 
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=True, fig_num=2)
 

@@ -150,7 +150,7 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
   return freq_ax, coherence
 
 def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, psd_shift=0, db=True, xmin=0, xmax=None, 
-                     ymin=None, ymax=None, wf_title=None, show_plot=True, fig_num=1):
+                     ymin=None, ymax=None, wf_title=None, show_plot=True, do_coherence=True, do_psd=True, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
   Parameters
@@ -178,6 +178,10 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
       wf_title: String, Optional
         Plot title is: "Phase Coherence and PSD of {wf_title}"
       wf_comp: str, Optional
+      do_coherence: bool, Optional
+        optionally suppress coherence plot
+      do_psd: bool, Optional
+        optionally suppress PSD plot
       show_plot: bool, Optional
         Repress showing plot
       fig_num: int, Optional
@@ -207,8 +211,10 @@ def coherence_vs_psd(wf, sample_rate, t_win, num_wins=None, max_vec_strength=1, 
   ax2 = ax1.twinx()
 
   # plot
-  ax1.plot(f, coherence, label=f"Coherence: t_win={t_win}", color='purple')
-  ax2.plot(f, psd, label="PSD", color='r')
+  if do_coherence:
+    ax1.plot(f, coherence, label=f"Coherence: t_win={t_win}", color='purple')
+  if do_psd:
+    ax2.plot(f, psd, label="PSD", color='r')
 
   # set labels
   ax1.set_ylabel('Phase Coherence', color='purple')
