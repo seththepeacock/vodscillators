@@ -349,7 +349,8 @@ def get_psd_vod(vod: Vodscillator, osc=-1, window=-1):
     fft = vod.every_fft[osc, :, :]
 
   # take the amplitude squared and normalize
-  psd = ((np.abs(fft))**2) / (vod.t_win)
+  psd = ((np.abs(fft))**2) / (vod.n_win*vod.sample_rate)
+  # psd = ((np.abs(fft))**2) / (vod.t_win)
   
   if window == -1:
     # average over windows
@@ -376,8 +377,8 @@ def get_amps_vod(vod: Vodscillator, osc=-1, window=-1):
     amps = amps[window]
   return amps
 
-def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=None, ymin=None, ymax=None, db=True, wf_comp="re", 
-                    wf_ss=False, show_plot=True, fig_num=1):
+def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=None, ymin=None, ymax=None, db=True, psd_shift=0, wf_comp="re", 
+                   wf_ss=False, show_plot=True, fig_num=1, wf_title=None):
   """ Plots various plots from Vodscillator
 
   Parameters
@@ -393,7 +394,6 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
     "pre_psd" takes PSD of each oscillator and THEN plots the sum of the PSDs;
     "superimpose" plots phase coherence and PSD;
     "wf" plots a waveform
-  
   osc: int, Optional
   xmin: float, Optional
     Defaults to 0
@@ -402,6 +402,8 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
   ymax: float, Optional
   db: bool, Optional
     Choose whether PSD plots are on a dB scale
+  psd_shift: any, Optional
+    Shifts the whole PSD plot
   wf_comp: str, Optional
     Which component of waveform signal to plot: "re" or "im" for real or imaginary, respectively
   wf_ss: boolean, Optional
@@ -410,6 +412,7 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
     Gives the ability to suppress the plt.show()
   fig_num: int, Optional
     Only required if plotting multiple figures
+  wf_title: String, Optional
     
     """
 
@@ -430,15 +433,21 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
     plt.legend() 
 
     # set title
+    title = "Phase Coherence and PSD of "
     if osc == -1:
-      plt.title("Phase Coherence and PSD of Summed Response")
+      title = title + "Summed Response"
     else:
-      plt.title(f"Phase Coherence and PSD of Oscillator #{osc}")
+      title = title (f"Oscillator #{osc}")
+    if wf_title:
+      title = title + f": {wf_title}"
+    plt.title(title)
 
   if plot_type == "psd":
     y = get_psd_vod(vod=vod, osc=osc, window=window)
     if db:              
       y = 10*np.log10(y)
+    # optionally artifically move psd_shift up or down
+    y = y + psd_shift
     plt.plot(f, y, color = "red", lw=1)
     if db:
       plt.ylabel('PSD [dB]')
@@ -446,10 +455,14 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
       plt.ylabel('PSD')
     plt.xlabel('Frequency')
     # set title
+    title = "Power Spectral Density of "
     if osc == -1:
-      plt.title("Power Spectral Density of Summed Response")
+      title = title + "Summed Response"
     else:
-      plt.title(f"Power Spectral Density of Oscillator #{osc}")
+      title = title (f"Oscillator #{osc}")
+    if wf_title:
+      title = title + f": {wf_title}"
+    plt.title(title)
 
   if plot_type == "amps":
     y = get_amps_vod(vod=vod, osc=osc, window=window)
@@ -462,10 +475,14 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
       plt.ylabel('Amplitude')
     plt.xlabel('Frequency')
     # set title
+    title = "Amplitude Spectrum of "
     if osc == -1:
-      plt.title("Amplitude Spectrum of Summed Response")
+      title = title + "Summed Response"
     else:
-      plt.title(f"Amplitude Spectrum of Oscillator #{osc}")
+      title = title (f"Oscillator #{osc}")
+    if wf_title:
+      title = title + f": {wf_title}"
+    plt.title(title)
   
   if plot_type == "pre_psd":
     y = 0
