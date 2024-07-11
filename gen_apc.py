@@ -14,8 +14,8 @@ def apc_and_save(vod=Vodscillator, cluster_width=float, t_win=float, amp_weights
         pickle.dump(vod.apc, outp, pickle.HIGHEST_PROTOCOL)
 
 # open up a vod
-filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-filename = "F&B fig 2D, noniso, loc=0.1, glob=0.pkl"
+filepath = "/home/deniz/Dropbox/vodscillators/"
+filename = "F&B fig 2D, noniso, loc=0.1, glob=0.1, sr1024, 15numint.pkl"
 # filename = "V&D fig 2A, loc=0, glob=0.pkl"
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
