@@ -162,9 +162,9 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, windowed_fft=None):
 
   phase_diffs = np.zeros((num_win_pairs, num_freq_pts))
   
-  for interval in range(0, num_win_pairs):
+  for win in range(0, num_win_pairs):
     # take the difference between the phases in this current window and the next
-    phase_diffs[interval] = phases[interval + 1] - phases[interval]
+    phase_diffs[win] = phases[win + 1] - phases[win]
 
   # get the sin and cos of the phase diffs, and average over the window pairs
   xx= np.mean(np.sin(phase_diffs),axis=0)

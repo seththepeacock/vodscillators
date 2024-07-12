@@ -26,7 +26,7 @@ class TwinVodscillators:
         vod_params = np.empty(2, 7)
         i = 0
         for v in [s.vl, s.vr]:
-            vod_params[i, :] = [v.sample_rate, v.ti, v.tf, v.t_transient, v.t_win, v.num_intervals, v.tpoints]
+            vod_params[i, :] = [v.sample_rate, v.ti, v.tf, v.t_transient, v.t_win, v.num_wins, v.tpoints]
             i = 1
         # if they agree, set all of the TV's parameters to them
         if all(vod_params[0, :] == vod_params[1, :]):
@@ -38,7 +38,7 @@ class TwinVodscillators:
             s.t_ss = vl.t_win
             s.n_transient = vl.n_transient
             s.n_win = vl.n_win
-            s.num_intervals = vl.num_intervals
+            s.num_wins = vl.num_wins
             s.tpoints = vl.tpoints
         else:
             print("Parameter mismatch!")
@@ -81,9 +81,9 @@ class TwinVodscillators:
         # First make an array to represent the current (complex) derivative of each oscillator
         ddt = np.zeros(s.total_num_osc, dtype=complex)
 
+
         # (We are adapting equation (11) in Vilfan & Duke 2008)
-        
-        # Define the interaural coupling expressions (interaural complex coupling constant * summed response of the opposite ear)
+        # Define the interaural coupling expressions: iaccc (=interaural complex coupling constant) * summed response of the opposite ear
         interaural_left = s.iaccc * (np.sum(z[s.vl.num_osc:s.vr.num_osc]))
         interaural_right = s.iaccc * (np.sum(z[0:s.vr.num_osc]))
 
@@ -126,12 +126,12 @@ class TwinVodscillators:
 
     def do_fft(s):
         """ Returns four arrays:
-        1. every_fft[oscillator index, ss interval index, output]
+        1. every_fft[oscillator index, ss win index, output]
         2. SOO_fft[output]
         3. AOI_fft[oscillator index, output]
         4. SOO_AOI_fft[output]
 
-        AOI = Averaged Over Intervals (for noise)
+        AOI = Averaged Over Wins (for noise)
 
         """
         # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_win), 
@@ -141,14 +141,14 @@ class TwinVodscillators:
         
         # compute the (r)fft for all oscillators individually and store them in "every_fft"
             # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
-        s.every_fft = np.zeros((s.num_osc, s.num_intervals, s.num_freq_points), dtype=complex) # every_fft[osc index, which ss interval, fft output]
+        s.every_fft = np.zeros((s.num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[osc index, which ss win, fft output]
 
-        for interval in range(s.num_intervals):
+        for win in range(s.num_wins):
             for osc in range(s.num_osc):
                 # calculate fft
-                n_start = interval * s.n_win
-                n_stop = (interval + 1) * s.n_win
-                s.every_fft[osc, interval, :] = rfft((s.ss_sol[osc, n_start:n_stop]).real)
+                n_start = win * s.n_win
+                n_stop = (win + 1) * s.n_win
+                s.every_fft[osc, win, :] = rfft((s.ss_sol[osc, n_start:n_stop]).real)
 
         # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
         s.SOO_fft = np.sum(s.every_fft, 0)

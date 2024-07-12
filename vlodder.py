@@ -257,7 +257,7 @@ def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True):
 
 
 def get_coherence_vod(vod: Vodscillator, osc=-1):
-  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the win #)
   # defaults to osc = -1 which is the sum of oscillators
   if osc == -1:
     wf = vod.SOO_fft[:, :]
@@ -267,11 +267,11 @@ def get_coherence_vod(vod: Vodscillator, osc=-1):
   # get phases
   phases = np.angle(wf)
   # initialize array for phase diffs
-  phase_diffs = np.zeros((vod.num_intervals - 1, vod.num_freq_points))
+  phase_diffs = np.zeros((vod.num_wins - 1, vod.num_freq_points))
   
-  for interval in range(0, vod.num_intervals - 1):
-    # take the difference between the phases in this current interval and the next
-    phase_diffs[interval] = phases[interval + 1] - phases[interval]
+  for win in range(0, vod.num_wins - 1):
+    # take the difference between the phases in this current win and the next
+    phase_diffs[win] = phases[win + 1] - phases[win]
 
   # get the average sin and cos of the phase diffs
   xx= np.mean(np.sin(phase_diffs),axis=0)
@@ -281,7 +281,7 @@ def get_coherence_vod(vod: Vodscillator, osc=-1):
   return np.sqrt(xx**2 + yy**2)
 
 def get_psd_vod(vod: Vodscillator, osc=-1, window=-1):
-  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the win #)
   if osc == -1:
     # if osc = -1 (the default) we want the summed (SOO) response!
     fft = vod.SOO_fft[:, :]
@@ -302,7 +302,7 @@ def get_psd_vod(vod: Vodscillator, osc=-1, window=-1):
 
 
 def get_amps_vod(vod: Vodscillator, osc=-1, window=-1):
-  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the interval #)
+  # first, we get our 2D array with all the FFTs - (the zeroth dimension of y is the win #)
   if osc == -1:
     # if osc = -1 (the default) we want the summed (SOO) response!
     wf = vod.SOO_fft[:, :]

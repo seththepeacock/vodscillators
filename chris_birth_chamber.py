@@ -4,13 +4,20 @@ import timeit
 from scipy.fft import rfft, rfftfreq
 from statistics import mean
 
+
+def save_SOO_wf(vod=Vodscillator, filename=str):
+    wf = vod.SOO_sol[vod.n_transient:]
+    with open(filename, 'wb') as outp:  # Overwrites any existing file with this filename!.
+        pickle.dump(wf, outp, pickle.HIGHEST_PROTOCOL)
+
+
 # CREATE AND SAVE A VODSCILLATOR
 
 start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 # General Initializing Params
-"name" : "V&D fig 2A, loc=0, glob=0, sr=512",
+"name" : "V&D fig 4, loc=0, glob=0, sr=128",
 "num_osc" : 80, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 # initialize
@@ -18,7 +25,7 @@ p = {
 "roughness_amp" : 0,
 "omega_0" : 2*np.pi, # char frequency of lowest oscillator [default = 2*np.pi] 
 "omega_N" : 5*(2*np.pi), # char frequency of highest oscillator [default = 5*(2*np.pi)] 
-"IC_method" : "const", #rand or const
+"IC_method" : "rand", #rand or const
 
 # gen_noise
 "loc_noise_amp" : 0, #amplitude (sigma value) for local noise [0 --> off, default = 0.1-5]
@@ -27,12 +34,12 @@ p = {
 "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
 "num_wins" : 30, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
-"sample_rate" : 512, #[default = 128]
-
+"sample_rate" : 128, #[default = 128]
+# 
 # solve_ODE
-"epsilon" : 4.0, # [default = 1.0] --> control parameter
-"d_R" : 16, # [default = 0.15] --> real part of coupling coefficient
-"d_I" : 0, # [default = -1.0] --> imaginary part of coupling coefficient
+"epsilon" : 1.0, # [default = 1.0] --> control parameter
+"d_R" : 0.15, # [default = 0.15] --> real part of coupling coefficient
+"d_I" : -1.0, # [default = -1.0] --> imaginary part of coupling coefficient
 "alpha" : 1.0, # [default = 1.0] --> real coefficient for cubic nonlinearity (in V&D, B = alpha + beta*i)
 "beta_sigma" : 0.0 # [0 = isochronous as in V&D] --> std dev (normal dist w/ 0 mean) for beta_j... 
 # imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
@@ -44,6 +51,26 @@ v.gen_noise(**p)
 v.solve_ODE()
 v.do_fft()
 v.save()
+
+v.num_wins = 650
+v.gen_noise(**p)
+v.solve_ODE()
+save_SOO_wf(v, "wf - " + v.name)
+
+v.loc_noise_amp = 0.1
+v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
+v.gen_noise(**p)
+v.solve_ODE()
+save_SOO_wf(v, "wf - " + v.name)
+
+
+v.glob_noise_amp = 0.1
+v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
+v.gen_noise(**p)
+v.solve_ODE()
+v.do_fft()
+save_SOO_wf(v, "wf - " + v.name)
+
 
 stop = timeit.default_timer() # ends timer
 print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 

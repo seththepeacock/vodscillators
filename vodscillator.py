@@ -79,7 +79,7 @@ class Vodscillator:
       for k in range(s.num_osc):
         x_k = all_x[k]
         y_k = all_y[k]
-        s.ICs[k] = x_k - (y_k*1j/s.omegas[k])
+        s.ICs[k] = x_k + (y_k*1j) # this was x_k - (y_k*1j/s.omegas[k]) in Beth's code
 
     # generate beta_j using a gaussian centered at 0 with std deviation beta_sigma (as in Faber & Bozovic)
     s.betas = np.random.normal(loc=0.0, scale=s.beta_sigma, size=s.num_osc)
@@ -96,8 +96,8 @@ class Vodscillator:
     s.sample_rate = p["sample_rate"] # [default = 128]
     s.ti = p["ti"] # start time; [default = 0]
     s.t_transient = p["t_transient"] # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
-    s.t_win = p["t_win"] # length of an interval of ss observation [default = 64 --> n.transient = 8192]
-    s.num_intervals = p["num_intervals"] # [default for no noise is 1; with noise we must average over multiple intervals]
+    s.t_win = p["t_win"] # length of an win of ss observation [default = 64 --> n.transient = 8192]
+    s.num_wins = p["num_wins"] # [default for no noise is 1; with noise we must average over multiple wins]
 
 
     # Calculate other params
@@ -105,7 +105,7 @@ class Vodscillator:
     s.n_transient = s.t_transient * s.sample_rate # num of time points corresponding to t_transient
     s.n_win = s.t_win * s.sample_rate + 1 # num of time points corresponding to t_win 
       # NOTE the + 1 is a recent addition! if sample_rate=1, we need 2 samples to describe a 1 second
-    s.tf = s.t_transient + s.num_intervals * s.t_win
+    s.tf = s.t_transient + s.num_wins * s.t_win
     
     # We want a global xi(t) and then one for each oscillator. 
 
@@ -166,12 +166,12 @@ class Vodscillator:
 
   def do_fft(s):
     """ Returns four arrays:
-    1. every_fft[oscillator index, ss interval index, output]
+    1. every_fft[oscillator index, ss win index, output]
     2. SOO_fft[output]
     3. AOI_fft[oscillator index, output]
     4. SOO_AOI_fft[output]
 
-    AOI = Averaged Over Intervals (for noise)
+    AOI = Averaged Over Wins (for noise)
 
     """
     # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_win), 
@@ -181,16 +181,16 @@ class Vodscillator:
     
     # compute the (r)fft for all oscillators individually and store them in "every_fft"
       # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
-    s.every_fft = np.zeros((s.num_osc, s.num_intervals, s.num_freq_points), dtype=complex) # every_fft[osc index, which ss interval, fft output]
+    s.every_fft = np.zeros((s.num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[osc index, which ss win, fft output]
 
     # truncate to the ss solution (all points after n_transient)
     ss_sol = s.sol[:, s.n_transient:]
-    for interval in range(s.num_intervals):
+    for win in range(s.num_wins):
       for osc in range(s.num_osc):
         # calculate fft
-        n_start = interval * s.n_win
-        n_stop = (interval + 1) * s.n_win
-        s.every_fft[osc, interval, :] = rfft((ss_sol[osc, n_start:n_stop]).real)
+        n_start = win * s.n_win
+        n_stop = (win + 1) * s.n_win
+        s.every_fft[osc, win, :] = rfft((ss_sol[osc, n_start:n_stop]).real)
 
     # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
     s.SOO_fft = np.sum(s.every_fft, 0)
