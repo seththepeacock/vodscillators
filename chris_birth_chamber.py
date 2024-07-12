@@ -1,8 +1,5 @@
 from vodscillator import *
-import matplotlib.pyplot as plt
 import timeit
-from scipy.fft import rfft, rfftfreq
-from statistics import mean
 
 
 def save_SOO_wf(vod=Vodscillator, filename=str):
