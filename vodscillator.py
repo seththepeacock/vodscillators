@@ -136,9 +136,9 @@ class Vodscillator:
 
   def ODE(s, t, z):
     # This function will only be called by the ODE solver
-
-    # Mark the current point in time to track progress
-    print(f"Time = {int(t)}/{int(s.tf)}")
+    if np.abs(t - int(t)) < 0.01:
+      # Mark the current point in time to track progress
+      print(f"Time = {int(t)}/{int(s.tf)}")
 
     # First make an array to represent the current (complex) derivative of each oscillator
     ddt = np.zeros(s.num_osc, dtype=complex)
