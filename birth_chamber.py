@@ -1,5 +1,4 @@
 from vodscillator import *
-import matplotlib.pyplot as plt
 import timeit
 
 # CREATE AND SAVE A VODSCILLATOR

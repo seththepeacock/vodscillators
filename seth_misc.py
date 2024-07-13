@@ -9,8 +9,39 @@ import scipy.io
 # vod.n_win = vod.n_ss
 # vod.save()
 
-# comparing sample rate effect on classic phase coherence
+
+# creating spectogram
 if 1==1:
+    # get passed in params
+    db=True
+    t_win = 32
+    t_shift = 32
+    sample_rate = 128
+    show_plot = True
+    ymin=0
+    ymax=None
+
+    filename = 'TH21RearwaveformSOAE'
+    mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
+    wf = np.squeeze(mat['wf'])
+    wf_title = filename
+
+    # filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # # load vod
+    # with open(filepath + filename, 'rb') as picklefile:
+    #     vod = pickle.load(picklefile)
+    #     assert isinstance(vod, Vodscillator)
+    # wf = vod.SOO_sol
+
+    spectrogram(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, ymin=ymin, ymax=ymax, show_plot=show_plot)
+
+
+
+
+
+# comparing sample rate effect on classic phase coherence
+if 1==0:
     t_win = 16
     filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
