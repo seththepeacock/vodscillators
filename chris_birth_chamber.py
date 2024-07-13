@@ -21,8 +21,8 @@ p = {
 # initialize
 "freq_dist" : "exp", #linear or exp
 "roughness_amp" : 0,
-"omega_0" : 2*np.pi, # char frequency of lowest oscillator [default = 2*np.pi]
-"omega_N" : 5*(2*np.pi), # char frequency of highest oscillator [default = 5*(2*np.pi)]
+"omega_0" : 2*np.pi, # char frequency of lowest oscillator [default = 2*np.pi] 
+"omega_N" : 5*(2*np.pi), # char frequency of highest oscillator [default = 5*(2*np.pi)] 
 "IC_method" : "rand", #rand or const
 
 # gen_noise
@@ -33,13 +33,13 @@ p = {
 "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
 "num_wins" : 30, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
 "sample_rate" : 128, #[default = 128]
-#
+
 # solve_ODE
 "epsilon" : 1.0, # [default = 1.0] --> control parameter
 "d_R" : 0.15, # [default = 0.15] --> real part of coupling coefficient
 "d_I" : -1.0, # [default = -1.0] --> imaginary part of coupling coefficient
 "alpha" : 1.0, # [default = 1.0] --> real coefficient for cubic nonlinearity (in V&D, B = alpha + beta*i)
-"beta_sigma" : 0.0 # [0 = isochronous as in V&D] --> std dev (normal dist w/ 0 mean) for beta_j...
+"beta_sigma" : 0.0 # [0 = isochronous as in V&D] --> std dev (normal dist w/ 0 mean) for beta_j... 
 # imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
 }
 
@@ -50,29 +50,36 @@ v.solve_ODE()
 v.do_fft()
 v.save()
 
-v.num_wins = 650
-v.gen_noise(**p)
-v.solve_ODE()
-save_SOO_wf(v, "wf - " + v.name)
+print("Finished with Vodscillator")
 
-v.loc_noise_amp = 0.1
-v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
-v.gen_noise(**p)
-v.solve_ODE()
-save_SOO_wf(v, "wf - " + v.name)
+# v.num_wins = 650
+# v.gen_noise(**p)
+# v.solve_ODE()
+# save_SOO_wf(v, "wf - " + v.name)
+
+# print("Finished with WF 1")
+
+# v.loc_noise_amp = 0.1
+# v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
+# v.gen_noise(**p)
+# v.solve_ODE()
+# save_SOO_wf(v, "wf - " + v.name)
+
+# print("Finished with WF 2")
+
+# v.glob_noise_amp = 0.1
+# v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
+# v.gen_noise(**p)
+# v.solve_ODE()
+# v.do_fft()
+# save_SOO_wf(v, "wf - " + v.name)
+
+# print("Finished with WF 3")
 
 
-v.glob_noise_amp = 0.1
-v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
-v.gen_noise(**p)
-v.solve_ODE()
-v.do_fft()
-save_SOO_wf(v, "wf - " + v.name)
-
-
-stop = timeit.default_timer() # ends timer
-print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes")
-# prints the total time the code took to run
+# stop = timeit.default_timer() # ends timer
+# print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
+# # prints the total time the code took to run
 
 
 
