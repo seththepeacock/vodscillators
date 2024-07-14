@@ -3,7 +3,8 @@ import timeit
 import pickle
 
 
-def save_SOO_wf(vod=Vodscillator, filename=str):
+def save_SOO_wf(vod=Vodscillator):
+    filename = "wf - " + v.name + ".pkl"
     wf = vod.SOO_sol[vod.n_transient:]
     with open(filename, 'wb') as outp:  # Overwrites any existing file with this filename!.
         pickle.dump(wf, outp, pickle.HIGHEST_PROTOCOL)
@@ -44,8 +45,8 @@ p = {
 }
 
 
-v = Vodscillator(**p)
-v.initialize(**p)
+# v = Vodscillator(**p)
+# v.initialize(**p)
 # v.gen_noise(**p)
 # v.solve_ODE()
 # save_SOO_wf(v, "wf - " + v.name)
@@ -53,10 +54,12 @@ v.initialize(**p)
 # print("Finished with WF 1")
 
 p["loc_noise_amp"] = 0.1
+v = Vodscillator(**p)
+v.initialize(**p)
 v.gen_noise(**p)
 v.solve_ODE()
 v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
-save_SOO_wf(v, "wf - " + v.name)
+save_SOO_wf(v)
 
 print("Finished with WF 2")
 
@@ -65,7 +68,7 @@ v.initialize(**p)
 v.gen_noise(**p)
 v.solve_ODE()
 v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
-save_SOO_wf(v, "wf - " + v.name)
+save_SOO_wf(v)
 
 print("Finished with WF 3")
 

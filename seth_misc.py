@@ -11,7 +11,7 @@ import scipy.io
 
 
 # creating spectogram
-if 1==1:
+if 1==0:
     # get passed in params
     db=True
     t_win = 32
@@ -40,7 +40,7 @@ if 1==1:
     #     assert isinstance(vod, Vodscillator)
     # wf = vod.SOO_sol
 
-    spectrogram(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, ymin=ymin, ymax=ymax, show_plot=show_plot)
+    # spectrogram(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, ymin=ymin, ymax=ymax, show_plot=show_plot)
 
 
 
@@ -69,7 +69,6 @@ if 1==0:
 
     # wf = vod.SOO_sol[vod.n_transient:]
     # coherence_vs_psd(wf, sample_rate=512, t_win=t_win, show_plot=True, fig_num=2, wf_title="512")
-
 
 # OLD comparing sample rate effect on classic phase coherence
 if 1==0:
@@ -313,12 +312,12 @@ if 1==0:
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
 
 #freq cluster of vodscillator
-if 1==0:
+if 1==1:
 
 
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
+    filename = "V&D fig 4, loc=0, glob=0, sr=128.pkl"
     with open(filepath + filename, 'rb') as picklefile:
         vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!

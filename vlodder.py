@@ -167,14 +167,15 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
     avg_cluster_freqs = np.zeros(vod.num_osc)
     for osc in range(vod.num_osc):
       # get the average amplitude (bottom line on V&D figure)
-      avg_position_amplitudes[osc] = np.sqrt(np.mean((vod.ss_sol[osc].real)**2))
+      ss_sol = vod.sol[osc, vod.n_transient:]
+      avg_position_amplitudes[osc] = np.sqrt(np.mean((ss_sol.real)**2))
       # get the average cluster frequency
       # first get the psd of this oscillator
       psd = get_psd_vod(vod, osc)
       # Now, the paper seems to indicate a proper average over each frequency's PSD:
-      avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
+      # avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
       # But Beth's way was just to use the frequency which has the highest PSD peak
-      # avg_cluster_freqs[osc] = vod.fft_freq[np.argmax(psd)]
+      avg_cluster_freqs[osc] = vod.fft_freq[np.argmax(psd)]
     
     plt.plot(avg_cluster_freqs, '-o', label="Average frequency")
     plt.plot(avg_position_amplitudes, label="Amplitude")
