@@ -19,12 +19,18 @@ if 1==1:
     sample_rate = 128
     show_plot = True
     ymin=0
-    ymax=None
+    ymax=6
+    
+    filename = "wf - V&D fig 4, loc=0, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    # load vod
+    with open(filepath + filename, 'rb') as picklefile:
+        wf = pickle.load(picklefile)
 
-    filename = 'TH21RearwaveformSOAE'
-    mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
-    wf = np.squeeze(mat['wf'])
-    wf_title = filename
+    # filename = 'TH21RearwaveformSOAE'
+    # mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
+    # wf = np.squeeze(mat['wf'])
+    # wf_title = filename
 
     # filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"

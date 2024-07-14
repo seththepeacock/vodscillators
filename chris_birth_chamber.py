@@ -31,7 +31,7 @@ p = {
 "ti" : 0, # start time; [default = 0]
 "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
-"num_wins" : 30, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
+"num_wins" : 650, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
 "sample_rate" : 128, #[default = 128]
 
 # solve_ODE
@@ -43,43 +43,34 @@ p = {
 # imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
 }
 
+
 v = Vodscillator(**p)
 v.initialize(**p)
-v.gen_noise(**p)
-v.solve_ODE()
-v.do_fft()
-v.save()
-
-print("Finished with Vodscillator")
-
-# v.num_wins = 650
 # v.gen_noise(**p)
 # v.solve_ODE()
 # save_SOO_wf(v, "wf - " + v.name)
 
 # print("Finished with WF 1")
 
-# v.loc_noise_amp = 0.1
-# v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
-# v.gen_noise(**p)
-# v.solve_ODE()
-# save_SOO_wf(v, "wf - " + v.name)
+p["loc_noise_amp"] = 0.1
+v.gen_noise(**p)
+v.solve_ODE()
+v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
+save_SOO_wf(v, "wf - " + v.name)
 
-# print("Finished with WF 2")
+print("Finished with WF 2")
 
-# v.glob_noise_amp = 0.1
-# v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
-# v.gen_noise(**p)
-# v.solve_ODE()
-# v.do_fft()
-# save_SOO_wf(v, "wf - " + v.name)
+p["glob_noise_amp"] = 0.1
+v.initialize(**p)
+v.gen_noise(**p)
+v.solve_ODE()
+v.name = f"V&D fig 4, loc={v.loc_noise_amp}, glob={v.glob_noise_amp}, sr={v.sample_rate}"
+save_SOO_wf(v, "wf - " + v.name)
 
-# print("Finished with WF 3")
+print("Finished with WF 3")
 
 
-# stop = timeit.default_timer() # ends timer
-# print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
-# # prints the total time the code took to run
+
 
 
 
