@@ -145,7 +145,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=False):
       "win_psd" : win_psd
       }
 
-def get_coherence(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=True):
+def get_coherence(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
   Parameters
@@ -261,24 +261,22 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, max_ve
   psd = psd + psd_shift
   coherence = max_vec_strength*coherence
 
-  plt.figure(fig_num)
-
   # get 2 axes for double y axis
-  ax1 = plt.subplots()[1]
+  ax1 = plt.subplots(num=fig_num)[1]
   ax2 = ax1.twinx()
 
-  # plot
+  # plot + set labels
   if do_coherence:
-    ax1.plot(f, coherence, label=f"Coherence: t_win={t_win}", color='purple')
+    ax1.plot(f, coherence, label=f"Coherence: t_win={t_win}, t_shift={t_shift}", color='purple')
+    ax1.set_xlabel('Freq')
+    ax1.set_ylabel('Phase Coherence', color='purple')
+    ax1.legend(loc="upper left")
   if do_psd:
     ax2.plot(f, psd, label="PSD", color='r')
+    ax2.set_xlabel('Freq')
+    ax2.set_ylabel('PSD [dB]', color='r')
+    ax2.legend(loc="upper right")
 
-  # set labels
-  ax1.set_ylabel('Phase Coherence', color='purple')
-  ax2.set_xlabel('Freq')
-  ax2.set_ylabel('PSD [dB]', color='r')
-  ax1.legend(loc="upper left")
-  ax2.legend(loc="upper right")
 
   # set title
   if wf_title:
@@ -295,14 +293,6 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, max_ve
 
   return f, coherence, psd
 
-
-def phase_portrait(wf, wf_title="Sum of Oscillators"):
-  xdot = np.imag(wf)
-  x = np.real(wf)
-  plt.plot(x, xdot)
-  plt.title("Phase Portrait of " + wf_title)
-  plt.grid()
-  plt.show()
 
 def spectrogram(wf, sample_rate, t_win, t_shift=None, num_wins=None, db=True, cmap='rainbow', vmin=None, vmax=None,
                 xmin=0, xmax=None, ymin=None, ymax=None, wf_title=None, show_plot=True, fig_num=1):
@@ -514,3 +504,12 @@ def coherogram(wf, sample_rate, t_win, t_shift, scope=2, freq_ref_step=1, ref_ty
   # show plot
   if show_plot:
       plt.show()
+      
+      
+def phase_portrait(wf, wf_title="Sum of Oscillators"):
+  xdot = np.imag(wf)
+  x = np.real(wf)
+  plt.plot(x, xdot)
+  plt.title("Phase Portrait of " + wf_title)
+  plt.grid()
+  plt.show()

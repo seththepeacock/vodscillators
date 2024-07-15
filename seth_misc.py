@@ -11,55 +11,63 @@ import scipy.io
 
 
 # creating coherogram
-if 1==1:
+if 1==0:
     # # good params for next_win!
     # t_win = 4
     # t_shift = 1
     # scope = 5
     
     
-    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    # filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     # load wf
     with open(filepath + filename, 'rb') as picklefile:
-        wf = pickle.load(picklefile)
+        vod = pickle.load(picklefile)
+        assert(isinstance(vod, Vodscillator))
         # truncate it
-        wf = wf[0:int(len(wf)/10)]
+        wf = vod.SOO_sol[vod.n_transient:]
         
     # global
     sample_rate=128
     xmin=None
     xmax=None
+    ymin=None
+    ymax=None
     ymin=0
-    ymax=6
+    ymax=8
+    show_plot=False
     
     # important params
-    t_win=4
-    t_shift=1
-    scope=5
+    t_win=16
+    t_shift=16
+    scope=20
+    # good parameters for ref_type=next_win!
+    # t_win =4
+    # t_shift = 1
+    # scope = 5
     
     # # next_freq
     # ref_type="next_freq"
-    # freq_ref_step=10
-    # coherogram(wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=False, fig_num=1)
-    # plt.show()
+    # freq_ref_step=1
+    # coherogram(wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=1)
     
     # next_win
     ref_type="next_win"
-    coherogram(wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=False, fig_num=2)
+    coherogram(wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
+    coherence_vs_psd(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, xmin=0, xmax=8, show_plot=show_plot, fig_num=3)
+  
+    # vmin=-40
+    # spectrogram(wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=3)
+    plt.show()
     
-
-
-    vmin=-40
-    show_plot = True
-    spectrogram(wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=3)
-
 # creating spectogram
 if 1==0:
     # get passed in params
     db=True
-    t_win = 32
-    t_shift = 32
+    t_win = 132
+    t_shift = 1
     sample_rate = 128
     show_plot = True
     ymin=0
@@ -70,6 +78,7 @@ if 1==0:
     # load vod
     with open(filepath + filename, 'rb') as picklefile:
         wf = pickle.load(picklefile)
+        wf = wf[0:100000]
 
     # filename = 'TH21RearwaveformSOAE'
     # mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
@@ -83,8 +92,9 @@ if 1==0:
     #     vod = pickle.load(picklefile)
     #     assert isinstance(vod, Vodscillator)
     # wf = vod.SOO_sol
-
-    spectrogram(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, ymin=ymin, ymax=ymax, show_plot=show_plot)
+    vmin=-40
+    spectrogram(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, xmin=0, xmax=100, ymin=ymin, ymax=ymax, vmin=vmin, vmax=30, show_plot=True)
+    # coherence_vs_psd(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, xmin=0, xmax=6, show_plot=show_plot, do_coherence=False)
 
 # comparing sample rate effect on classic phase coherence
 if 1==0:
@@ -217,15 +227,22 @@ if 1==0:
 
 #psd + coherence of generated data
 if 1==0:
-    sr = 512
-    t = np.arange(0, 1000, 1/sr)
-    noise_amp = 50
+    sr = 8
+    t = np.arange(0, 10, 1/sr)
+    noise_amp = 0
     noise = np.random.uniform(-noise_amp, noise_amp, len(t))
     freqs = [1, 2, 3, 4, 5]
     wf = noise
-    for freq in freqs:
-        wf = wf + np.sin(2*np.pi*freq*t)
-    coherence_vs_psd(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
+    for freq in freqs[0:2]:
+        wf = wf + np.sin(2*np.pi*freq*t + 2)
+    for freq in freqs[1:4]:
+        wf = wf + 3*np.cos(2*np.pi*freq*t)
+
+    xmin=None
+    xmax=None
+    xmin=0
+    xmax=10
+    coherence_vs_psd(wf=wf, sample_rate=sr, t_win=4, xmin=xmin, xmax=xmax, do_psd=True)
 
 #psd + coherence of generated data
 if 1==0:
