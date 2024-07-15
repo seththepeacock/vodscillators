@@ -379,7 +379,7 @@ def spectrogram(wf, sample_rate, t_win, t_shift=None, num_wins=None, db=True, cm
   if show_plot:
       plt.show()
 
-def coherogram(wf, sample_rate, t_win, t_shift, scope=2, ref_type="coherogram", num_wins=None, cmap='rainbow', vmin=None, vmax=None,
+def coherogram(wf, sample_rate, t_win, t_shift, scope=2, freq_ref_step=1, ref_type="next_win", num_wins=None, cmap='rainbow', vmin=None, vmax=None,
                 xmin=0, xmax=None, ymin=None, ymax=None, wf_title=None, show_plot=True, fig_num=1):
   
   """ Plots a coherogram of the waveform
@@ -398,6 +398,8 @@ def coherogram(wf, sample_rate, t_win, t_shift, scope=2, ref_type="coherogram", 
         "next_win" for the same freq of the following window or "next_freq" for the next freq bin of the current window
       scope: int, Optional
         number of windows on either side to average over for vector strength
+      freq_ref_step: int, Optional
+        how many frequency bins over to use as a phase reference
       num_wins: int, Optional
         If this isn't passed, then it will just get the maximum number of windows of the given size
       cmap: str, Optional
@@ -428,6 +430,8 @@ def coherogram(wf, sample_rate, t_win, t_shift, scope=2, ref_type="coherogram", 
   freq_ax = wfft_output["freq_ax"]
   # these are the indices of where each window starts in the waveform 
   win_start_indices = wfft_output["win_start_indices"]
+  # get num_wins (if you passed in a num_wins, this will just redefine it at the same value!)
+  num_wins = len(win_start_indices)
   # to convert these to time, just divide by sample rate 
   t_ax = win_start_indices / sample_rate
 
@@ -436,81 +440,77 @@ def coherogram(wf, sample_rate, t_win, t_shift, scope=2, ref_type="coherogram", 
 
   # restrict the time axis since we need "scope" # of windows on either side of t. 
     # note if scope = 1, then t_ax[1:-1] will keep the one at the 1 index but not the one at the last index 
-    # this is because the : operator is [start, stop)
+    # this is because the : operator is [start, stop)... and this is what we want!
   t_ax = t_ax[scope:-scope]
 
   if ref_type == "next_win":
     # if using this reference method, since we must compare it to the subsequent window, 
     # we will not be able to calculate a coherence for the final t value
     t_ax = t_ax[0:-1] 
-
-  # initialize final matrix for coherences
-  coherences = np.zeros(len(t_ax), len(freq_ax))
-
+  elif ref_type == "next_freq":
+    # if using this reference method, since we must compare each freq to the one freq_ref_step away, 
+    # we will not be able to calculate a coherence for the final freq_ref_step # of values
+    freq_ax = freq_ax[0:-freq_ref_step]
+  
+  # calc num_freqs
+  num_freqs = len(freq_ax)
+  # initialize matrix for coherences (taking the above considerations into account)
+  coherences = np.zeros((len(t_ax), num_freqs))
+  # get phase information from wfft
+  phases = np.angle(wfft)
+  
   if ref_type == "next_win":
-    print()
-
-    # IMPLEMENT
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # initialize phase_diffs; the -1 is because we will not be able to calculate a phase diff for the final window!
+    phase_diffs = np.zeros((num_wins - 1, num_freqs))
+    for index in range(num_wins - 1):
+      phase_diffs[index] = phases[index + 1] - phases[index]
 
   elif ref_type == "next_freq":
-    print()
+    # initialize phase_diffs:
+      # no -1 for num_wins in contrast to above since we can use every window!)
+    phase_diffs = np.zeros((num_wins, num_freqs))
+    for win_index in range(num_wins):
+      for freq_index in range(num_freqs):
+        phase_diffs[win_index, freq_index] = phases[win_index, freq_index + freq_ref_step] - phases[win_index, freq_index]
 
-    # IMPLEMENT
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  # make meshgrid
-  xx, yy = np.meshgrid(t_ax, freq_ax) 
+  # now we calculate coherences (vector strengths) for each group of 2*scope + 1
+  # If scope is 2, then we will start at index 2 (so we can grab the windows at 0 and 1 on the left - and right - sides. So scope of 2!)
+  for k in range(scope, len(t_ax) + scope):
+    # get the start and end indices of the group of size 2*scope + 1
+    start = k - scope
+    end = k + scope + 1
+      # the + 1 is just because [start:end] doesn't include the endpoint!
+    # take the sin/cos of the phase_diffs and average over the 0th axis (over the group of windows)
+    xx = np.mean(np.sin(phase_diffs[start:end]), 0)
+    yy = np.mean(np.cos(phase_diffs[start:end]), 0)
+    # now when we input to coherences, we want to start at 0 and go to len(t_ax) so we use [k - scope] as our index
+    coherences[k - scope] = np.sqrt(xx**2 + yy**2)
+    # note that the first index of the t_ax will correspond to the first index of coherence since both were shifted in the same way!
 
   # Initialize plotting!
   plt.figure(fig_num)
+  # make meshgrid
+  xx, yy = np.meshgrid(t_ax, freq_ax) 
   # plot the colormesh
     # note we have to transpose "coherences" since its first dimension - which picks the row of the matrix - is t and
     # we want t on the x axis, meaning we want it to pick the column, not the row!
       # of course, we could have defined the axes of coherences differently, but I think the way we have it now is much more intuitive.
       # pcolormesh is the silly one here. 
   plt.pcolormesh(xx, yy, coherences.T, vmin=vmin, vmax=vmax, cmap=cmap)
-  label = "Vector Strength"
-  plt.colorbar(label=label)
-  plt.xlabel("Time")
-  plt.ylabel("Frequency (Hz)")
+  # set limits
   plt.xlim(xmin, xmax)
   plt.ylim(ymin, ymax)
-  title = "Coherogram"
+  # set titles and labels
+  plt.xlabel("Time")
+  plt.ylabel("Frequency (Hz)")
+  plt.colorbar(label="Vector Strength")
   if wf_title:
-      title = title + f" of {wf_title}"
+      title = f"Coherogram of {wf_title}: ref_type={ref_type}, t_win={t_win}, t_shift={t_shift}, scope={scope}"
+  else: 
+    title = f"Coherogram: ref_type={ref_type}, t_win={t_win}, t_shift={t_shift}, scope={scope}"
+  if ref_type == "next_freq":
+    title = title + f", freq_ref_step={freq_ref_step}"
   plt.title(title)
+  # show plot
   if show_plot:
       plt.show()

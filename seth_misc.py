@@ -10,6 +10,49 @@ import scipy.io
 # vod.save()
 
 
+# creating coherogram
+if 1==1:
+    # # good params for next_win!
+    # t_win = 4
+    # t_shift = 1
+    # scope = 5
+    
+    
+    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    # load wf
+    with open(filepath + filename, 'rb') as picklefile:
+        wf = pickle.load(picklefile)
+        # truncate it
+        wf = wf[0:int(len(wf)/10)]
+        
+    # global
+    sample_rate=128
+    xmin=None
+    xmax=None
+    ymin=0
+    ymax=6
+    
+    # important params
+    t_win=64
+    t_shift=8
+    scope=3
+    
+    # # next_freq
+    # ref_type="next_freq"
+    # freq_ref_step=10
+    # coherogram(wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=False, fig_num=1)
+    # plt.show()
+    
+    # next_win
+    ref_type="next_win"
+    coherogram(wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=True, fig_num=2)
+    plt.show()
+    
+    # vmin=-30
+    # show_plot = True
+    # spectrogram(wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
+
 # creating spectogram
 if 1==0:
     # get passed in params
@@ -41,10 +84,6 @@ if 1==0:
     # wf = vod.SOO_sol
 
     spectrogram(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, ymin=ymin, ymax=ymax, show_plot=show_plot)
-
-
-
-
 
 # comparing sample rate effect on classic phase coherence
 if 1==0:
@@ -312,7 +351,7 @@ if 1==0:
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
 
 #freq cluster of vodscillator
-if 1==1:
+if 1==0:
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     filename = "V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
@@ -326,6 +365,8 @@ if 1==1:
     # plt.subplot(2, 1, 2)
     # plots.heat_map(v, min_freq=1, max_freq=5, db=False)
     # plt.show()
+    vod.do_fft()
+    vod.save()
     vlodder(vod, "cluster")
 
 #psd pre or post summing oscillators of vodscillator
