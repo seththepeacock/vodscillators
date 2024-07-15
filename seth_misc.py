@@ -21,7 +21,7 @@ if 1==0:
     ymin=0
     ymax=6
     
-    filename = "wf - V&D fig 4, loc=0, glob=0, sr=128.pkl"
+    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
     # load vod
     with open(filepath + filename, 'rb') as picklefile:
@@ -40,7 +40,7 @@ if 1==0:
     #     assert isinstance(vod, Vodscillator)
     # wf = vod.SOO_sol
 
-    # spectrogram(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, ymin=ymin, ymax=ymax, show_plot=show_plot)
+    spectrogram(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, db=db, ymin=ymin, ymax=ymax, show_plot=show_plot)
 
 
 
@@ -313,11 +313,9 @@ if 1==0:
 
 #freq cluster of vodscillator
 if 1==1:
-
-
     # Open pickled vodscillator
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    filename = "V&D fig 4, loc=0, glob=0, sr=128.pkl"
+    filename = "V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
     with open(filepath + filename, 'rb') as picklefile:
         vod = pickle.load(picklefile)
         # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
