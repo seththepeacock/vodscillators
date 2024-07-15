@@ -34,9 +34,9 @@ if 1==1:
     ymax=6
     
     # important params
-    t_win=64
-    t_shift=8
-    scope=3
+    t_win=4
+    t_shift=1
+    scope=5
     
     # # next_freq
     # ref_type="next_freq"
@@ -46,12 +46,13 @@ if 1==1:
     
     # next_win
     ref_type="next_win"
-    coherogram(wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=True, fig_num=2)
-    plt.show()
+    coherogram(wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=False, fig_num=2)
     
-    # vmin=-30
-    # show_plot = True
-    # spectrogram(wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
+
+
+    vmin=-40
+    show_plot = True
+    spectrogram(wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=3)
 
 # creating spectogram
 if 1==0:
