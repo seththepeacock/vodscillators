@@ -9,25 +9,70 @@ import scipy.io
 # vod.n_win = vod.n_ss
 # vod.save()
 
+# all cohero-figs for TH14
+if 1==1:
+    filename = 'TH14RearwaveformSOAE'
+    mat = scipy.io.loadmat('SOAE Data/' + 'TH14RearwaveformSOAE.mat')
+    wf = np.squeeze(mat['wf'])
+    wf_title = filename
+        
+    # global
+    sample_rate=44100
+    xmin=None
+    xmax=None
+    ymin=None
+    ymax=None
+    # ymin=0
+    # ymax=8
+    show_plot=False
 
-# creating coherogram
+    ref_type="next_win"
+    t_win = 24
+    t_shift = 0.025
+    scope = 1
+    ref_type="next_win"
+    coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
+    plt.show()
+
+    t_win = 1
+    t_shift = 0.025
+    coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, xmin=100, xmax=20000, show_plot=show_plot, fig_num=3)
+    plt.show()
+    
+    # t_win = 24
+    # t_shift = 0.025
+    # # vmin=-40
+    # vmin=None
+    # spectrogram(wf_title=wf_title, wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=4)
+    # plt.show()
+    
+    # t_win = 24
+    # t_shift = 4
+    # scope = 
+    # ref_type="next_freq"
+    # freq_ref_step=1
+    # coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=1)
+    # plt.show()
+
+
+# all cohero-figs for V&D
 if 1==0:
     # # good params for next_win!
     # t_win = 4
     # t_shift = 1
     # scope = 5
     
-    
-    # filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
-    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
-    filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    # filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     # load wf
     with open(filepath + filename, 'rb') as picklefile:
-        vod = pickle.load(picklefile)
-        assert(isinstance(vod, Vodscillator))
+        wf = pickle.load(picklefile)
+        # assert(isinstance(vod, Vodscillator))
         # truncate it
-        wf = vod.SOO_sol[vod.n_transient:]
+        # wf = vod.SOO_sol[vod.n_transient:]
+        wf = wf[0:int(len(wf)/4)]
         
     # global
     sample_rate=128
@@ -38,30 +83,35 @@ if 1==0:
     ymin=0
     ymax=8
     show_plot=False
-    
-    # important params
-    t_win=16
-    t_shift=16
-    scope=20
-    # good parameters for ref_type=next_win!
-    # t_win =4
-    # t_shift = 1
-    # scope = 5
-    
-    # # next_freq
-    # ref_type="next_freq"
-    # freq_ref_step=1
-    # coherogram(wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=1)
-    
-    # next_win
+    wf_title = "V&D fig 4, loc=0.1, glob=0"
+
     ref_type="next_win"
-    coherogram(wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
-    coherence_vs_psd(wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, xmin=0, xmax=8, show_plot=show_plot, fig_num=3)
-  
-    # vmin=-40
-    # spectrogram(wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=3)
+    t_win = 24
+    t_shift = 4
+    scope = 8
+    ref_type="next_win"
+    coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
     plt.show()
+
+    # t_win = 20
+    # t_shift = 0.25
+    # coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, xmin=0, xmax=8, show_plot=show_plot, fig_num=3)
+    # plt.show()
     
+    # t_win = 24
+    # t_shift = 4
+    # vmin=-40
+    # spectrogram(wf_title=wf_title, wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=4)
+    # plt.show()
+    
+    t_win = 24
+    t_shift = 4
+    scope = 1
+    ref_type="next_freq"
+    freq_ref_step=1
+    coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=1)
+    plt.show()
+
 # creating spectogram
 if 1==0:
     # get passed in params

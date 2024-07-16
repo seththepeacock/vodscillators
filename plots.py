@@ -30,11 +30,11 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
   
   # calculate the number of samples in the window
     # + 1 is because if you have SR=2 and you want a two second window, this will take 5 samples!
-  n_win = t_win*sample_rate + 1
+  n_win = int(t_win*sample_rate) + 1
 
   # and the number of samples to shift
     # no + 1 here; if you want to shift it over one second and SR=2, that will be two samples
-  n_shift = t_shift*sample_rate
+  n_shift = int(t_shift*sample_rate)
 
   # get sample_spacing
   sample_spacing = 1/sample_rate
@@ -60,13 +60,13 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
   windowed_wf = np.zeros((num_wins, n_win))
 
   for k in range(num_wins):
-        win_start = win_start_indices[k]
-        win_end = win_start + n_win
-        # grab the (real part of the) waveform in this window
-        windowed_wf[k, :] = wf[win_start:win_end].real
-        # note this grabs the wf at indices win_start, win_start+1, ..., win_end-1
-          # if there are 4 samples and t_win=t_shift=1 and SR=1, then n_win=2, n_shift=1 and
-          # Thus the first window will be samples 0 and 1, the next 1 and 2...
+    win_start = win_start_indices[k]
+    win_end = win_start + n_win
+    # grab the (real part of the) waveform in this window
+    windowed_wf[k, :] = wf[win_start:win_end].real
+    # note this grabs the wf at indices win_start, win_start+1, ..., win_end-1
+      # if there are 4 samples and t_win=t_shift=1 and SR=1, then n_win=2, n_shift=1 and
+      # Thus the first window will be samples 0 and 1, the next 1 and 2...
 
   # Now we do the ffts!
 
@@ -145,7 +145,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=False):
       "win_psd" : win_psd
       }
 
-def get_coherence(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=False):
+def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None, return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
   Parameters
@@ -156,6 +156,8 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=F
         defaults to 44100 
       t_win: float
         length (in time) of each window
+      t_shift: float
+        length (in time) between the start of successive windows
       num_wins: int, Optional
         If this isn't passed, then just get the maximum number of windows of the given size
       wfft: any, Optional
@@ -163,7 +165,7 @@ def get_coherence(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=F
   """
   # if you passed the wfft in then we'll skip over this
   if wfft is None:
-    wfft = get_wfft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins)
+    wfft = get_wfft(wf=wf, sample_rate=sample_rate, t_win=t_win, t_shift=t_shift, num_wins=num_wins)
     
   # we'll calculate the fft_freq manually
   num_win_pts = sample_rate * t_win
@@ -268,14 +270,14 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, max_ve
   # plot + set labels
   if do_coherence:
     ax1.plot(f, coherence, label=f"Coherence: t_win={t_win}, t_shift={t_shift}", color='purple')
-    ax1.set_xlabel('Freq')
+    ax1.set_xlabel('Freq [Hz]')
     ax1.set_ylabel('Phase Coherence', color='purple')
-    ax1.legend(loc="upper left")
+    ax1.legend(loc="lower left")
   if do_psd:
     ax2.plot(f, psd, label="PSD", color='r')
-    ax2.set_xlabel('Freq')
+    ax2.set_xlabel('Freq [Hz]')
     ax2.set_ylabel('PSD [dB]', color='r')
-    ax2.legend(loc="upper right")
+    ax2.legend(loc="lower right")
 
 
   # set title
@@ -362,9 +364,10 @@ def spectrogram(wf, sample_rate, t_win, t_shift=None, num_wins=None, db=True, cm
   plt.ylabel("Frequency (Hz)")
   plt.xlim(xmin, xmax)
   plt.ylim(ymin, ymax)
-  title = "Spectrogram"
   if wf_title:
-      title = title + f" of {wf_title}"
+      title = f"Spectrogram of {wf_title}: t_win={t_win}, t_shift={t_shift}"
+  else: 
+    title = f"Spectrogram: t_win={t_win}, t_shift={t_shift}"
   plt.title(title)
   if show_plot:
       plt.show()
