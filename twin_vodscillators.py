@@ -59,7 +59,6 @@ class TwinVodscillators:
         # Numerically integrate our ODE from ti to tf with sample rate 1/h
         sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y
         # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
-        # so s.sol[2, 1104] is the value of the solution for the 3rd oscillator at the 1105th time point.
 
         # lets add a dimension at the beginning to track if its the left or right ear
             # in case each has different # oscillators, we'll use the max of the two
@@ -67,6 +66,7 @@ class TwinVodscillators:
         s.sol = np.zeros((2, max_num_osc, len(s.tpoints)), dtype=complex)
         s.sol[0, :, :] = sol[0:s.vl.num_osc, :]
         s.sol[1, :, :] = sol[s.vl.num_osc:(s.vl.num_osc+s.vr.num_osc), :]
+        # so s.sol[1, 2, 1104] is the value of the solution for the 3rd oscillator in the right ear at the 1105th time point.
 
         # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators)
         s.left_SOO_sol = np.sum(s.sol[0, :, :], 1)
@@ -136,31 +136,41 @@ class TwinVodscillators:
         """
         # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_win), 
         # and sample spacing (h) tells it what these frequencies correspond to in terms of real time 
-        s.fft_freq = rfftfreq(s.n_win, s.delta_t)
+        s.fft_freq = rfftfreq(s.n_win, 1/s.sample_rate)
         s.num_freq_points = len(s.fft_freq)
         
         # compute the (r)fft for all oscillators individually and store them in "every_fft"
             # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
-        s.every_fft = np.zeros((s.num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[osc index, which ss win, fft output]
+        s.every_fft = np.zeros((2, s.total_num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[l/r ear, osc index, which ss win, fft output]
 
+        # we'll get the ss solutions:
+        s.ss_sol = s.sol[:, :, s.n_transient:]
+        
         for win in range(s.num_wins):
-            for osc in range(s.num_osc):
+            # get the start and stop indices for this window
+            n_start = win * s.n_win
+            n_stop = (win + 1) * s.n_win
+            # first, we'll calculate the ffts for the left side:
+            for osc in range(s.vl.num_osc):
                 # calculate fft
-                n_start = win * s.n_win
-                n_stop = (win + 1) * s.n_win
-                s.every_fft[osc, win, :] = rfft((s.ss_sol[osc, n_start:n_stop]).real)
+                s.every_fft[0, osc, win, :] = rfft((s.ss_sol[0, osc, n_start:n_stop]).real)
+            # then we'll do the right side
+            for osc in range(s.vr.num_osc):
+                # calculate fft
+                s.every_fft[1, osc, win, :] = rfft((s.ss_sol[1, osc, n_start:n_stop]).real)
 
-        # we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
-        s.SOO_fft = np.sum(s.every_fft, 0)
+        # finally, we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
+        s.left_SOO_fft = np.sum(s.every_fft[0], 0)
+        s.right_SOO_fft = np.sum(s.every_fft[1], 0)
 
     def save(s, filename = None):
-        """ Saves your vodscillator in a .pkl file
+        """ Saves your Twin Vodscillators in a .pkl file
 
         Parameters
         ------------
             filename: string, Optional
                 Don't include the ".pkl" at the end of the string!
-                If no filename is provided, it will just use the "name" given to your vodscillator
+                If no filename is provided, it will just use the "name" given to your Twin Vodscillators
             
         """
         
@@ -173,7 +183,7 @@ class TwinVodscillators:
             pickle.dump(s, outp, pickle.HIGHEST_PROTOCOL)
 
     def __str__(s):
-        return f"A vodscillator named {s.name} with {s.num_osc} oscillators!"
+        return f"A Twin Vodscillator named {s.name} with {s.vl.num_osc} oscillators on the left and {s.vr.num_osc} on the right!"
             
         
 

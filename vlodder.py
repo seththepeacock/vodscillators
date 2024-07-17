@@ -167,14 +167,15 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
     avg_cluster_freqs = np.zeros(vod.num_osc)
     for osc in range(vod.num_osc):
       # get the average amplitude (bottom line on V&D figure)
-      avg_position_amplitudes[osc] = np.sqrt(np.mean((vod.ss_sol[osc].real)**2))
+      ss_sol = vod.sol[osc, vod.n_transient:]
+      avg_position_amplitudes[osc] = np.sqrt(np.mean((ss_sol.real)**2))
       # get the average cluster frequency
       # first get the psd of this oscillator
       psd = get_psd_vod(vod, osc)
       # Now, the paper seems to indicate a proper average over each frequency's PSD:
-      avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
+      # avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
       # But Beth's way was just to use the frequency which has the highest PSD peak
-      # avg_cluster_freqs[osc] = vod.fft_freq[np.argmax(psd)]
+      avg_cluster_freqs[osc] = vod.fft_freq[np.argmax(psd)]
     
     plt.plot(avg_cluster_freqs, '-o', label="Average frequency")
     plt.plot(avg_position_amplitudes, label="Amplitude")
@@ -317,3 +318,110 @@ def get_amps_vod(vod: Vodscillator, osc=-1, window=-1):
     # pick a average
     amps = amps[window]
   return amps
+
+
+def get_apc(vod=Vodscillator, cluster_width=0.005, f_min=0.0, f_max=10.0, f_resolution=0.001, num_wins=100, t_win=1, amp_weights=True):
+  """ Calculates phase coherence using the instantaneous information from the analytic signal
+
+  Parameters
+  ------------
+      cluster_width: float
+        Defines how close an oscillator's avg freq can be to the target frequency to count in that freq's cluster
+      f_min: float, Optional
+      f_max: float, Optional
+      f_resolution: float, Optional
+        These define the min, max, and size of the frequency boxes
+      t_win: float, Optional
+        Size of the window (in t) to calculate phase coherence over (should be small or else all phases will drift over the window)
+      amp_weights: bool, Optional
+        For each frequency box, the average vector strength over all pairs is weighted by the pairs' instantaneous amplitude (averaged over the window)
+      
+  """
+  # function to get all oscillators whose average oscillator is near a particular frequency over a given window
+  def cluster():
+    # take "derivatives" to get instantaenous frequencies
+    inst_freqs = (np.diff(inst_phases) / (2.0*np.pi) * vod.sample_rate)
+    clusters = np.zeros((num_wins, num_freqs, vod.num_osc))
+
+    # pick a window
+    for win in range(num_wins):
+      # find average frequency for each oscillator
+      avg_freqs = np.average(inst_freqs[:, win*n_win:(win+1)*n_win], axis=1)
+      # for each frequency box we look through each oscillator to see which oscillators are close enough to that frequency
+      for f in range(num_freqs):
+        for osc in range(vod.num_osc):
+          # # keep track of how many oscillators we've found in the cluster
+          # osc_in_clusters = 0
+          if abs(avg_freqs[osc] - freqs[f]) < cluster_width:
+              # put the oscillator's index in the ith position
+              clusters[win, f, osc] = 1
+              # i += 1
+    return clusters
+  
+  # get SS part of solution
+  ss_sol = vod.sol[:, vod.n_transient:]
+  #get analytic signals of each oscillator
+  analytic_signals = hilbert(ss_sol.real, axis=1)
+  # get phases and amps
+  inst_phases = np.unwrap(np.angle(analytic_signals))
+  inst_amps = np.abs(analytic_signals)
+  # get # points in window
+  n_win = int(t_win * vod.sample_rate)
+  # generate frequency array
+  freqs = np.arange(f_min, f_max, f_resolution) #apc stands for analytic phase coherence
+  num_freqs = len(freqs)
+  
+  # get all clusters
+  clusters = cluster()
+  
+  # initialize array to store all phase coherences
+  all_phase_coherences = np.zeros((num_wins, num_freqs))
+
+  for win in range(num_wins):
+      for f in range(len(freqs)):
+        print(f"Window {win}: Finding PC for {freqs[f]}Hz")
+        # create list of osc_indices in the cluster
+        osc_indices = np.where(clusters[win, f] == 1)[0]
+        # if there's no oscillators in here, set the PC for this freq to 0 and break
+        if len(osc_indices) <= 1:
+          continue
+        # generate all possible pairs of oscillators in our cluster
+        pairs = list(combinations(osc_indices, 2))
+        # init temp arrays to store vector strengths for each pair
+        num_pairs = len(pairs)
+        pairwise_vec_strengths = np.zeros(num_pairs)
+        # if amp_weights is on, we also need to store the average amplitude for the pair over the window 
+        if amp_weights:
+          pairwise_amp_weights = np.zeros(num_pairs)
+        
+        # this variable will help us index the pairwise_ arrays:
+        k = 0
+        for pair in pairs:
+            # get the inst phases for each oscillator over the window
+            win_phases_osc1 = inst_phases[pair[0], win*n_win:(win+1)*n_win]
+            win_phases_osc2 = inst_phases[pair[1], win*n_win:(win+1)*n_win]
+            #calculate vector strength of the difference over the window
+            xx = np.average(np.sin(win_phases_osc1 - win_phases_osc2))
+            yy = np.average(np.cos(win_phases_osc1 - win_phases_osc2))
+            # do final calculation and store away
+            pairwise_vec_strengths[k] = np.sqrt(xx**2 + yy**2)
+            # if we want to weight by amplitude
+            if amp_weights:
+              # get the inst amps for each oscillator over the window
+              win_amps_osc1 = inst_amps[pair[0], win*n_win:(win+1)*n_win]
+              win_amps_osc2 = inst_amps[pair[1], win*n_win:(win+1)*n_win]
+              # average between the two oscillators and then average over time
+              pairwise_amp_weights[k] = np.mean((win_amps_osc1 + win_amps_osc2)/2)
+            # get ready for next loop
+            k+=1
+        # average over all pairs (possibly weighting by pairwise_amp_weights) and store away
+        if amp_weights:
+          # note that this way, the higher amp pairs contribute more to that cluster's average. 
+          # BUT frequencies whose clusters who have exceptionally high amp are NOT weighted any higher than the others!
+            # if they did, then we would just be artificially boosting PC for frequencies with lots of power!
+          all_phase_coherences[win, f] = np.average(pairwise_vec_strengths, weights=pairwise_amp_weights)
+        else:
+          all_phase_coherences[win, f] = np.mean(pairwise_vec_strengths)
+
+  # average over all t_wins and return
+  return np.mean(all_phase_coherences, 0)
