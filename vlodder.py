@@ -173,9 +173,9 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
       # first get the psd of this oscillator
       psd = get_psd_vod(vod, osc)
       # Now, the paper seems to indicate a proper average over each frequency's PSD:
-      # avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
+      avg_cluster_freqs[osc] = np.average(vod.fft_freq, weights=psd)
       # But Beth's way was just to use the frequency which has the highest PSD peak
-      avg_cluster_freqs[osc] = vod.fft_freq[np.argmax(psd)]
+      # avg_cluster_freqs[osc] = vod.fft_freq[np.argmax(psd)]
     
     plt.plot(avg_cluster_freqs, '-o', label="Average frequency")
     plt.plot(avg_position_amplitudes, label="Amplitude")
@@ -224,7 +224,7 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
 
   
 
-def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True):
+def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True, vmin=None, vmax=None):
   n = v.num_osc
   spectra = (abs(v.every_fft))**2 #first index is oscillator index
   if db:
@@ -242,18 +242,20 @@ def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True):
 
   xx, yy = np.meshgrid(osc_array, freq_array) 
 
-  if db:
-    vmax = 115
-  else:
-    vmax = 10000000
+  # if db:
+  #   vmax = 115
+  # else:
+  #   vmax = 10000000
 
-  plt.pcolormesh(xx, yy, avgd_spectra, cmap='plasma', vmax=vmax)
+  plt.pcolormesh(xx, yy, avgd_spectra, cmap='plasma', vmin=vmin, vmax=vmax)
   label = "PSD"
   if db:
       label = label + " [dB]"
   plt.colorbar(label=label)
   plt.xlabel("Oscillator index")
   plt.ylabel("Frequency (Hz)")
+  yticks = np.arange(min_freq, max_freq, 0.2)
+  plt.yticks(yticks)
   plt.title("Heat Map of Frequency Clusters")
 
 
@@ -320,7 +322,7 @@ def get_amps_vod(vod: Vodscillator, osc=-1, window=-1):
   return amps
 
 
-def get_apc(vod=Vodscillator, cluster_width=0.005, f_min=0.0, f_max=10.0, f_resolution=0.001, num_wins=100, t_win=1, amp_weights=True):
+def get_apc(vod=Vodscillator, cluster_width=0.05, f_min=0.0, f_max=10.0, f_resolution=0.01, num_wins=100, t_win=1, amp_weights=True):
   """ Calculates phase coherence using the instantaneous information from the analytic signal
 
   Parameters
@@ -379,7 +381,7 @@ def get_apc(vod=Vodscillator, cluster_width=0.005, f_min=0.0, f_max=10.0, f_reso
 
   for win in range(num_wins):
       for f in range(len(freqs)):
-        print(f"Window {win}: Finding PC for {freqs[f]}Hz")
+        # print(f"Window {win}: Finding PC for {freqs[f]}Hz")
         # create list of osc_indices in the cluster
         osc_indices = np.where(clusters[win, f] == 1)[0]
         # if there's no oscillators in here, set the PC for this freq to 0 and break
@@ -423,5 +425,14 @@ def get_apc(vod=Vodscillator, cluster_width=0.005, f_min=0.0, f_max=10.0, f_reso
         else:
           all_phase_coherences[win, f] = np.mean(pairwise_vec_strengths)
 
+
   # average over all t_wins and return
   return np.mean(all_phase_coherences, 0)
+def phase_portrait(vod=Vodscillator, wf_title="Sum of Oscillators"):
+  wf = vod.SOO_sol
+  xdot = np.imag(wf)
+  x = np.real(wf)
+  plt.plot(x, xdot)
+  plt.title("Phase Portrait of " + wf_title)
+  plt.grid()
+  plt.show()

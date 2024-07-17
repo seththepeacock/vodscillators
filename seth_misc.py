@@ -9,8 +9,11 @@ import scipy.io
 # vod.n_win = vod.n_ss
 # vod.save()
 
-# all cohero-figs for TH14
-if 1==1:
+
+
+
+# Replicating chris' spectro/coherograms for TH14
+if 1==0:
     filename = 'TH14RearwaveformSOAE'
     mat = scipy.io.loadmat('SOAE Data/' + 'TH14RearwaveformSOAE.mat')
     wf = np.squeeze(mat['wf'])
@@ -22,40 +25,43 @@ if 1==1:
     xmax=None
     ymin=None
     ymax=None
-    # ymin=0
-    # ymax=8
+    ymin=0
+    ymax=6
     show_plot=False
 
-    ref_type="next_win"
-    t_win = 24
-    t_shift = 0.025
+    t_win = 0.045
+    t_shift = 0.045
     scope = 1
     ref_type="next_win"
-    coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
-    plt.show()
-
-    t_win = 1
-    t_shift = 0.025
-    coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, xmin=100, xmax=20000, show_plot=show_plot, fig_num=3)
+    vmin=0.3
+    vmax=1
+    cmap="viridis"
+    coherogram(wf_title=wf_title, cmap=cmap, wf=wf, t_win=t_win, ref_type=ref_type, khz=True, scope=scope, t_shift=t_shift, vmin=vmin, vmax=vmax, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
+    ref_type="next_freq"
+    coherogram(wf_title=wf_title, cmap=cmap, wf=wf, t_win=t_win, ref_type=ref_type, khz=True, scope=scope, t_shift=t_shift, vmin=vmin, vmax=vmax, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=3)
     plt.show()
     
-    # t_win = 24
-    # t_shift = 0.025
-    # # vmin=-40
+    
+    # note we are doing psd while chris did amps, so our vmin/vmax is slightly different. The t_win is also approximate.
+    # t_win = 0.045
+    # t_shift = 0.045
+    # vmin=-40
     # vmin=None
-    # spectrogram(wf_title=wf_title, wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=4)
+    # vmax=None
+    # vmin=-100
+    # vmax=-60
+    # cmap="jet"
+    # spectrogram(wf_title=wf_title, wf=wf, t_win=t_win, db=True, khz=True, t_shift=t_shift, vmin=vmin, vmax=vmax, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, cmap=cmap, fig_num=4)
     # plt.show()
     
-    # t_win = 24
-    # t_shift = 4
-    # scope = 
-    # ref_type="next_freq"
-    # freq_ref_step=1
-    # coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=1)
+    # t_win = 0.045
+    # t_shift = 0.045
+    # ref_type="next_win"
+    # coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=100, xmax=20000, show_plot=show_plot, fig_num=3)
     # plt.show()
 
 
-# all cohero-figs for V&D
+# all cohero-figs for Chris' V&D
 if 1==0:
     # # good params for next_win!
     # t_win = 4
@@ -74,44 +80,118 @@ if 1==0:
         # wf = vod.SOO_sol[vod.n_transient:]
         wf = wf[0:int(len(wf)/4)]
         
-    # global
+    # set global
     sample_rate=128
-    xmin=None
-    xmax=None
+    xmin=0
+    xmax=6
     ymin=None
     ymax=None
     ymin=0
     ymax=8
     show_plot=False
     wf_title = "V&D fig 4, loc=0.1, glob=0"
+    
+    # # PLOT COHEROGRAM NEXT_WIN
+    
+    # t_win = 45
+    # t_shift = 45
+    # scope = 4
+    # ref_type="next_win"
+    # coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
+    
+    # # PLOT COHEROGRAM NEXT_FREQ
+    
+    # t_win = 50
+    # t_shift = 50
+    # scope = 1
+    # ref_type="next_freq"
+    # freq_ref_step=1
+    # coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=1)
+    # plt.show()
 
-    ref_type="next_win"
-    t_win = 24
-    t_shift = 4
-    scope = 8
-    ref_type="next_win"
-    coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=2)
+
+
+    # PLOT COHERENCE NEXT_FREQ VS NEXT_WIN
+    
+    xmin=0
+    xmax=6
+    ymin=0
+    ymax=8
+    
+    plt.figure(1)
+    
+    
+    downsample_freq=1
+    
+    ref_type="next_freq"
+    ax1 = plt.subplot(2, 1, 1)
+    t_win = 20
+    t_shift = t_win
+    coherence_vs_psd(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
+    ax1.set_title("Referenced to Next Freq (Window Size = 20s)")
+    
+    ax3 = plt.subplot(2, 1, 2)
+    ref_type="next_freq"
+    t_win = 30
+    t_shift = t_win
+    coherence_vs_psd(downsample_freq=downsample_freq, ax=ax3, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
+    ax3.set_title("Referenced to Next Freq (Window Size = 30s)")
+    
+    plt.tight_layout()
+    
     plt.show()
+    
+    # plt.figure(2)
 
-    # t_win = 20
-    # t_shift = 0.25
-    # coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, xmin=0, xmax=8, show_plot=show_plot, fig_num=3)
+    # ref_type="next_win"
+    # t_win = 10
+    # t_shift = t_win
+    # ax2 = plt.subplot(2, 1, 1)
+    # coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
+    # ax2.set_title("Referenced to Next Window (Small Window Size)")
+    
+    # ax4 = plt.subplot(2, 1, 2)
+    # ref_type="next_win"
+    # t_win = 50
+    # t_shift = t_win
+    # coherence_vs_psd(downsample_freq=downsample_freq, ax=ax4, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
+    # ax4.set_title("Referenced to Next Window (Large Window Size)")
+    
+    # plt.tight_layout()
     # plt.show()
     
+    
+    
+    
+    
+    
+    
+    
+    # # Plot Spectrogram and Coherogram in one plot
+    # plt.figure(2)
+    
+    # xmin=None
+    # xmax=None
+    # vmin=None
+
     # t_win = 24
     # t_shift = 4
-    # vmin=-40
-    # spectrogram(wf_title=wf_title, wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=4)
+    
+    # freq_ref_step=1
+    # ax1 = plt.subplot(2, 1, 1)
+    # spectrogram(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, db=True, t_shift=t_shift, vmin=vmin, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax)
+    
+    # ref_type="next_win"
+    # freq_ref_step=1
+    # t_win = 24
+    # t_shift = 4
+    # scope=4
+    # ax2 = plt.subplot(2, 1, 2)
+    # coherogram(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax)
+    
+    # plt.tight_layout()
     # plt.show()
     
-    t_win = 24
-    t_shift = 4
-    scope = 1
-    ref_type="next_freq"
-    freq_ref_step=1
-    coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=1)
-    plt.show()
-
 # creating spectogram
 if 1==0:
     # get passed in params
@@ -433,9 +513,10 @@ if 1==0:
     # plt.subplot(2, 1, 2)
     # plots.heat_map(v, min_freq=1, max_freq=5, db=False)
     # plt.show()
-    vod.do_fft()
-    vod.save()
-    vlodder(vod, "cluster")
+
+    # vlodder(vod, "heat_map")
+    heat_map(vod, min_freq=0.1, max_freq=6, vmin=40, vmax=None)
+    plt.show()
 
 #psd pre or post summing oscillators of vodscillator
 if 1==0:
@@ -476,4 +557,3 @@ if 1==0:
     vlodder(vod, "cluster")
 
 
-    

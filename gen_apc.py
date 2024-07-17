@@ -1,8 +1,5 @@
 from vodscillator import *
 from vlodder import *
-import matplotlib.pyplot as plt
-import numpy as np
-import timeit
 import pickle
 from plots import *
 
@@ -29,135 +26,23 @@ with open(filepath + filename, 'rb') as picklefile:
 f_resolution=0.01
 f_min=0
 f_max=7
-num_wins=100
+num_wins=50
 
-# start with a pretty big cluster_width (THIS IS BETTER THAN 0.01 or 0.001)
-cluster_width=0.1
+# # start with a pretty big cluster_width (THIS IS BETTER THAN 0.01 or 0.001)
+# cluster_width=0.1
+# t_win=0.125
+# amp_weights=True
+# # run fx to get apc and save to a lil pickle
+# apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
 
-t_win=1
-amp_weights=True
-# run fx to get apc and save to a lil pickle
-apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-# change any parameters you want and rerun (note you can copy and paste the same list of args)
-amp_weights=False
-apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+# # change any parameters you want and rerun (note you can copy and paste the same list of args)
+# amp_weights=False
+# apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
 
 
 # a bunch more generating
 if 1==1:
-    t_win=8
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=32
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=1/2
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-
-    t_win=1/8
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=1/32
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    # change cluster_width then run it all again
-    cluster_width=0.05
-
-    t_win=1
-    amp_weights=True
-    # run fx to get apc and save to a lil pickle
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    # change any parameters you want and rerun (note you can copy and paste the same list of args)
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=8
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=32
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=1/8
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=1/32
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    # change cluster_width then run it all again
-    cluster_width=0.2
-
-    t_win=1
-    amp_weights=True
-    # run fx to get apc and save to a lil pickle
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    # change any parameters you want and rerun (note you can copy and paste the same list of args)
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=8
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=32
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=1/8
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    t_win=1/32
-    amp_weights=True
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
-
-    amp_weights=False
-    apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
+    for t_win in [1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4, 8]:
+        for amp_weights in [True, False]:
+            for cluster_width in [0.1, 0.01, 0.05, 0.2, 0.3, 0.5, 1]: 
+                apc_and_save(vod, cluster_width=cluster_width, t_win=t_win, amp_weights=amp_weights, num_wins=num_wins, f_min=f_min, f_max=f_max, f_resolution=f_resolution)
