@@ -6,11 +6,24 @@ from plots import *
 from vlodder import *
 import scipy.io
 
-# vod.n_win = vod.n_ss
+filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
+filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
+
+
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
+    # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+    assert isinstance(vod, Vodscillator)
+
+vod.n_win = vod.n_ss
+
 # vod.save()
 
+vlodder(vod, "cluster")
+plt.show()
+
 # all cohero-figs for TH14
-if 1==1:
+if 1==0:
     filename = 'TH14RearwaveformSOAE'
     mat = scipy.io.loadmat('SOAE Data/' + 'TH14RearwaveformSOAE.mat')
     wf = np.squeeze(mat['wf'])

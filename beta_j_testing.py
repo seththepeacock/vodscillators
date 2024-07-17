@@ -7,9 +7,10 @@ from plots import *
 import scipy.io
 from vlodder import *
 
-filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
-filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+deniz_filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
 
+filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
+filepath = deniz_filepath
 
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
@@ -27,5 +28,5 @@ plt.figure()
 plt.plot(oscillators, beta_j_list)
 plt.xlabel("Oscillator index")
 plt.ylabel("beta_j")
-plt.title("Seth " + filename)
+plt.title("Deniz " + filename)
 plt.show()
