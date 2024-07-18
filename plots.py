@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from vodscillator import *
 from scipy.fft import rfft, rfftfreq
+from scipy.signal import welch
 
 # define helper functions
 def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=False):
@@ -24,6 +25,8 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
         "wfft", "freq_ax", "win_start_indices"
 
   """
+
+
   # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
   if t_shift is None:
     t_shift=t_win
@@ -86,6 +89,24 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
       "freq_ax" : freq_ax,
       "win_start_indices" : win_start_indices
       }
+
+
+def get_welch(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=False):
+  # calculate the number of samples in the window
+    # + 1 is because if you have SR=2 and you want a two second window, this will take 5 samples!
+  n_win = int(t_win*sample_rate) + 1
+  fs = sample_rate
+  freq_ax, psd = welch(wf, fs, nperseg=n_win)
+
+  if not return_all:
+    return psd
+  else: 
+    return {  
+      "wfft" : psd,
+      "freq_ax" : freq_ax
+      }
+
+
 
 
 def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=False):
