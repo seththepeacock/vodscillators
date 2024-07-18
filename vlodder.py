@@ -220,8 +220,6 @@ def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=No
 
 
 
-
-
   
 
 def heat_map(v=Vodscillator, min_freq=None, max_freq=None, db=True):

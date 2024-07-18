@@ -88,7 +88,6 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
       }
 
 
-
 def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
