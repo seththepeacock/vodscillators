@@ -25,12 +25,17 @@ from scipy.signal import welch
 filename = 'TH14RearwaveformSOAE'
 mat = scipy.io.loadmat('SOAE Data/' + 'TH14RearwaveformSOAE.mat')
 wf = np.squeeze(mat['wf'])
-
+wf_title = filename
+    
+# global
 sample_rate=44100
-t_win = 24
-
-w = get_welch(wf, sample_rate, t_win, return_all = True)
-wfft = w['wfft']
-freq_ax = w['freq_ax']
-plt.plot(freq_ax, wfft)
+xmin=None
+xmax=None
+ymin=None
+ymax=None
+# ymin=0
+# ymax=8
+show_plot=False
+t_win = 16
+coherence_vs_psd2(wf_title=wf_title, wf=wf, t_win=t_win, sample_rate=sample_rate, xmin=0, xmax=10, show_plot=show_plot, fig_num=3)
 plt.show()
