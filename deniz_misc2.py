@@ -26,8 +26,9 @@ filename = 'AC6rearSOAEwfB1.mat'
 mat = scipy.io.loadmat('SOAE Data/' + 'AC6rearSOAEwfB1.mat')
 wf = np.squeeze(mat['wf'])
 wf_title = filename
-    
-# global
+
+
+ref_type = "next_win"
 sample_rate=44100
 xmin=None
 xmax=None
@@ -38,5 +39,18 @@ ymax=None
 show_plot=False
 t_win = 0.1
 hann = True
-coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, sample_rate=sample_rate, xmin=0, xmax=20000, show_plot=show_plot, fig_num=3, hann=hann)
+
+ax2 = plt.subplot(2, 1, 1)
+coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=hann)
+ax2.set_title("Next window")
+
+
+ax4 = plt.subplot(2, 1, 2)
+ref_type="next_freq"
+coherence_vs_psd(wf_title=wf_title, ax=ax4, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=hann)
+ax4.set_title("Next frequency")
+
+plt.tight_layout()
 plt.show()
