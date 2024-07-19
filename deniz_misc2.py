@@ -22,8 +22,8 @@ from scipy.signal import welch
 # vod.save()
 
 
-filename = 'TH14RearwaveformSOAE'
-mat = scipy.io.loadmat('SOAE Data/' + 'TH14RearwaveformSOAE.mat')
+filename = 'AC6rearSOAEwfB1.mat'
+mat = scipy.io.loadmat('SOAE Data/' + 'AC6rearSOAEwfB1.mat')
 wf = np.squeeze(mat['wf'])
 wf_title = filename
     
@@ -36,6 +36,6 @@ ymax=None
 # ymin=0
 # ymax=8
 show_plot=False
-t_win = 16
+t_win = 2
 coherence_vs_psd2(wf_title=wf_title, wf=wf, t_win=t_win, sample_rate=sample_rate, xmin=0, xmax=10, show_plot=show_plot, fig_num=3)
 plt.show()
