@@ -395,7 +395,7 @@ magA10= magA10*(magA1[0]/magA10[0])
 # ===== visualize
 plt.close("all")
 # --- Fig.1: (last wd run) time waveforms & phase space
-if 1==0:
+if 1==1:
     fig1, ax1 = plt.subplots(2,1)
     ax1[0].plot(tpoints,x,'b-',label='X')
     ax1[0].plot(tpoints[indx-Npoints:indx],signal,'r.',label='SS bit')
@@ -410,6 +410,7 @@ if 1==0:
     ax1[1].set_ylabel('dx/dt') 
     ax1[1].grid()
     fig1.tight_layout(pad=1.5)
+    plt.show()
 
 # --- Fig.2: (last wd run) spectrum
 if 1==0:
