@@ -29,8 +29,9 @@ wf = np.squeeze(mat['wf'])
 sample_rate=44100
 t_win = 24
 
-w = get_welch(wf, sample_rate, t_win, return_all = True)
-wfft = w['wfft']
-freq_ax = w['freq_ax']
-plt.plot(freq_ax, wfft)
+wfft2 = get_wfft2(wf, sample_rate, t_win, return_all = False)
+coh = get_coherence(wf, sample_rate, t_win, return_all=True, wfft=wfft2)
+coherence = coh['coherence']
+freq_ax = coh['freq_ax']
+plt.plot(freq_ax, coherence)
 plt.show()

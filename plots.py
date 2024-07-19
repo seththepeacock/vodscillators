@@ -91,22 +91,90 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
       }
 
 
-def get_welch(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=False):
+def get_wfft2(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=False):
+  """ Gets the windowed fft of the given waveform with given window size and given t_shift
+
+  Parameters
+  ------------
+      wf: array
+        waveform input array
+      sample_rate: int
+        defaults to 44100 
+      t_win: float
+        length (in time) of each window
+      t_shift: float
+        length (in time) between the start of successive windows
+      num_wins: int, Optional
+        If this isn't passed, then just get the maximum number of windows of the given size
+      return_all: bool, Optional
+        Defaults to only returning the wfft; if this is enabled, then a dictionary is returned with keys:
+        "wfft", "freq_ax", "win_start_indices"
+
+  """
+
+
+  # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
+  if t_shift is None:
+    t_shift=t_win
+  
   # calculate the number of samples in the window
     # + 1 is because if you have SR=2 and you want a two second window, this will take 5 samples!
   n_win = int(t_win*sample_rate) + 1
-  fs = sample_rate
-  freq_ax, psd = welch(wf, fs, nperseg=n_win)
 
+  # and the number of samples to shift
+    # no + 1 here; if you want to shift it over one second and SR=2, that will be two samples
+  n_shift = int(t_shift*sample_rate)
+
+  # get sample_spacing
+  sample_spacing = 1/sample_rate
+
+  # first, get the last index of the waveform
+  final_wf_index = len(wf) - 1
+    # - 1 is because of zero-indexing!
+  # next, we get what we would be the largest potential win_start_index
+  final_win_start_index = final_wf_index - (n_win-1)
+    # start at the final_wf_index. we need to collect n_win points. this final index is our first one, and then we need n_win - 1 more. 
+    # So we march back n_win-1 points, and then THAT is the last_potential_win_start_index!
+  win_start_indices = np.arange(0, final_win_start_index + 1, n_shift)
+    # the + 1 here is because np.arange won't ever include the "stop" argument in the output array... but it could include (stop - 1) which is just our final_win_start_index!
+
+  # if number of windows is passed in, we make sure it's less than the length of win_start_indices
+  if num_wins is not None:
+    if num_wins > len(win_start_indices):
+      raise Exception("That's more windows than we can manage! Decrease num_wins!")
+  else:
+    # if no num_wins is passed in, we'll just use the max number of windows
+    num_wins = len(win_start_indices)
+
+  windowed_wf = np.zeros((num_wins, n_win))
+
+  for k in range(num_wins):
+    win_start = win_start_indices[k]
+    win_end = win_start + n_win
+    # grab the (real part of the) waveform in this window
+    windowed_wf[k, :] = wf[win_start:win_end].real
+    # note this grabs the wf at indices win_start, win_start+1, ..., win_end-1
+      # if there are 4 samples and t_win=t_shift=1 and SR=1, then n_win=2, n_shift=1 and
+      # Thus the first window will be samples 0 and 1, the next 1 and 2...
+
+  # Now we do the ffts!
+
+  # get frequency axis 
+  freq_ax = rfftfreq(n_win, sample_spacing)
+  num_freq_pts = len(freq_ax)
+  # get fft of each window
+  wfft = np.zeros((num_wins, num_freq_pts), dtype=complex)
+  for k in range(num_wins):
+    wfft[k, :] = rfft(windowed_wf[k, :]*np.hanning(n_win))
+  
   if not return_all:
-    return psd
+    return wfft
   else: 
     return {  
-      "wfft" : psd,
-      "freq_ax" : freq_ax
+      "wfft" : wfft,
+      "freq_ax" : freq_ax,
+      "win_start_indices" : win_start_indices
       }
-
-
 
 
 def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, return_all=False):
