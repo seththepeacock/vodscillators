@@ -344,8 +344,8 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, khz=Fa
   # if we haven't passed in an axes object, we'll initialize a figure and get the axes
   if ax is None:
     plt.figure(fig_num)
-    ax = plt.gca
-  assert isinstance(ax, Axes)
+    ax = plt.gca()
+  #assert isinstance(ax, Axes)
   
   # now we'll add an axes object with identical x-axis and flexible y-axis (which we'll add the psd to)
   ax2 = ax.twinx()
