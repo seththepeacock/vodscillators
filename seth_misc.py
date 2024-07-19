@@ -523,14 +523,6 @@ if 1==0:
 
 #psd + coherence of JIrear data
 if 1==1:
-    # # Load the .mat file
-    # filename = 'AC6rearSOAEwfB1'
-    # mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
-    # wf = np.squeeze(mat['wf'])
-    #     # set global
-    # wf_title = filename
-        
-        
     # filename = "V&D fig 4, loc=0.1, glob=0, sr=512.pkl"
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     # with open(filepath + filename, 'rb') as picklefile:
@@ -540,23 +532,31 @@ if 1==1:
     #     wf = vod.SOO_sol[vod.n_transient:]
         
     # wf_title = "V&D fig 4, loc=0.1, glob=0, sr=512"
+    # sample_rate=128
+    # khz=False
+    # xmin=0
+    # xmax=64
     
     
-    filename = "V&D fig 4, loc=0.1, glob=0, sr=128"
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    with open(filepath + filename + ".pkl", 'rb') as picklefile:
-        vod = pickle.load(picklefile)
-        assert(isinstance(vod, Vodscillator))
-        # truncate it
-        wf = vod.SOO_sol[vod.n_transient:]
-        
+    # filename = "V&D fig 4, loc=0.1, glob=0, sr=128"
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # with open(filepath + filename + ".pkl", 'rb') as picklefile:
+    #     vod = pickle.load(picklefile)
+    #     assert(isinstance(vod, Vodscillator))
+    #     # truncate it
+    #     wf = vod.SOO_sol[vod.n_transient:]
+    
+    # Load the .mat file
+    filename = 'AC6rearSOAEwfB1'
+    mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
+    wf = np.squeeze(mat['wf'])
+        # set global
     wf_title = filename
- 
     
-    sample_rate=128
-    khz=False
+    sample_rate=44100
+    khz=True
     xmin=0
-    xmax=64
+    xmax=24
     ymin=None
     ymax=None
     ymin=0
@@ -566,7 +566,7 @@ if 1==1:
         
     
     # set alterable params
-    t_win=50
+    t_win=0.1
     t_shift=t_win
     downsample_freq = 1
     
@@ -577,7 +577,7 @@ if 1==1:
     
     # optionally add noise
     if 1==1:
-        noise_amp = 0.1
+        noise_amp = 0
         wf = wf + (noise_amp*np.random.random_sample(len(wf)) - 1)
     
     
@@ -590,7 +590,7 @@ if 1==1:
     # wf_title1 = wf_title + f" with PR to Next Win"
     ax1 = plt.subplot(2, 1, 2)
     coherence_vs_psd(ax=ax1, downsample_freq=downsample_freq, khz=khz, wf_title=wf_title1, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax, do_psd=do_psd)
-    
+
     ref_type="next_freq"
     wf_title2 = wf_title + f" with NFPC (noise_amp = {noise_amp})"
     # wf_title2 = wf_title + f" with PR to Higher Freq"
