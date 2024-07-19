@@ -62,7 +62,6 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
     num_wins = len(win_start_indices)
 
   windowed_wf = np.zeros((num_wins, n_win))
-
   for k in range(num_wins):
     win_start = win_start_indices[k]
     win_end = win_start + n_win
@@ -79,6 +78,7 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
   num_freq_pts = len(freq_ax)
   # get fft of each window
   wfft = np.zeros((num_wins, num_freq_pts), dtype=complex)
+
   for k in range(num_wins):
     wfft[k, :] = rfft(windowed_wf[k, :])
   
@@ -141,7 +141,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, freq_ax=None, retu
     d = get_wfft(wf=wf, sample_rate=sample_rate, t_win=t_win, num_wins=num_wins, return_all=True)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
-    
+  
   # calculate necessary params from the wfft
   wfft_size = np.shape(wfft)
   num_wins = wfft_size[0]
@@ -193,6 +193,15 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
         Defaults to only returning the PSD averaged over all windows; if this is enabled, then a dictionary is returned with keys:
         "avg_psd", "freq_ax", "win_psd"
   """
+  # define a helper function to calculate vector strength from an array of phase diffs (one for each freq)
+  def get_vector_strength(phase_diffs):
+    # get the sin and cos of the phase diffs, and average over the window pairs
+    xx= np.mean(np.sin(phase_diffs),axis=0)
+    yy= np.mean(np.cos(phase_diffs),axis=0)
+
+    # finally, output the vector strength (for each frequency)
+    return np.sqrt(xx**2 + yy**2)
+  
   # make sure we either have both or neither
   if (wfft is None and freq_ax is not None) or (wfft is not None and freq_ax is None):
     raise Exception("We need both wfft and freq_ax (or neither)!")
@@ -202,7 +211,7 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
     d = get_wfft(wf=wf, sample_rate=sample_rate, t_win=t_win, t_shift=t_shift, num_wins=num_wins, return_all=True)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
-    
+  
   # calculate necessary params from the wfft
   wfft_size = np.shape(wfft)
   num_wins = wfft_size[0]
@@ -210,8 +219,8 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
 
   # get phases
   phases = np.angle(wfft)
-
-  # get phase diffs with either ref_type
+  
+  # we can reference each phase against the phase of the same frequency in the next window:
   if ref_type == "next_win":
     # initialize array for phase diffs; we won't be able to get it for the final window
     phase_diffs = np.zeros((num_wins - 1, num_freq_pts))
@@ -220,9 +229,13 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
     for win in range(num_wins - 1):
       # take the difference between the phases in this current window and the next
       phase_diffs[win] = phases[win + 1] - phases[win]
-      
+    
+    coherence = get_vector_strength(phase_diffs)
+    
+  # or we can reference it against the phase of the next frequency in the same window:
   elif ref_type == "next_freq":
-    # initialize array for phase diffs; we won't be able to get it for the final freq
+    
+    # initialize array for phase diffs; - 1 is because we won't be able to get it for the final freq 
     phase_diffs = np.zeros((num_wins, num_freq_pts - 1))
     # we'll also need to take the last bin off the freq_ax
     freq_ax = freq_ax[0:-1]
@@ -231,13 +244,31 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
     for win in range(num_wins):
       for freq in range(num_freq_pts - 1):
         phase_diffs[win, freq] = phases[win, freq + 1] - phases[win, freq]
-
-  # get the sin and cos of the phase diffs, and average over the window pairs
-  xx= np.mean(np.sin(phase_diffs),axis=0)
-  yy= np.mean(np.cos(phase_diffs),axis=0)
-
-  # finally, output the vector strength (for each frequency)
-  coherence = np.sqrt(xx**2 + yy**2)
+    
+    coherence = get_vector_strength(phase_diffs)
+  
+  # or we can reference it against the phase of both the lower and higher frequencies in the same window
+  elif ref_type == "both_freqs":
+    # initialize arrays
+      # even though we only lose ONE freq point with lower and one with higher, we want to get all the points we can get from BOTH so we do - 2
+    pd_low = np.zeros((num_wins, num_freq_pts - 2))
+    pd_high = np.zeros((num_wins, num_freq_pts - 2))
+    # take the first and last bin off the freq ax
+    freq_ax = freq_ax[1:-1]
+    
+    # calc phase diffs
+    for win in range(num_wins):
+      for freq in range(1, num_freq_pts - 1):
+        # the - 1 is so that we start our phase_diffs arrays at 0 and put in num_freq_pts-2 points. 
+        # These will correspond to our new frequency axis.
+        pd_low[win, freq - 1] = phases[win, freq] - phases[win, freq - 1]
+        pd_high[win, freq - 1] = phases[win, freq + 1] - phases[win, freq]
+    coherence_low = get_vector_strength(pd_low)
+    coherence_high = get_vector_strength(pd_high)
+    # aveerage the coherences you would get from either of these
+    coherence = (coherence_low + coherence_high)/2
+  else:
+    raise Exception("You didn't input a proper ref_type!") 
 
   if not return_all:
     return coherence
@@ -246,8 +277,10 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
       "freq_ax" : freq_ax,
       "coherence" : coherence
       }
+      # define a helper function to be reused
 
-def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, downsample_freq=False, ref_type="next_win", max_vec_strength=1, psd_shift=0, db=True, xmin=None, xmax=None, 
+
+def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, khz=False, downsample_freq=False, ref_type="next_win", max_vec_strength=1, psd_shift=0, db=True, xmin=None, xmax=None, 
                      ymin=None, ymax=None, wf_title=None, show_plot=False, do_coherence=True, do_psd=True, ax=None, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
@@ -295,8 +328,7 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, downsa
   wfft = d["wfft"]
   # we'll want to pass this through the subsequent functions as well to maintain correspondence through all the shifts
   freq_ax = d["freq_ax"]
-
-
+  
   # get (averaged over windows) PSD
   p = get_psd(wf, sample_rate, t_win, wfft=wfft, freq_ax=freq_ax, return_all=True)
   psd = p["psd"]
@@ -308,10 +340,14 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, downsa
   coherence_freq_ax = c["freq_ax"]
 
   if downsample_freq:
-    coherence=coherence[1::downsample_freq]
-    coherence_freq_ax=coherence_freq_ax[1::downsample_freq]
-    psd=psd[1::downsample_freq]
-    psd_freq_ax=psd_freq_ax[1::downsample_freq]
+    coherence=coherence[::downsample_freq]
+    coherence_freq_ax=coherence_freq_ax[::downsample_freq]
+    psd=psd[::downsample_freq]
+    psd_freq_ax=psd_freq_ax[::downsample_freq]
+  
+  if khz:
+    psd_freq_ax = psd_freq_ax / 1000
+    coherence_freq_ax = coherence_freq_ax / 1000
   
   if (db == True):
     psd = 20*np.log10(psd)
@@ -329,15 +365,19 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, downsa
 
   # plot + set labels
   if do_coherence:
-    ax.plot(coherence_freq_ax, coherence, label=f"Coherence: t_win={t_win}, t_shift={t_shift}, ref_type={ref_type}", color='purple')
+    ax.plot(coherence_freq_ax, coherence, label=f"Phase Coherence: t_win={t_win}, t_shift={t_shift}, ref_type={ref_type}", color='purple')
     ax.set_xlabel('Freq [Hz]')
-    ax.set_ylabel('Phase Coherence', color='purple')
+    ax.set_ylabel('Vector Strength', color='purple')
     ax.legend(loc="lower left")
   if do_psd:
     ax2.plot(psd_freq_ax, psd, label="PSD", color='r')
     ax2.set_xlabel('Freq [Hz]')
     ax2.set_ylabel('PSD [dB]', color='r')
     ax2.legend(loc="lower right")
+  
+  if khz:
+    ax.set_xlabel('Freq [kHz]')
+    ax2.set_xlabel('Freq [kHz]')
 
   # set title
   if wf_title:

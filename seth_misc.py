@@ -5,7 +5,7 @@ import pickle
 from plots import *
 from vlodder import *
 import scipy.io
-
+import random as rand
 # vod.n_win = vod.n_ss
 # vod.save()
 
@@ -61,18 +61,143 @@ if 1==0:
     # plt.show()
 
 
+# Comparing next win with next freq
+if 1==0:
+    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    # filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # load wf
+    with open(filepath + filename, 'rb') as picklefile:
+        wf = pickle.load(picklefile)
+        # assert(isinstance(vod, Vodscillator))
+        # truncate it
+        # wf = vod.SOO_sol[vod.n_transient:]
+        wf = wf[0:int(len(wf)/4)]
+        
+    # set global
+    sample_rate=128
+    xmin=0
+    xmax=6
+    ymin=None
+    ymax=None
+    ymin=0
+    ymax=8
+    show_plot=False
+    wf_title = "V&D fig 4, loc=0.1, glob=0"
+
+
+    # PLOT COHERENCE NEXT_FREQ VS NEXT_WIN
+    
+    xmin=0
+    xmax=6
+    ymin=0
+    ymax=8
+    
+    plt.figure(1)
+    
+    
+    downsample_freq=1
+    
+    ref_type="next_freq"
+    ax1 = plt.subplot(2, 1, 1)
+    t_win = 20
+    t_shift = t_win
+    coherence_vs_psd(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
+    ax1.set_title("Referenced to Next Freq (Window Size = 20s)")
+    
+    ax3 = plt.subplot(2, 1, 2)
+    ref_type="next_freq"
+    t_win = 30
+    t_shift = t_win
+    coherence_vs_psd(downsample_freq=downsample_freq, ax=ax3, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
+    ax3.set_title("Referenced to Next Freq (Window Size = 30s)")
+    
+    plt.tight_layout()
+    
+    plt.show()
+    
+    plt.figure(2)
+
+    ref_type="next_win"
+    t_win = 10
+    t_shift = t_win
+    ax2 = plt.subplot(2, 1, 1)
+    coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
+    ax2.set_title("Referenced to Next Window (Small Window Size)")
+    
+    ax4 = plt.subplot(2, 1, 2)
+    ref_type="next_win"
+    t_win = 50
+    t_shift = t_win
+    coherence_vs_psd(downsample_freq=downsample_freq, ax=ax4, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
+    ax4.set_title("Referenced to Next Window (Large Window Size)")
+    
+    plt.tight_layout()
+    plt.show()
+    
+# testing next_freq on generated waveforms
+if 1==0:
+    def dxdt(x,t,gamma,w0,A,wd):
+        x1, x2 = x
+        dx1dt = x2
+        dx2dt = -gamma*x2 - (w0**2)*x1 + A*np.sin(wd*t)
+        return dx1dt, dx2dt
+    
+    # get waveform
+
+    # filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    # # filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
+    # # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # # load wf
+    # with open(filepath + filename, 'rb') as picklefile:
+    #     wf = pickle.load(picklefile)
+    #     # assert(isinstance(vod, Vodscillator))
+    #     # truncate it
+    #     # wf = vod.SOO_sol[vod.n_transient:]
+    #     wf = wf[0:int(len(wf)/4)]
+    
+    
+        
+    # set global
+    wf_title = "V&D fig 4, loc=0.1, glob=0"
+    sample_rate=128
+    xmin=0
+    xmax=6
+    ymin=None
+    ymax=None
+    ymin=0
+    ymax=8
+    show_plot=False
+    do_psd = True
+
+    plt.figure(1)
+    
+    # plot
+
+    t_win=50
+    t_shift=t_win
+    ref_type="next_win"
+    ax1 = plt.subplot(2, 1, 1)
+    coherence_vs_psd(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    
+    ref_type="next_freq"
+    ax2 = plt.subplot(2, 1, 2)
+    coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    plt.tight_layout()
+    plt.show()
+    
+
 # all cohero-figs for Chris' V&D
 if 1==0:
-    # # good params for next_win!
+    # # good params for next_win coherogram!
     # t_win = 4
     # t_shift = 1
     # scope = 5
     
     filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
-    # filename = "V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
-    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-    # load wf
     with open(filepath + filename, 'rb') as picklefile:
         wf = pickle.load(picklefile)
         # assert(isinstance(vod, Vodscillator))
@@ -114,58 +239,26 @@ if 1==0:
     # PLOT COHERENCE NEXT_FREQ VS NEXT_WIN
     
     xmin=0
-    xmax=6
+    xmax=50
     ymin=0
     ymax=8
     
     plt.figure(1)
     
+    wf = 2*np.random.random_sample(5000*sample_rate) - 1
+    do_psd = False
     
-    downsample_freq=1
-    
-    ref_type="next_freq"
+    t_win=50
+    t_shift=t_win
+    ref_type="next_win"
     ax1 = plt.subplot(2, 1, 1)
-    t_win = 20
-    t_shift = t_win
-    coherence_vs_psd(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
-    ax1.set_title("Referenced to Next Freq (Window Size = 20s)")
+    coherence_vs_psd(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax, do_psd=do_psd)
     
-    ax3 = plt.subplot(2, 1, 2)
     ref_type="next_freq"
-    t_win = 30
-    t_shift = t_win
-    coherence_vs_psd(downsample_freq=downsample_freq, ax=ax3, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
-    ax3.set_title("Referenced to Next Freq (Window Size = 30s)")
-    
+    ax2 = plt.subplot(2, 1, 2)
+    coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax, do_psd=do_psd)
     plt.tight_layout()
-    
     plt.show()
-    
-    # plt.figure(2)
-
-    # ref_type="next_win"
-    # t_win = 10
-    # t_shift = t_win
-    # ax2 = plt.subplot(2, 1, 1)
-    # coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
-    # ax2.set_title("Referenced to Next Window (Small Window Size)")
-    
-    # ax4 = plt.subplot(2, 1, 2)
-    # ref_type="next_win"
-    # t_win = 50
-    # t_shift = t_win
-    # coherence_vs_psd(downsample_freq=downsample_freq, ax=ax4, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax)
-    # ax4.set_title("Referenced to Next Window (Large Window Size)")
-    
-    # plt.tight_layout()
-    # plt.show()
-    
-    
-    
-    
-    
-    
-    
     
     # # Plot Spectrogram and Coherogram in one plot
     # plt.figure(2)
@@ -429,37 +522,83 @@ if 1==0:
     # plt.show()
 
 #psd + coherence of JIrear data
-if 1==0:
-    # Load the .mat file
-    filename = 'TH21RearwaveformSOAE'
-    mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
-    soae = np.squeeze(mat['wf'])
+if 1==1:
+    # # Load the .mat file
+    # filename = 'AC6rearSOAEwfB1'
+    # mat = scipy.io.loadmat('SOAE Data/' + 'TH21RearwaveformSOAE.mat')
+    # wf = np.squeeze(mat['wf'])
+    #     # set global
+    # wf_title = filename
+        
+        
+    # filename = "V&D fig 4, loc=0.1, glob=0, sr=512.pkl"
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # with open(filepath + filename, 'rb') as picklefile:
+    #     vod = pickle.load(picklefile)
+    #     assert(isinstance(vod, Vodscillator))
+    #     # truncate it
+    #     wf = vod.SOO_sol[vod.n_transient:]
+        
+    # wf_title = "V&D fig 4, loc=0.1, glob=0, sr=512"
+    
+    
+    filename = "V&D fig 4, loc=0.1, glob=0, sr=128"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    with open(filepath + filename + ".pkl", 'rb') as picklefile:
+        vod = pickle.load(picklefile)
+        assert(isinstance(vod, Vodscillator))
+        # truncate it
+        wf = vod.SOO_sol[vod.n_transient:]
+        
     wf_title = filename
-    fig_num=1
-    win_size=128
-    show_plot=True
-    max_vec_strength=100
-    psd_shift=100
-    db=True
-    do_psd=True
-    do_coherence=True,
-    xmin=None
-    xmax=None
+ 
+    
+    sample_rate=128
+    khz=False
+    xmin=0
+    xmax=64
     ymin=None
     ymax=None
-    # xmin=1.69
-    # xmax=1.76
-    xmin=1
-    xmax=5
-    # ymin=0
-    # ymax=1
-    # coherence_vs_psd(soae, win_size=win_size, show_plot=False, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
-                        #    db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
-    win_size=16
-    fig_num = 2
-    coherence_vs_psd(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
-                           db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
-
+    ymin=0
+    ymax=8
+    show_plot=False
+    do_psd = True
+        
+    
+    # set alterable params
+    t_win=50
+    t_shift=t_win
+    downsample_freq = 1
+    
+    # optionally downsample
+    if 1==0:
+        sample_rate = sample_rate / 2
+        wf = wf[::2]
+    
+    # optionally add noise
+    if 1==1:
+        noise_amp = 0.1
+        wf = wf + (noise_amp*np.random.random_sample(len(wf)) - 1)
+    
+    
+    # plot
+    
+    plt.figure(2)
+    
+    ref_type="next_win"
+    wf_title1 = wf_title + f" with NWPC (noise_amp = {noise_amp})"
+    # wf_title1 = wf_title + f" with PR to Next Win"
+    ax1 = plt.subplot(2, 1, 2)
+    coherence_vs_psd(ax=ax1, downsample_freq=downsample_freq, khz=khz, wf_title=wf_title1, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    
+    ref_type="next_freq"
+    wf_title2 = wf_title + f" with NFPC (noise_amp = {noise_amp})"
+    # wf_title2 = wf_title + f" with PR to Higher Freq"
+    ax2 = plt.subplot(2, 1, 1)
+    coherence_vs_psd(ax=ax2, khz=khz, downsample_freq=downsample_freq, wf_title=wf_title2, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sample_rate=sample_rate, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    
+    plt.tight_layout()
+    plt.show()
 #psd + coherence of vodscillators
 if 1==0:
     # Open pickled vodscillator
