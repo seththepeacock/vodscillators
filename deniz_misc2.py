@@ -36,6 +36,7 @@ ymax=None
 # ymin=0
 # ymax=8
 show_plot=False
-t_win = 2
-coherence_vs_psd2(wf_title=wf_title, wf=wf, t_win=t_win, sample_rate=sample_rate, xmin=0, xmax=10, show_plot=show_plot, fig_num=3)
+t_win = 0.1
+hann = True
+coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, sample_rate=sample_rate, xmin=0, xmax=20000, show_plot=show_plot, fig_num=3, hann=hann)
 plt.show()
