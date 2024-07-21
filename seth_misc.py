@@ -9,6 +9,83 @@ import random as rand
 # vod.n_win = vod.n_ss
 # vod.save()
 
+# next freq phase diff comparison for peaks vs valleys (Anolis SOAE)
+if 1==0: 
+    filepath = 'SOAE Data\\2020.02.21 Anolis\\'
+    filename = 'ACsb24rearSOAEwfA1.mat'
+    mat = scipy.io.loadmat(filepath + filename)
+    wf = np.squeeze(mat['wf'])
+
+
+    # set global
+    sample_rate=128
+    wf_title = filename
+    xmin=0
+    xmax=6
+    ymin=None
+    ymax=None
+    ymin=0
+    ymax=8
+    show_plot=False
+    t_win=50
+
+
+
+    coherence_vs_psd(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, xmin=xmin, xmax=xmax)
+    plt.show()
+
+    # c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
+    # num_wins = c["num_wins"]
+    # phase_diffs = c["phase_diffs"]
+    # freq = 1.10
+    # freq_bin_index = int(freq*50)
+    # print(np.mean(np.abs(phase_diffs[:, freq_bin_index])))
+
+    # plt.scatter(range(num_wins), phase_diffs[:, freq_bin_index])
+    # plt.title(f"Next Freq Bin Phase Diffs for the V&D Fig 4 Coherence/Power Valley at {freq}Hz")
+    # plt.xlabel("Window #")
+    # plt.ylabel("Phase Diff")
+    # plt.show()
+
+# next freq phase diff comparison for peaks vs valleys (V&D)
+if 1==0: 
+    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    with open(filepath + filename, 'rb') as picklefile:
+        wf = pickle.load(picklefile)
+        wf = wf[0:int(len(wf)/4)]
+
+    # set global
+    sample_rate=128
+    wf_title = filename
+    xmin=0
+    xmax=6
+    ymin=None
+    ymax=None
+    ymin=0
+    ymax=8
+    show_plot=False
+    t_win=50
+
+
+
+    # coherence_vs_psd(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, xmin=xmin, xmax=xmax)
+    # plt.show()
+
+    c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
+    num_wins = c["num_wins"]
+    phase_diffs = c["phase_diffs"]
+    freq = 1.10
+    freq_bin_index = int(freq*50)
+    print(np.mean(np.abs(phase_diffs[:, freq_bin_index])))
+
+    plt.scatter(range(num_wins), phase_diffs[:, freq_bin_index])
+    plt.title(f"Next Freq Bin Phase Diffs for the V&D Fig 4 Coherence/Power Valley at {freq}Hz")
+    plt.xlabel("Window #")
+    plt.ylabel("Phase Diff")
+    plt.show()
+
+
 
 
 
@@ -522,7 +599,7 @@ if 1==0:
     # plt.show()
 
 #psd + coherence of JIrear data
-if 1==1:
+if 1==0:
     # filename = "V&D fig 4, loc=0.1, glob=0, sr=512.pkl"
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     # with open(filepath + filename, 'rb') as picklefile:
