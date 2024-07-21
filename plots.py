@@ -223,7 +223,7 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
   # or we can reference it against the phase of the next frequency in the same window:
   elif ref_type == "next_freq":
     # unwrap it w.r.t. neighboring frequency bins
-    phases=np.angle(wfft, axis=1)
+    phases=np.unwrap(phases, axis=1)
     # initialize array for phase diffs; - 1 is because we won't be able to get it for the final freq 
     phase_diffs = np.zeros((num_wins, num_freq_pts - 1))
     # we'll also need to take the last bin off the freq_ax
