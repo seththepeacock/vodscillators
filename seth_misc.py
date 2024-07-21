@@ -10,7 +10,7 @@ import random as rand
 # vod.save()
 
 # next freq phase diff comparison for peaks vs valleys (Anolis SOAE)
-if 1==0: 
+if 1==1: 
     filepath = 'SOAE Data\\2020.02.21 Anolis\\'
     filename = 'ACsb24rearSOAEwfA1.mat'
     mat = scipy.io.loadmat(filepath + filename)
