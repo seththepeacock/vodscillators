@@ -28,7 +28,6 @@ wf = np.squeeze(mat['wf'])
 wf_title = filename
 
 
-ref_type = "next_win"
 sample_rate=44100
 xmin=None
 xmax=None
@@ -39,18 +38,46 @@ ymax=None
 show_plot=False
 t_win = 0.1
 hann = True
+t_shift = 0.1
 
-ax2 = plt.subplot(2, 1, 1)
-coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+ax1 = plt.subplot(2, 2, 1)
+ref_type = "next_win"
+coherence_vs_psd(ax=ax1, t_shift=t_shift, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=False)
+ax1.set_title("Next window ")
+
+
+
+ax2 = plt.subplot(2, 2, 2)
+ref_type = "next_win"
+coherence_vs_psd(ax=ax2, t_shift=t_shift, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=hann)
-ax2.set_title("Next window")
+ax2.set_title("Next window Hann")
 
-
-ax4 = plt.subplot(2, 1, 2)
+ax3 = plt.subplot(2, 2, 3)
 ref_type="next_freq"
-coherence_vs_psd(wf_title=wf_title, ax=ax4, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, ax=ax3, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=False)
+ax3.set_title("Next frequency ")
+
+
+
+ax4 = plt.subplot(2, 2, 4)
+ref_type="next_freq"
+coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, ax=ax4, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=hann)
-ax4.set_title("Next frequency")
+ax4.set_title("Next frequency Hann")
+
+#ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+#          ncol=3, fancybox=True, shadow=True)
+#ax2.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+#          ncol=3, fancybox=True, shadow=True)
+#ax3.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+#          ncol=3, fancybox=True, shadow=True)
+#ax4.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+#          ncol=3, fancybox=True, shadow=True)
+#
+#
 
 plt.tight_layout()
 plt.show()
