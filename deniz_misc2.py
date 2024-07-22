@@ -44,6 +44,7 @@ ax1 = plt.subplot(2, 2, 1)
 ref_type = "next_win"
 coherence_vs_psd(ax=ax1, t_shift=t_shift, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=False)
+ax1.legend(loc='upper right')
 ax1.set_title("Next window ")
 
 
@@ -52,12 +53,14 @@ ax2 = plt.subplot(2, 2, 2)
 ref_type = "next_win"
 coherence_vs_psd(ax=ax2, t_shift=t_shift, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=hann)
+ax2.legend(loc='upper right')
 ax2.set_title("Next window Hann")
 
 ax3 = plt.subplot(2, 2, 3)
 ref_type="next_freq"
 coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, ax=ax3, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=False)
+ax3.legend(loc='upper right')
 ax3.set_title("Next frequency ")
 
 
@@ -66,18 +69,11 @@ ax4 = plt.subplot(2, 2, 4)
 ref_type="next_freq"
 coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, ax=ax4, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=True, show_plot=show_plot, hann=hann)
+ax4.legend(loc='upper right')
 ax4.set_title("Next frequency Hann")
 
-#ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-#          ncol=3, fancybox=True, shadow=True)
-#ax2.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-#          ncol=3, fancybox=True, shadow=True)
-#ax3.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-#          ncol=3, fancybox=True, shadow=True)
-#ax4.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
-#          ncol=3, fancybox=True, shadow=True)
-#
-#
+
+
 
 plt.tight_layout()
 plt.show()
