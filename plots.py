@@ -205,7 +205,8 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
   num_freq_pts = wfft_size[1]
 
   # get phases
-  phases = np.angle(wfft)
+  # phases = np.unwrap(np.angle(wfft))
+  phases=np.angle(wfft)
   
   # we can reference each phase against the phase of the same frequency in the next window:
   if ref_type == "next_win":
@@ -221,7 +222,8 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
     
   # or we can reference it against the phase of the next frequency in the same window:
   elif ref_type == "next_freq":
-    
+    # unwrap it w.r.t. neighboring frequency bins
+    phases=np.unwrap(phases, axis=1)
     # initialize array for phase diffs; - 1 is because we won't be able to get it for the final freq 
     phase_diffs = np.zeros((num_wins, num_freq_pts - 1))
     # we'll also need to take the last bin off the freq_ax
@@ -231,7 +233,6 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
     for win in range(num_wins):
       for freq in range(num_freq_pts - 1):
         phase_diffs[win, freq] = phases[win, freq + 1] - phases[win, freq]
-    
     coherence = get_vector_strength(phase_diffs)
   
   # or we can reference it against the phase of both the lower and higher frequencies in the same window
@@ -262,7 +263,9 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
   else:
     return {  
       "freq_ax" : freq_ax,
-      "coherence" : coherence
+      "coherence" : coherence,
+      "phase_diffs": phase_diffs,
+      "num_wins": num_wins
       }
       # define a helper function to be reused
 
