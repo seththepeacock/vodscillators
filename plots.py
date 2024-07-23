@@ -6,7 +6,7 @@ from scipy.fft import rfft, rfftfreq
 from scipy.signal import welch
 
 # define helper functions
-def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=False, hann=False):
+def get_wfft(wf, sample_rate, t_win, t_shift=None, fcut=False, num_wins=None, return_all=False, hann=False):
   """ Gets the windowed fft of the given waveform with given window size and given t_shift
 
   Parameters
@@ -86,13 +86,25 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, num_wins=None, return_all=Fal
   else:
     for k in range(num_wins):
       wfft[k, :] = rfft(windowed_wf[k, :])
+      
+  if fcut:
+      fcut_index = np.where(freq_ax > 200)[0][0]
+      wfft2 = np.zeros((num_wins, num_freq_pts - fcut_index), dtype=complex)
+      freq_ax2 = np.zeros(num_freq_pts - fcut_index + 1)
+      for k in range(num_wins):
+        wfft2[k,:] = wfft[k, fcut_index:]
+        freq_ax2 = freq_ax[fcut_index:]
+  
+  else:
+    wfft2 = wfft
+    freq_ax2 = freq_ax
   
   if not return_all:
-    return wfft
+    return wfft2
   else: 
     return {  
-      "wfft" : wfft,
-      "freq_ax" : freq_ax,
+      "wfft" : wfft2,
+      "freq_ax" : freq_ax2,
       "win_start_indices" : win_start_indices
       }
 
@@ -157,7 +169,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, freq_ax=None, retu
       "win_psd" : win_psd
       }
 
-def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
+def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, num_wins=None, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
   Parameters
@@ -195,7 +207,7 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
   
   # if you passed the wfft and freq_ax in then we'll skip over this
   if wfft is None:
-    d = get_wfft(wf=wf, sample_rate=sample_rate, t_win=t_win, t_shift=t_shift, num_wins=num_wins, return_all=True)
+    d = get_wfft(wf=wf, sample_rate=sample_rate, fcut=fcut, t_win=t_win, t_shift=t_shift, num_wins=num_wins, return_all=True)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
   
@@ -270,7 +282,7 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
       # define a helper function to be reused
 
 
-def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, khz=False, downsample_freq=False, ref_type="next_win", max_vec_strength=1, psd_shift=0, db=True, xmin=None, xmax=None, 
+def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, fcut=False, num_wins=None, khz=False, downsample_freq=False, ref_type="next_win", max_vec_strength=1, psd_shift=0, db=True, xmin=None, xmax=None, 
                      ymin=None, ymax=None, wf_title=None, show_plot=False, do_coherence=True, do_psd=True, ax=None, fig_num=1, hann=False):
   """ Plots the power spectral density and phase coherence of an input waveform
   
@@ -314,7 +326,7 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, num_wins=None, khz=Fa
         If you didn't pass in an Axes, then it will create a figure and this will set the figure number
   """
   # get wfft so we don't have to do it twice below
-  d = get_wfft(wf=wf, sample_rate=sample_rate, t_shift=t_shift, t_win=t_win, num_wins=num_wins, return_all=True, hann=hann)
+  d = get_wfft(wf=wf, sample_rate=sample_rate, t_shift=t_shift, fcut=fcut, t_win=t_win, num_wins=num_wins, return_all=True, hann=hann)
   wfft = d["wfft"]
   # we'll want to pass this through the subsequent functions as well to maintain correspondence through all the shifts
   freq_ax = d["freq_ax"]
