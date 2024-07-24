@@ -9,10 +9,68 @@ import random as rand
 # vod.n_win = vod.n_ss
 # vod.save()
 
-
-
-# ALL VALUES next freq phase diff comparison for peaks vs valleys (TH14 SOAE)
+# ALL VALUES <|phase diff|> vs coherence (V&D)
 if 1==1: 
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
+    # filename = 'TH14RearwaveformSOAE.mat'
+    # # filename = 'ACsb24rearSOAEwfA1'
+    # mat = scipy.io.loadmat(filepath + filename)
+    # wf = np.squeeze(mat['wf'])
+    # sample_rate=44100
+    # t_win=0.1
+    # xmax=5000
+    
+    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    with open(filepath + filename, 'rb') as picklefile:
+        wf = pickle.load(picklefile)
+        wf = wf[0:int(len(wf)/8)]
+    sample_rate=128
+    t_win=16
+    xmax=6
+
+
+    # set global
+    wf_title = filename
+    xmin=0
+    ymin=None
+    ymax=None
+    ymin=0
+    ymax=8
+    show_plot=False
+
+
+    c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
+    num_wins = c["num_wins"]
+    phase_diffs = c["phase_diffs"]
+    freq_ax_n = c["freq_ax"]
+    
+    # get the mean over all windows (0th axis)
+    means_n = np.mean(np.abs(phase_diffs[:, :]), 0)
+    
+    plt.figure(1)
+    ax1 = plt.gca()
+    ax2 = ax1.twinx()
+    ax1 = plt.subplot(2, 1, 1)
+    ax2 = plt.subplot(2, 1, 2)
+
+    ax1.plot(freq_ax_n, means_n, label="<|Phase Diff (Next)|>")
+    ax1.set_xlim(xmin, xmax)
+    ax1.set_title(f"Average of Absolute Value of Phase Diffs (Next Freq) for {wf_title}")
+    ax1.set_xlabel("Frequency")
+    ax1.set_ylabel("<|Phase Diff|>")
+    ax1.legend()
+    
+    coherence_vs_psd(ax=ax2, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", t_win = t_win, xmin=xmin, xmax=xmax)
+    
+    plt.tight_layout()
+    
+    
+    plt.show()
+
+
+# ALL VALUES <|phase diff|> and psd and coherence Next Freq VS Prev Freq (TH14 SOAE)
+if 1==0: 
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
     filename = 'TH14RearwaveformSOAE.mat'
     # filename = 'ACsb24rearSOAEwfA1'
@@ -86,8 +144,8 @@ if 1==1:
     plt.show()
 
 
-# next freq phase diff comparison for peaks vs valleys (TH14 SOAE)
-if 1==0: 
+# scatter plot for next freq phase diffs (TH14 SOAE)
+if 1==1: 
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
     filename = 'TH14RearwaveformSOAE.mat'
     # filename = 'ACsb24rearSOAEwfA1'
@@ -119,7 +177,7 @@ if 1==0:
     c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
     num_wins = c["num_wins"]
     phase_diffs = c["phase_diffs"]
-    freq = 4380
+    freq = 2810
     freq_bin_index = int(freq*t_win)
     print(np.mean(np.abs(phase_diffs[:, freq_bin_index])))
 
