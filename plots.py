@@ -235,6 +235,21 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
         phase_diffs[win, freq] = phases[win, freq + 1] - phases[win, freq]
     coherence = get_vector_strength(phase_diffs)
   
+  elif ref_type == "prev_freq":
+    # unwrap it w.r.t. neighboring frequency bins
+    phases=np.unwrap(phases, axis=1)
+    # initialize array for phase diffs; - 1 is because we won't be able to get it for the final freq 
+    phase_diffs = np.zeros((num_wins, num_freq_pts - 1))
+    # we'll also need to take the first bin off the freq_ax
+    freq_ax = freq_ax[1:]
+    
+    # calc phase diffs
+    for win in range(num_wins):
+      for freq in range(1, num_freq_pts):
+        # so the first entry is in phase_diffs[win, 0] and corresponds to the entry for phases[win, 1] which makes sense bc our first bin on freq_ax is the one that was originally at index 1
+        phase_diffs[win, freq - 1] = phases[win, freq] - phases[win, freq - 1]
+    coherence = get_vector_strength(phase_diffs)
+  
   # or we can reference it against the phase of both the lower and higher frequencies in the same window
   elif ref_type == "both_freqs":
     # initialize arrays
@@ -253,10 +268,12 @@ def get_coherence(wf, sample_rate, t_win=16, t_shift=1, num_wins=None, wfft=None
         pd_high[win, freq - 1] = phases[win, freq + 1] - phases[win, freq]
     coherence_low = get_vector_strength(pd_low)
     coherence_high = get_vector_strength(pd_high)
-    # aveerage the coherences you would get from either of these
+    # average the coherences you would get from either of these
     coherence = (coherence_low + coherence_high)/2
+    # set phase_diffs to one of these so it doesn't throw an error when you try to return phase_Diffs
+    phase_diffs = pd_high
   else:
-    raise Exception("You didn't input a proper ref_type!") 
+    raise Exception("You didn't input a valid ref_type!") 
 
   if not return_all:
     return coherence
