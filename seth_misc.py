@@ -10,66 +10,6 @@ import random as rand
 # vod.save()
 
 # ALL VALUES <|phase diff|> vs coherence (V&D)
-if 1==1: 
-    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
-    # filename = 'TH14RearwaveformSOAE.mat'
-    # # filename = 'ACsb24rearSOAEwfA1'
-    # mat = scipy.io.loadmat(filepath + filename)
-    # wf = np.squeeze(mat['wf'])
-    # sample_rate=44100
-    # t_win=0.1
-    # xmax=5000
-    
-    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
-    with open(filepath + filename, 'rb') as picklefile:
-        wf = pickle.load(picklefile)
-        wf = wf[0:int(len(wf)/8)]
-    sample_rate=128
-    t_win=16
-    xmax=6
-
-
-    # set global
-    wf_title = filename
-    xmin=0
-    ymin=None
-    ymax=None
-    ymin=0
-    ymax=8
-    show_plot=False
-
-
-    c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
-    num_wins = c["num_wins"]
-    phase_diffs = c["phase_diffs"]
-    freq_ax_n = c["freq_ax"]
-    
-    # get the mean over all windows (0th axis)
-    means_n = np.mean(np.abs(phase_diffs[:, :]), 0)
-    
-    plt.figure(1)
-    ax1 = plt.gca()
-    ax2 = ax1.twinx()
-    ax1 = plt.subplot(2, 1, 1)
-    ax2 = plt.subplot(2, 1, 2)
-
-    ax1.plot(freq_ax_n, means_n, label="<|Phase Diff (Next)|>")
-    ax1.set_xlim(xmin, xmax)
-    ax1.set_title(f"Average of Absolute Value of Phase Diffs (Next Freq) for {wf_title}")
-    ax1.set_xlabel("Frequency")
-    ax1.set_ylabel("<|Phase Diff|>")
-    ax1.legend()
-    
-    coherence_vs_psd(ax=ax2, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", t_win = t_win, xmin=xmin, xmax=xmax)
-    
-    plt.tight_layout()
-    
-    
-    plt.show()
-
-
-# ALL VALUES <|phase diff|> and psd and coherence Next Freq VS Prev Freq (TH14 SOAE)
 if 1==0: 
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
     filename = 'TH14RearwaveformSOAE.mat'
@@ -78,114 +18,93 @@ if 1==0:
     wf = np.squeeze(mat['wf'])
     sample_rate=44100
     t_win=0.1
-    xmax=5000
+    xmin=2100
+    xmax=2900
+    wf_title=filename
+    t_win= 0.1
     
     # filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
     # with open(filepath + filename, 'rb') as picklefile:
     #     wf = pickle.load(picklefile)
-    #     wf = wf[0:int(len(wf)/8)]
+    #     wf = wf[0:int(len(wf))]
     # sample_rate=128
-    # t_win=32
-    # xmax=6
-
+    # wf_title = "V&D fig 4 (loc=0.1, glob=0)"
+    # xmin=0
+    # xmax=6.5
+    # t_win=10
 
     # set global
-    wf_title = filename
-    xmin=0
-    ymin=None
-    ymax=None
-    ymin=0
-    ymax=8
-    show_plot=False
-
-
-
-    # coherence_vs_psd(wf, khz=False, wf_title=wf_title, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, xmin=xmin, xmax=xmax)
-    # plt.show()
-
-    c = get_coherence(wf, ref_type="prev_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
-    num_wins = c["num_wins"]
-    phase_diffs = c["phase_diffs"]
-    freq_ax_p = c["freq_ax"]
+    do_means=False
     
-    # get the mean over all windows (0th axis)
-    means_p = np.mean(np.abs(phase_diffs[:, :]), 0)
-    
-    c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
-    num_wins = c["num_wins"]
-    phase_diffs = c["phase_diffs"]
-    freq_ax_n = c["freq_ax"]
-    
-    # get the mean over all windows (0th axis)
-    means_n = np.mean(np.abs(phase_diffs[:, :]), 0)
-    
-    plt.figure(1)
-    ax1 = plt.gca()
-    ax2 = ax1.twinx()
+
+    # plt.figure(1)
+    # ax1 = plt.gca()
     ax1 = plt.subplot(2, 1, 1)
     ax2 = plt.subplot(2, 1, 2)
-    
-    coherence_vs_psd(ax=ax1, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="prev_freq", t_win = t_win, xmin=xmin, xmax=xmax)
-    coherence_vs_psd(ax=ax2, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", t_win = t_win, xmin=xmin, xmax=xmax)
 
-    ax1.plot(freq_ax_p, means_p, label="<|Phase Diff (Prev)|>")
-    ax2.plot(freq_ax_n, means_n, label="<|Phase Diff (Next)|>")
-    ax1.set_xlim(xmin, xmax)
-    ax2.set_xlim(xmin, xmax)
+    bin_shift=56
+    coherence_vs_psd(ax=ax1, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax)
+    bin_shift=57
+    coherence_vs_psd(ax=ax2, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax) 
+    plt.tight_layout()
+    plt.show()
+    
+
+
+    # c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, bin_shift=bin_shift, return_all=True)
+    # num_wins = c["num_wins"]
+    # phase_diffs = c["phase_diffs"]
+    # freq_ax_n = c["freq_ax"]
+    
+    # # get the mean over all windows (0th axis)
+    # means_n = np.mean(np.abs(phase_diffs[:, :]), 0)
+    # ax2.plot(freq_ax_n, means_n, label="<|Phase Diff (Next)|>")
+    # ax2.set_xlim(xmin, xmax)
     # ax2.set_title(f"Average of Absolute Value of Phase Diffs (Next Freq) for {wf_title}")
     # ax2.set_xlabel("Frequency")
     # ax2.set_ylabel("<|Phase Diff|>")
-    ax1.legend()
-    ax2.legend()
-    plt.tight_layout()
-    
-    
-    plt.show()
+    # ax2.legend()
+    # plt.tight_layout()
 
-
-# scatter plot for next freq phase diffs (TH14 SOAE)
+# scatter plot for next freq phase diffs
 if 1==1: 
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
-    filename = 'TH14RearwaveformSOAE.mat'
-    # filename = 'ACsb24rearSOAEwfA1'
-    mat = scipy.io.loadmat(filepath + filename)
-    wf = np.squeeze(mat['wf'])
+    # get wf and set wf sepecific params
+    WF = "TH14"
+    
+    if WF == "TH14":
+        filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
+        filename = 'TH14RearwaveformSOAE.mat'
+        # filename = 'ACsb24rearSOAEwfA1'
+        mat = scipy.io.loadmat(filepath + filename)
+        wf = np.squeeze(mat['wf'])
+        sample_rate=44100
+        wf_title = filename
+    if WF == "V&D":
+        filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+        filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+        with open(filepath + filename, 'rb') as picklefile:
+            wf = pickle.load(picklefile)
+            wf = wf[0:int(len(wf))]
+        sample_rate=128
+        wf_title = "V&D fig 4 (loc=0.1, glob=0)"
 
 
-    # set global
-    sample_rate=44100
-    wf_title = filename
-    # xmin=0
-    # xmax=6
-    xmin=0
-    xmax=5000
-    # xmin=2750
-    # xmax=2900
-    ymin=None
-    ymax=None
-    ymin=0
-    ymax=8
-    show_plot=False
+    # set params
     t_win=0.1
+    bin_shift=58
+    
+    # ax1=plt.subplot(2, 1, 1)
+    # ax2=plt.subplot(2, 1, 2)
+    ax1= plt.gca()
 
 
-
-    # coherence_vs_psd(wf, khz=False, wf_title=wf_title, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, xmin=xmin, xmax=xmax)
-    # plt.show()
-
-    c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
-    num_wins = c["num_wins"]
-    phase_diffs = c["phase_diffs"]
-    freq = 2810
-    freq_bin_index = int(freq*t_win)
-    print(np.mean(np.abs(phase_diffs[:, freq_bin_index])))
-
-    plt.scatter(range(num_wins), phase_diffs[:, freq_bin_index])
-    plt.title(f"Next Freq Bin Phase Diffs for the TH14RearwaveformSOAE Coherence/Power Near-Peak at {freq}Hz")
-    plt.xlabel("Window #")
-    plt.ylabel("Phase Diff")
+    scatter_phase_diffs(2250, wf, sample_rate, t_win, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax1)
+    # scatter_phase_diffs(4.8, wf, sample_rate, t_win, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax2)
+    plt.tight_layout()
     plt.show()
+
+
 
 # next freq phase diff comparison for peaks vs valleys (V&D)
 if 1==0: 
