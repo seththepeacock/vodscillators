@@ -75,12 +75,10 @@ class Twins:
 
         k_T = 1 #coupling with tympanum
         N = s.vl.num_osc 
-        m_0 = 1 #mass of single vodscillator
-        iaccc = k_T / N / m_0 #iac coupling constant
+        m_0 = 1 #mass of single vodscillator hair bundle
         k_C = 1
         m_C = 1
         m_T = 1
-
 
         # This function will only be called by the ODE solver
         # Mark the current point in time to track progress
@@ -88,20 +86,20 @@ class Twins:
         # First make an array to represent the current (complex) derivative of each oscillator
         ddt = np.zeros(s.total_num_osc+3, dtype=complex) #last 3 are T_1, T_2 and X_C
         # (We are adapting equation (11) in Vilfan & Duke 2008)
-        # Define the interaural coupling expressions: iaccc (=interaural complex coupling constant) * summed response of the opposite ear
+
         X_1 = np.sum(z[s.vl.num_osc:s.vr.num_osc])
         X_2 = np.sum(z[0:s.vr.num_osc])
-        T_1 = ddt[-3]
-        T_2 = ddt[-2]
-        X_C = ddt[-1]
-        interaural_left = -1j*iaccc * (X_1 - T_1)
-        interaural_right = 1j*iaccc * (T_2 - X_2)
+        T_1 = z[-3]
+        T_2 = z[-2]
+        X_C = z[-1]
+        iac_left = k_T / N / m_0 * (X_1 - T_1) * 1j
+        iac_right = k_T / N / m_0 * (T_2 - X_2) * 1j
         # Now define our derivatives!
         # First, do the left ear. 
         for k in range(s.vl.num_osc):
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
-            # Note it's the same as for a single vodscillator, just with the interaural coupling!
-            universal = interaural_left + (1j*s.vl.omegas[k] + s.vl.epsilon)*z[k] + s.vl.xi_glob(t) + s.vl.xi_loc[k](t) - (s.vl.alpha + s.vl.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
+                # Note it's the same as for a single vodscillator, just with the interaural coupling!
+            universal = iac_left + (1j*s.vl.omegas[k] + s.vl.epsilon)*z[k] + s.vl.xi_glob(t) + s.vl.xi_loc[k](t) - (s.vl.alpha + s.vl.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
             
             # Coupling within each ear
             # if we're at an endpoint, we only have one oscillator to couple with
@@ -117,10 +115,11 @@ class Twins:
 
             l = k - s.vl.num_osc
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
-            # Note it's the same as for a single vodscillator, just with the interaural coupling!
-            universal = interaural_right + (1j*s.vr.omegas[l] + s.vr.epsilon)*z[l] + s.vr.xi_glob(t) + s.vr.xi_loc[l](t) - (s.vr.alpha + s.vr.betas[l]*1j)*((np.abs(z[l]))**2)*z[l]
+                # Again, it's the same as for a single vodscillator, just with the interaural coupling!
+            universal = iac_right + (1j*s.vr.omegas[l] + s.vr.epsilon)*z[l] + s.vr.xi_glob(t) + s.vr.xi_loc[l](t) - (s.vr.alpha + s.vr.betas[l]*1j)*((np.abs(z[l]))**2)*z[l]
             
             # Coupling within each ear
+            
             # if we're at an endpoint, we only have one oscillator to couple with
             if k == 0:
                 ddt[k] = universal + s.vr.ccc*(z[l+1] - z[l])
@@ -130,9 +129,10 @@ class Twins:
             else:
                 ddt[k] = universal + s.vr.ccc*((z[l+1] - z[l]) + (z[l-1] - z[l]))
 
-        ddt[-3] = (k_T / m_T * (X_1 - T_1) + k_C / m_T*  (X_C - T_1))*1j
-        ddt[-2] = (k_C / m_T * (X_C - T_2) + k_T / m_T * (X_2 - T_2))*1j
-        ddt[-1] = (k_C / m_C * (T_1 - X_C) + k_C / m_C * (T_2 - X_C))*1j
+        # set the new state variables T1, T2
+        ddt[-3] = (k_T / m_T * (X_1 - T_1) + k_C / m_T * (X_C - T_1))*1j + T_1.imag
+        ddt[-2] = (k_C / m_T * (X_C - T_2) + k_T / m_T * (X_2 - T_2))*1j + T_2.imag
+        ddt[-1] = (k_C / m_C * (T_1 - X_C) + k_C / m_C * (T_2 - X_C))*1j + X_C.imag
                 
         return ddt
 
