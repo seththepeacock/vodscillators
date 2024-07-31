@@ -76,8 +76,7 @@ class Twins:
 
     def ODE(s, t, z):
 
-        k_T = 1 #coupling with tympanum
-        N = s.vl.num_osc 
+        k_T = 1 #coupling with tympanum 
         m_0 = 1 #mass of single vodscillator hair bundle
         k_C = 1
         m_C = 1
@@ -95,8 +94,8 @@ class Twins:
         T_1 = z[-3]
         T_2 = z[-2]
         X_C = z[-1]
-        iac_left = k_T / N / m_0 * (X_1 - T_1) * 1j
-        iac_right = k_T / N / m_0 * (T_2 - X_2) * 1j
+        iac_left = k_T / s.vl.num_osc / m_0 * (X_1 - T_1) * 1j
+        iac_right = k_T / s.vr.num_osc / m_0 * (T_2 - X_2) * 1j
         # Now define our derivatives!
         # First, do the left ear. 
         for k in range(s.vl.num_osc):
