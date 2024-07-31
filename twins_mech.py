@@ -158,9 +158,13 @@ class Twins:
         # compute the (r)fft for all oscillators individually and store them in "every_fft"
             # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
         every_fft = np.zeros((2, s.total_num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[l/r ear, osc index, which ss win, fft output]
-
+        T1_fft = np.zeros((s.num_wins, s.num_freq_points), dtype=complex)
+        T2_fft = np.zeros((s.num_wins, s.num_freq_points), dtype=complex)
+        
         # we'll get the ss solutions:
         ss_sol = s.sol[:, :, s.n_transient:]
+        T1_ss_sol = s.sol[s.n_transient:]
+        T2_ss_sol = s.sol[s.n_transient:]
         
         for win in range(s.num_wins):
             # get the start and stop indices for this window
@@ -174,13 +178,14 @@ class Twins:
             for osc in range(s.vr.num_osc):
                 # calculate fft
                 every_fft[1, osc, win, :] = rfft((ss_sol[1, osc, n_start:n_stop]).real)
+            # then we'll get T1 and T2 ffts
+            T1_fft[win, :] = rfft(T1_ss_sol[n_start:n_stop].real)
+            T2_fft[win, :] = rfft(T2_ss_sol[n_start:n_stop].real)
+            
 
         # finally, we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
         s.left_SOO_fft = np.sum(every_fft[0], 0)
         s.right_SOO_fft = np.sum(every_fft[1], 0)
-        
-        # we'll also get the fft of the tympani
-        s.T1_fft = rfft(ss_sol[-3, ])
 
         
 
