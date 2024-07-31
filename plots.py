@@ -277,6 +277,9 @@ def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, num_wins=No
     
     # get final coherence
     coherence = get_vector_strength(phase_diffs)
+    
+    #alter freq ax so that each coherence is the difference between half a bin on either side
+    # freq_ax = freq_ax + (1/2)*(1/t_win)
   
   elif ref_type == "prev_freq":
     # unwrap it w.r.t. neighboring frequency bins
@@ -361,9 +364,9 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, fcut=False, num_wins=
       xmin: float, Optional
       xmax: float, Optional
       ymin: float, Optional
-        Sets the PSD axis
+        Sets the coherence y axis
       ymax: float, Optional
-        Sets the PSD axis
+        Sets the coherence y axis
       wf_title: String, Optional
         Plot title is: "Phase Coherence and PSD of {wf_title}"
       wf_comp: str, Optional
@@ -438,7 +441,7 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, fcut=False, num_wins=
     means = np.mean(np.abs(phase_diffs[:, :]), 0)
     ax.plot(coherence_freq_ax, means / np.pi, label="<|Phase Diffs|> / pi")
     ax.set_ylabel('Vector Strength and Normalized <|Phase Diffs|>', color = 'black')
-    ax.legend(loc='lower left')
+    ax.legend(loc='upper right')
   
   if do_psd:
     ax2.plot(psd_freq_ax, psd, label="PSD", color='r')
@@ -460,8 +463,8 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, fcut=False, num_wins=
     ax.set_title(f"Phase Coherence and PSD of {wf_title}")
 
   # finally, overwrite any default x and y lims (this does nothing if none were inputted)
-  ax2.set_xlim(left = xmin, right = xmax)
-  ax2.set_ylim(bottom = ymin, top = ymax)
+  ax.set_xlim(left = xmin, right = xmax)
+  ax.set_ylim(bottom = ymin, top = ymax)
   
   
   

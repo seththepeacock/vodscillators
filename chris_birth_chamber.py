@@ -16,12 +16,12 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 # General Initializing Params
-"name" : "V&D fig 4, loc=0.1, glob=0, sr=512",
+"name" : "V&D fig 4, loc=0.1, glob=0, sr=128, rough=0.1",
 "num_osc" : 80, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 # initialize
 "freq_dist" : "exp", #linear or exp
-"roughness_amp" : 0,
+"roughness_amp" : 0.1,
 "omega_0" : 2*np.pi, # char frequency of lowest oscillator [default = 2*np.pi] 
 "omega_N" : 5*(2*np.pi), # char frequency of highest oscillator [default = 5*(2*np.pi)] 
 "IC_method" : "rand", #rand or const
@@ -32,8 +32,8 @@ p = {
 "ti" : 0, # start time; [default = 0]
 "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
-"num_wins" : 30, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
-"sample_rate" : 512, #[default = 128]
+"num_wins" : 650, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
+"sample_rate" : 128, #[default = 128]
 
 # solve_ODE
 "epsilon" : 1.0, # [default = 1.0] --> control parameter

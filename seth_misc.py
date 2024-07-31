@@ -11,18 +11,6 @@ import random as rand
 
 # ALL VALUES <|phase diff|> vs coherence (V&D)
 if 1==0: 
-    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
-    filename = 'TH14RearwaveformSOAE.mat'
-    # filename = 'ACsb24rearSOAEwfA1'
-    mat = scipy.io.loadmat(filepath + filename)
-    wf = np.squeeze(mat['wf'])
-    sample_rate=44100
-    t_win=0.1
-    xmin=2100
-    xmax=2900
-    wf_title=filename
-    t_win= 0.1
-    
     # filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
     # with open(filepath + filename, 'rb') as picklefile:
@@ -34,6 +22,21 @@ if 1==0:
     # xmax=6.5
     # t_win=10
 
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
+    # filename = 'TH14RearwaveformSOAE.mat'
+    filename = 'ACsb24rearSOAEwfA1'
+    mat = scipy.io.loadmat(filepath + filename)
+    wf = np.squeeze(mat['wf'])
+    sample_rate=44100
+    xmin=1000
+    xmax=5000
+    
+    ymin=None
+    ymax=None
+    wf_title=filename
+    t_win=0.02
+    bin_shift=1
+    
     # set global
     do_means=False
     
@@ -43,10 +46,11 @@ if 1==0:
     ax1 = plt.subplot(2, 1, 1)
     ax2 = plt.subplot(2, 1, 2)
 
-    bin_shift=56
-    coherence_vs_psd(ax=ax1, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax)
-    bin_shift=57
-    coherence_vs_psd(ax=ax2, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax) 
+    coherence_vs_psd(ax=ax1, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+    # bin_shift=3
+    # t_win=0.02
+    do_means=True
+    coherence_vs_psd(do_coherence=False, ax=ax2, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) 
     plt.tight_layout()
     plt.show()
     
@@ -67,15 +71,23 @@ if 1==0:
     # ax2.legend()
     # plt.tight_layout()
 
+
 # scatter plot for next freq phase diffs
 if 1==1: 
     # get wf and set wf sepecific params
-    WF = "TH14"
+    WF = "AC"
     
     if WF == "TH14":
         filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
-        filename = 'TH14RearwaveformSOAE.mat'
         # filename = 'ACsb24rearSOAEwfA1'
+        mat = scipy.io.loadmat(filepath + filename)
+        wf = np.squeeze(mat['wf'])
+        sample_rate=44100
+        wf_title = filename
+        t_win=0.1
+    if WF == "AC":
+        filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
+        filename = 'ACsb24rearSOAEwfA1'
         mat = scipy.io.loadmat(filepath + filename)
         wf = np.squeeze(mat['wf'])
         sample_rate=44100
@@ -88,22 +100,23 @@ if 1==1:
             wf = wf[0:int(len(wf))]
         sample_rate=128
         wf_title = "V&D fig 4 (loc=0.1, glob=0)"
+        t_win=10
 
 
     # set params
-    t_win=0.1
-    bin_shift=58
+    t_win=0.02
+    bin_shift=1
     
     # ax1=plt.subplot(2, 1, 1)
     # ax2=plt.subplot(2, 1, 2)
     ax1= plt.gca()
 
 
+
     scatter_phase_diffs(2250, wf, sample_rate, t_win, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax1)
     # scatter_phase_diffs(4.8, wf, sample_rate, t_win, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax2)
     plt.tight_layout()
     plt.show()
-
 
 
 # next freq phase diff comparison for peaks vs valleys (V&D)
@@ -143,9 +156,6 @@ if 1==0:
     # plt.xlabel("Window #")
     # plt.ylabel("Phase Diff")
     # plt.show()
-
-
-
 
 
 # Replicating chris' spectro/coherograms for TH14
@@ -271,6 +281,7 @@ if 1==0:
     
     plt.tight_layout()
     plt.show()
+    
     
 # testing next_freq on generated waveforms
 if 1==0:
