@@ -65,14 +65,15 @@ class Twins:
         max_num_osc = max(s.vl.num_osc, s.vr.num_osc)
         s.sol = np.zeros((2, max_num_osc, len(s.tpoints)), dtype=complex)
         s.sol[0, :, :] = sol[0:s.vl.num_osc, :]
-        s.sol[1, :, :] = sol[s.vl.num_osc:(s.vl.num_osc+s.vr.num_osc), :]
+        s.sol[1, :, :] = sol[s.vl.num_osc:(s.total_num_osc), :]
+        
         # so s.sol[1, 2, 1104] is the value of the solution for the 3rd oscillator in the right ear at the 1105th time point.
         # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators)
         s.left_SOO_sol = np.sum(s.sol[0, :, :], 0)
         s.right_SOO_sol = np.sum(s.sol[1, :, :], 0)
-        s.T1 = s.sol[-3]
-        s.T2 = s.sol[-2]
-        s.X_C = s.sol[-1]
+        s.T1_sol = sol[-3]
+        s.T2_sol = sol[-2]
+        s.X_C_sol = sol[-1]
 
     def ODE(s, t, z):
 
@@ -156,10 +157,10 @@ class Twins:
         
         # compute the (r)fft for all oscillators individually and store them in "every_fft"
             # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
-        s.every_fft = np.zeros((2, s.total_num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[l/r ear, osc index, which ss win, fft output]
+        every_fft = np.zeros((2, s.total_num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[l/r ear, osc index, which ss win, fft output]
 
         # we'll get the ss solutions:
-        s.ss_sol = s.sol[:, :, s.n_transient:]
+        ss_sol = s.sol[:, :, s.n_transient:]
         
         for win in range(s.num_wins):
             # get the start and stop indices for this window
@@ -168,15 +169,18 @@ class Twins:
             # first, we'll calculate the ffts for the left side:
             for osc in range(s.vl.num_osc):
                 # calculate fft
-                s.every_fft[0, osc, win, :] = rfft((s.ss_sol[0, osc, n_start:n_stop]).real)
+                every_fft[0, osc, win, :] = rfft((ss_sol[0, osc, n_start:n_stop]).real)
             # then we'll do the right side
             for osc in range(s.vr.num_osc):
                 # calculate fft
-                s.every_fft[1, osc, win, :] = rfft((s.ss_sol[1, osc, n_start:n_stop]).real)
+                every_fft[1, osc, win, :] = rfft((ss_sol[1, osc, n_start:n_stop]).real)
 
         # finally, we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
-        s.left_SOO_fft = np.sum(s.every_fft[0], 0)
-        s.right_SOO_fft = np.sum(s.every_fft[1], 0)
+        s.left_SOO_fft = np.sum(every_fft[0], 0)
+        s.right_SOO_fft = np.sum(every_fft[1], 0)
+        
+        # we'll also get the fft of the tympani
+        s.T1_fft = rfft(ss_sol[-3, ])
 
         
 
