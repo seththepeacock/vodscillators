@@ -5,38 +5,78 @@ import pickle
 from plots import *
 from vlodder import *
 import scipy.io
-from scipy.signal import welch
-#from scipy.signal import *
+from scipy.signal import *
 
-#filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
+#filename = "F&B fig 2D iso.pkl"
+#filename = "F&B fig 2D noniso.pkl"
 #filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
-
-
 #with open(filepath + filename, 'rb') as picklefile:
 #    vod = pickle.load(picklefile)
-#    # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+    #this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
 #    assert isinstance(vod, Vodscillator)
+#
+##vod.n_win = vod.n_ss
+##vod.save()
 
-#vod.n_win = vod.n_ss
-
-# vod.save()
-
-
-filename = 'AC6rearSOAEwfB1.mat'
-mat = scipy.io.loadmat('SOAE Data/' + 'AC6rearSOAEwfB1.mat')
+#filename = 'AC6rearSOAEwfB1.mat'
+filename = 'TH14RearwaveformSOAE.mat'
+mat = scipy.io.loadmat('SOAE Data/' + filename)
 wf = np.squeeze(mat['wf'])
 wf_title = filename
-    
-# global
+
+#wf = vod.SOO_sol
+
+#wf = np.pad(wf, 20) #padding might help???
+
+
 sample_rate=44100
-xmin=None
-xmax=None
+win_size = 2048
+xmin=0
+xmax=7
 ymin=None
 ymax=None
 # ymin=0
 # ymax=8
 show_plot=False
-t_win = 0.1
+t_win = win_size / sample_rate
 hann = True
-coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, sample_rate=sample_rate, xmin=0, xmax=20000, show_plot=show_plot, fig_num=3, hann=hann)
+t_shift = t_win / 2 #set this to half the window size #it used to be 0.1
+fcut=False
+khz=True
+
+fig, (ax1, ax2) = plt.subplots(2) #no hann
+figg, (ax3, ax4) = plt.subplots(2) #yes hann
+fig.suptitle('No Hann')
+figg.suptitle("Yes Hann")
+
+ref_type = "next_win"
+coherence_vs_psd(ax=ax1, t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
+ax1.legend(loc='upper right')
+ax1.set_title("Next window ")
+
+
+ref_type="next_freq"
+coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=ax2, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
+ax2.legend(loc='upper right')
+ax2.set_title("Next frequency ")
+
+
+ref_type = "next_win"
+coherence_vs_psd(ax=ax3, t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
+ax3.legend(loc='upper right')
+ax3.set_title("Next window")
+
+
+ref_type="next_freq"
+coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=ax4, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
+ax4.legend(loc='upper right')
+ax4.set_title("Next frequency")
+
+
 plt.show()
+
+print(filename, ", sample_rate=", sample_rate, ", win_size=", win_size)
