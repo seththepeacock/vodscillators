@@ -23,10 +23,11 @@ class Twins:
         s.glob_glob_noise_amp = p["glob_glob_noise_amp"] # amplitude of (uniformly generated) noise
         #s.iaccc = [["iaccc"]] # interaural complex coupling constant
         # check that our time parameters are the same for both or we might have some issues!
-        vod_params = np.empty(2, 7)
+        vod_params = np.empty((2, 6))
         i = 0
         for v in [s.vl, s.vr]:
-            vod_params[i, :] = [v.sample_rate, v.ti, v.tf, v.t_transient, v.t_win, v.num_wins, v.tpoints]
+            vod_params[i, :] = np.array([v.sample_rate, v.ti, v.tf, v.t_transient, v.t_win, v.num_wins])
+
             i = 1
         # if they agree, set all of the TV's parameters to them
         if all(vod_params[0, :] == vod_params[1, :]):
@@ -54,7 +55,8 @@ class Twins:
     def solve_ODE(s):
         # NOTE WE ALWAYS PUT LEFT BEFORE RIGHT
         # create ICs by concatenating left and right IC arrays
-        s.ICs = np.concatenate(s.vl.ICs, s.vr.ICs)
+        s.ICs = np.zeros(s.total_num_osc+3, dtype=complex) 
+        s.ICs = np.concatenate((s.vl.ICs, s.vr.ICs, np.array([0, 0, 0])))
         # Numerically integrate our ODE from ti to tf with sample rate 1/h
         sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y
         # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
@@ -78,9 +80,6 @@ class Twins:
         k_C = 1
         m_C = 1
         m_T = 1
-        T_1 = 0
-        T_2 = 0
-        X_C = 0
 
 
         # This function will only be called by the ODE solver
@@ -92,6 +91,9 @@ class Twins:
         # Define the interaural coupling expressions: iaccc (=interaural complex coupling constant) * summed response of the opposite ear
         X_1 = np.sum(z[s.vl.num_osc:s.vr.num_osc])
         X_2 = np.sum(z[0:s.vr.num_osc])
+        T_1 = ddt[-3]
+        T_2 = ddt[-2]
+        X_C = ddt[-1]
         interaural_left = -1j*iaccc * (X_1 - T_1)
         interaural_right = 1j*iaccc * (T_2 - X_2)
         # Now define our derivatives!
@@ -111,24 +113,26 @@ class Twins:
             else:
                 ddt[k] = universal + s.vl.ccc*((z[k+1] - z[k]) + (z[k-1] - z[k])) 
         # Now, do the right ear.
-        for k in np.arange(s.vl.num_osc, s.total_num_osc):
+        for k in range(s.vl.num_osc, s.total_num_osc):
+
+            l = k - s.vl.num_osc
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
             # Note it's the same as for a single vodscillator, just with the interaural coupling!
-            universal = interaural_right + (1j*s.vr.omegas[k] + s.vr.epsilon)*z[k] + s.vr.xi_glob(t) + s.vr.xi_loc[k](t) - (s.vr.alpha + s.vr.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
+            universal = interaural_right + (1j*s.vr.omegas[l] + s.vr.epsilon)*z[l] + s.vr.xi_glob(t) + s.vr.xi_loc[l](t) - (s.vr.alpha + s.vr.betas[l]*1j)*((np.abs(z[l]))**2)*z[l]
             
             # Coupling within each ear
             # if we're at an endpoint, we only have one oscillator to couple with
             if k == 0:
-                ddt[k] = universal + s.vr.ccc*(z[k+1] - z[k])
+                ddt[k] = universal + s.vr.ccc*(z[l+1] - z[l])
             elif k == s.vr.num_osc - 1:
-                ddt[k] = universal + s.vr.ccc*(z[k-1] - z[k])
+                ddt[k] = universal + s.vr.ccc*(z[l-1] - z[l])
             # but if we're in the middle of the chain, we couple with the oscillator on either side
             else:
-                ddt[k] = universal + s.vr.ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
+                ddt[k] = universal + s.vr.ccc*((z[l+1] - z[l]) + (z[l-1] - z[l]))
 
-        ddt[-3] = k_T / m_T * (X_1 - T_1) + k_C / m_T*  (X_C - T_1)
-        ddt[-2] = k_C / m_T * (X_C - T_2) + k_T / m_T * (X_C - T_1)
-        ddt[-1] = k_T / m_T * (T_1 - X_1) + k_C / m_C * (T_2 - X_2)
+        ddt[-3] = (k_T / m_T * (X_1 - T_1) + k_C / m_T*  (X_C - T_1))*1j
+        ddt[-2] = (k_C / m_T * (X_C - T_2) + k_T / m_T * (X_2 - T_2))*1j
+        ddt[-1] = (k_C / m_C * (T_1 - X_C) + k_C / m_C * (T_2 - X_C))*1j
                 
         return ddt
 
@@ -171,6 +175,8 @@ class Twins:
         # finally, we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
         s.left_SOO_fft = np.sum(s.every_fft[0], 0)
         s.right_SOO_fft = np.sum(s.every_fft[1], 0)
+
+        
 
     def save(s, filename = None):
         """ Saves your Twin Vodscillators in a .pkl file

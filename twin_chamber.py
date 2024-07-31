@@ -1,4 +1,5 @@
 from vodscillator import *
+from twins_mech import *
 import timeit
 
 # CREATE AND SAVE A VODSCILLATOR
@@ -7,11 +8,11 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 
 p = {
 # General Initializing Params
-"name" : "V&D fig 2A, loc=0, glob=0, sr=512",
-"num_osc" : 80, # number of oscillators in chain[default = 100 or 150], 80 in paper
+"name" : "vod_lr",
+"num_osc" : 10, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 # initialize
-"freq_dist" : "exp", #linear or exp
+"freq_dist" : "linear", #linear or exp
 "roughness_amp" : 0,
 "omega_0" : 2*np.pi, # char frequency of lowest oscillator [default = 2*np.pi] 
 "omega_N" : 5*(2*np.pi), # char frequency of highest oscillator [default = 5*(2*np.pi)] 
@@ -35,12 +36,24 @@ p = {
 # imaginary coefficient for cubic nonlinearity (beta_j) which creates nonisochronicity
 }
 
-v = Vodscillator(**p)
-v.initialize(**p)
-v.gen_noise(**p)
-v.solve_ODE()
-v.do_fft()
-v.save()
+pp = {"name" : "twins", "glob_glob_noise_amp" : 0.1}
+
+vleft = Vodscillator(**p)
+vleft.initialize(**p)
+vleft.gen_noise(**p)
+
+vright = Vodscillator(**p)
+vright.initialize(**p)
+vright.gen_noise(**p)
+
+v_twins = Twins(vl=vleft, vr=vright, **pp)
+v_twins.solve_ODE()
+v_twins.save()
+
+
+# vleft.solve_ODE()
+# vleft.do_fft()
+# vleft.save()
 
 stop = timeit.default_timer() # ends timer
 print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
