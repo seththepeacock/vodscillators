@@ -68,8 +68,11 @@ class Twins:
         s.sol[1, :, :] = sol[s.vl.num_osc:(s.vl.num_osc+s.vr.num_osc), :]
         # so s.sol[1, 2, 1104] is the value of the solution for the 3rd oscillator in the right ear at the 1105th time point.
         # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators)
-        s.left_SOO_sol = np.sum(s.sol[0, :, :], 1)
-        s.right_SOO_sol = np.sum(s.sol[1, :, :], 2)
+        s.left_SOO_sol = np.sum(s.sol[0, :, :], 0)
+        s.right_SOO_sol = np.sum(s.sol[1, :, :], 0)
+        s.T1 = s.sol[-3]
+        s.T2 = s.sol[-2]
+        s.X_C = s.sol[-1]
 
     def ODE(s, t, z):
 
@@ -129,7 +132,7 @@ class Twins:
             else:
                 ddt[k] = universal + s.vr.ccc*((z[l+1] - z[l]) + (z[l-1] - z[l]))
 
-        # set the new state variables T1, T2
+        # set the new state variables T1, T2, X_C
         ddt[-3] = (k_T / m_T * (X_1 - T_1) + k_C / m_T * (X_C - T_1))*1j + T_1.imag
         ddt[-2] = (k_C / m_T * (X_C - T_2) + k_T / m_T * (X_2 - T_2))*1j + T_2.imag
         ddt[-1] = (k_C / m_C * (T_1 - X_C) + k_C / m_C * (T_2 - X_C))*1j + X_C.imag
