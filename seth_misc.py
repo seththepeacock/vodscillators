@@ -4,6 +4,7 @@ import numpy as np
 import pickle
 from plots import *
 from vlodder import *
+from twins_mech import *
 import scipy.io
 import random as rand
 # vod.n_win = vod.n_ss
@@ -72,8 +73,35 @@ if 1==0:
     # plt.tight_layout()
 
 
+# plotting twins
+if 1==1:
+    filename = "test_twins.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    with open(filepath + filename, 'rb') as picklefile:
+        twins = pickle.load(picklefile)
+        assert isinstance(twins, Twins)
+
+    fig, _ = plt.subplots(2, 2)
+    axes = fig.axes
+    
+    wfs = [twins.SOOL_sol, twins.SOOR_sol, twins.T_l_sol, twins.T_r_sol]
+    
+    t_win = 10
+    t_shift = t_win
+    
+    for i in range(4):
+        wf = wfs[i][twins.n_transient:]
+        coherence_vs_psd(wfs[i], sample_rate=twins.sample_rate, t_win=t_win, t_shift=t_shift, ax=axes[i])
+        axes[i].set_xlim(0, 10)
+        
+    plt.tight_layout()
+    plt.show()
+    
+    
+
+
 # scatter plot for next freq phase diffs
-if 1==1: 
+if 1==0: 
     # get wf and set wf sepecific params
     WF = "AC"
     

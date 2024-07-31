@@ -24,7 +24,6 @@ def get_wfft(wf, sample_rate, t_win, t_shift=None, fcut=False, num_wins=None, re
       return_all: bool, Optional
         Defaults to only returning the wfft; if this is enabled, then a dictionary is returned with keys:
         "wfft", "freq_ax", "win_start_indices"
-
   """
 
 
@@ -169,7 +168,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, freq_ax=None, retu
       "win_psd" : win_psd
       }
 
-def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, num_wins=None, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
+def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, bin_shift=1, num_wins=None, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
   Parameters
@@ -334,8 +333,8 @@ def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, num_wins=No
       # define a helper function to be reused
 
 
-def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, fcut=False, num_wins=None, khz=False, downsample_freq=False, ref_type="next_win", max_vec_strength=1, psd_shift=0, db=True, xmin=None, xmax=None, 
-                     ymin=None, ymax=None, wf_title=None, show_plot=False, do_coherence=True, do_psd=True, ax=None, fig_num=1, hann=False):
+def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, fcut=False, bin_shift=1, num_wins=None, khz=False, downsample_freq=False, ref_type="next_win", max_vec_strength=1, psd_shift=0, db=True, xmin=None, xmax=None, 
+                     ymin=None, ymax=None, wf_title=None, show_plot=False, do_coherence=True, do_psd=True, do_means=False, ax=None, fig_num=1, hann=False):
   """ Plots the power spectral density and phase coherence of an input waveform
   
   Parameters

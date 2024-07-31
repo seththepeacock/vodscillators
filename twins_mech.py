@@ -21,7 +21,7 @@ class Twins:
         s.vr = vr #right Vodscillator
         s.name = p["name"] # name your vodscillator! (also will be used as a filename)
         s.glob_glob_noise_amp = p["glob_glob_noise_amp"] # amplitude of (uniformly generated) noise
-        #s.iaccc = [["iaccc"]] # interaural complex coupling constant
+        
         # check that our time parameters are the same for both or we might have some issues!
         vod_params = np.empty((2, 6))
         i = 0
@@ -54,34 +54,36 @@ class Twins:
 
     def solve_ODE(s):
         # NOTE WE ALWAYS PUT LEFT BEFORE RIGHT
+        
         # create ICs by concatenating left and right IC arrays
-        s.ICs = np.zeros(s.total_num_osc+3, dtype=complex) 
         s.ICs = np.concatenate((s.vl.ICs, s.vr.ICs, np.array([0, 0, 0])))
-        # Numerically integrate our ODE from ti to tf with sample rate 1/h
+        
+        # Numerically integrate our ODE (making sure that it gives us the value at our tpoints)
         sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y
+        
         # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
         # lets add a dimension at the beginning to track if its the left or right ear
             # in case each has different # oscillators, we'll use the max of the two
         max_num_osc = max(s.vl.num_osc, s.vr.num_osc)
-        s.sol = np.zeros((2, max_num_osc, len(s.tpoints)), dtype=complex)
-        s.sol[0, :, :] = sol[0:s.vl.num_osc, :]
-        s.sol[1, :, :] = sol[s.vl.num_osc:(s.total_num_osc), :]
+        s.osc_sol = np.zeros((2, max_num_osc, len(s.tpoints)), dtype=complex)
+        s.osc_sol[0, :, :] = sol[0:s.vl.num_osc, :]
+        s.osc_sol[1, :, :] = sol[s.vl.num_osc:(s.total_num_osc), :]
         
         # so s.sol[1, 2, 1104] is the value of the solution for the 3rd oscillator in the right ear at the 1105th time point.
         # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators)
-        s.left_SOO_sol = np.sum(s.sol[0, :, :], 0)
-        s.right_SOO_sol = np.sum(s.sol[1, :, :], 0)
-        s.T1_sol = sol[-3]
-        s.T2_sol = sol[-2]
-        s.X_C_sol = sol[-1]
+        s.SOOL_sol = np.sum(s.osc_sol[0, :, :], 0)
+        s.SOOR_sol = np.sum(s.osc_sol[1, :, :], 0)
+        s.T_l_sol = sol[-3]
+        s.T_r_sol = sol[-2]
+        s.X_c_sol = sol[-1]
 
     def ODE(s, t, z):
 
-        k_T = 1 #coupling with tympanum 
-        m_0 = 1 #mass of single vodscillator hair bundle
-        k_C = 1
-        m_C = 1
-        m_T = 1
+        K_T = 1 # tympanum spring constant
+        K_C = 1 # cavity spring constant
+        M_0 = 1 # mass of single vodscillator hair bundle
+        M_C = 1 # mass of the air in the IAC
+        M_T = 1 # mass of the tympanum
 
         # This function will only be called by the ODE solver
         # Mark the current point in time to track progress
@@ -90,14 +92,21 @@ class Twins:
         ddt = np.zeros(s.total_num_osc+3, dtype=complex) #last 3 are T_1, T_2 and X_C
         # (We are adapting equation (11) in Vilfan & Duke 2008)
 
-        X_1 = np.sum(z[s.vl.num_osc:s.vr.num_osc])
-        X_2 = np.sum(z[0:s.vr.num_osc])
-        T_1 = z[-3]
-        T_2 = z[-2]
-        X_C = z[-1]
-        iac_left = k_T / s.vl.num_osc / m_0 * (X_1 - T_1) * 1j
-        iac_right = k_T / s.vr.num_osc / m_0 * (T_2 - X_2) * 1j
+        # get variables:
+        
+        # summed vodscillators
+        X_l = np.sum(z[s.vl.num_osc:s.vr.num_osc])
+        X_r = np.sum(z[0:s.vr.num_osc])
+        # tympani
+        T_l = z[-3]
+        T_r = z[-2]
+        # air cavity
+        X_c = z[-1]
+        iac_left = K_T / s.vl.num_osc / M_0 * (X_l - T_l) * 1j
+        iac_right = K_T / s.vr.num_osc / M_0 * (T_r - X_r) * 1j
+        
         # Now define our derivatives!
+        
         # First, do the left ear. 
         for k in range(s.vl.num_osc):
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
@@ -132,10 +141,10 @@ class Twins:
             else:
                 ddt[k] = universal + s.vr.ccc*((z[l+1] - z[l]) + (z[l-1] - z[l]))
 
-        # set the new state variables T1, T2, X_C
-        ddt[-3] = (k_T / m_T * (X_1 - T_1) + k_C / m_T * (X_C - T_1))*1j + T_1.imag
-        ddt[-2] = (k_C / m_T * (X_C - T_2) + k_T / m_T * (X_2 - T_2))*1j + T_2.imag
-        ddt[-1] = (k_C / m_C * (T_1 - X_C) + k_C / m_C * (T_2 - X_C))*1j + X_C.imag
+        # set derivatives for the new state variables T1, T2, X_C
+        ddt[-3] = (K_T / M_T * (X_l - T_l) + K_C / M_T * (X_c - T_l))*1j + T_l.imag
+        ddt[-2] = (K_C / M_T * (X_c - T_r) + K_T / M_T * (X_r - T_r))*1j + T_r.imag
+        ddt[-1] = (K_C / M_C * (T_l - X_c) + K_C / M_C * (T_r - X_c))*1j + X_c.imag
                 
         return ddt
 
@@ -158,9 +167,13 @@ class Twins:
         # compute the (r)fft for all oscillators individually and store them in "every_fft"
             # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
         every_fft = np.zeros((2, s.total_num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[l/r ear, osc index, which ss win, fft output]
-
+        T1_fft = np.zeros((s.num_wins, s.num_freq_points), dtype=complex)
+        T2_fft = np.zeros((s.num_wins, s.num_freq_points), dtype=complex)
+        
         # we'll get the ss solutions:
-        ss_sol = s.sol[:, :, s.n_transient:]
+        ss_sol = s.osc_sol[:, :, s.n_transient:]
+        T1_ss_sol = s.osc_sol[s.n_transient:]
+        T2_ss_sol = s.osc_sol[s.n_transient:]
         
         for win in range(s.num_wins):
             # get the start and stop indices for this window
@@ -174,13 +187,14 @@ class Twins:
             for osc in range(s.vr.num_osc):
                 # calculate fft
                 every_fft[1, osc, win, :] = rfft((ss_sol[1, osc, n_start:n_stop]).real)
+            # then we'll get T1 and T2 ffts
+            T1_fft[win, :] = rfft(T1_ss_sol[n_start:n_stop].real)
+            T2_fft[win, :] = rfft(T2_ss_sol[n_start:n_stop].real)
+            
 
         # finally, we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
         s.left_SOO_fft = np.sum(every_fft[0], 0)
         s.right_SOO_fft = np.sum(every_fft[1], 0)
-        
-        # we'll also get the fft of the tympani
-        s.T1_fft = rfft(ss_sol[-3, ])
 
         
 
