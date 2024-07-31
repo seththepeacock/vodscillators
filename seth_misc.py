@@ -85,14 +85,14 @@ if 1==1:
     axes = fig.axes
     
     wfs = [twins.SOOL_sol, twins.SOOR_sol, twins.T_l_sol, twins.T_r_sol]
-    
+    wf_titles = ["SOOL", "SOOR", "T_l", "T_r"]
     t_win = 10
     t_shift = t_win
     
     for i in range(4):
         wf = wfs[i][twins.n_transient:]
-        coherence_vs_psd(wfs[i], sample_rate=twins.sample_rate, t_win=t_win, t_shift=t_shift, ax=axes[i])
-        axes[i].set_xlim(0, 10)
+        coherence_vs_psd(wfs[i], sample_rate=twins.sample_rate, t_win=t_win, t_shift=t_shift, ax=axes[i], wf_title=wf_titles[i])
+        axes[i].set_xlim(0, 8)
         
     plt.tight_layout()
     plt.show()

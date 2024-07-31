@@ -21,6 +21,12 @@ class Twins:
         s.vr = vr #right Vodscillator
         s.name = p["name"] # name your vodscillator! (also will be used as a filename)
         s.glob_glob_noise_amp = p["glob_glob_noise_amp"] # amplitude of (uniformly generated) noise
+        s.K_C = p["K_C"] # cavity spring constant
+        s.K_T = p["K_T"] # tympanum spring constant
+        s.M_0 = p["M_0"] # mass of single vodscillator hair bundle
+        s.M_C = p["M_C"] # mass of the air in the IAC
+        s.M_T = p["M_T"] # mass of the tympanum
+        
         
         # check that our time parameters are the same for both or we might have some issues!
         vod_params = np.empty((2, 6))
@@ -78,13 +84,6 @@ class Twins:
         s.X_c_sol = sol[-1]
 
     def ODE(s, t, z):
-
-        K_T = 1 # tympanum spring constant
-        K_C = 1 # cavity spring constant
-        M_0 = 1 # mass of single vodscillator hair bundle
-        M_C = 1 # mass of the air in the IAC
-        M_T = 1 # mass of the tympanum
-
         # This function will only be called by the ODE solver
         # Mark the current point in time to track progress
         print(f"Time = {int(t)}/{int(s.tf)}")
@@ -102,49 +101,52 @@ class Twins:
         T_r = z[-2]
         # air cavity
         X_c = z[-1]
-        iac_left = K_T / s.vl.num_osc / M_0 * (X_l - T_l) * 1j
-        iac_right = K_T / s.vr.num_osc / M_0 * (T_r - X_r) * 1j
+        
+        # IAC force terms
+        iac_left = s.K_T / s.vl.num_osc / s.M_0 * (X_l - T_l) * 1j
+        iac_right = s.K_T / s.vr.num_osc / s.M_0 * (T_r - X_r) * 1j
         
         # Now define our derivatives!
         
-        # First, do the left ear. 
+        # LEFT EAR
         for k in range(s.vl.num_osc):
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
                 # Note it's the same as for a single vodscillator, just with the interaural coupling!
-            universal = iac_left + (1j*s.vl.omegas[k] + s.vl.epsilon)*z[k] + s.vl.xi_glob(t) + s.vl.xi_loc[k](t) - (s.vl.alpha + s.vl.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
+            universal = iac_left + (1j*s.vl.omegas[k] + s.vl.epsilons[k])*z[k] + s.vl.xi_glob(t) + s.vl.xi_loc[k](t) - (s.vl.alphas[k] + s.vl.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
             
             # Coupling within each ear
             # if we're at an endpoint, we only have one oscillator to couple with
             if k == 0:
-                ddt[k] = universal + s.vl.ccc*(z[k+1] - z[k]) 
+                ddt[k] = universal + s.vl.cccs[k]*(z[k+1] - z[k]) 
             elif k == s.vl.num_osc - 1:
-                ddt[k] = universal + s.vl.ccc*(z[k-1] - z[k])
+                ddt[k] = universal + s.vl.cccs[k]*(z[k-1] - z[k])
             # but if we're in the middle of the chain, we couple with the oscillator on either side
             else:
-                ddt[k] = universal + s.vl.ccc*((z[k+1] - z[k]) + (z[k-1] - z[k])) 
-        # Now, do the right ear.
+                ddt[k] = universal + s.vl.cccs[k]*((z[k+1] - z[k]) + (z[k-1] - z[k])) 
+                
+        # RIGHT EAR
         for k in range(s.vl.num_osc, s.total_num_osc):
-
+            # define an index "l" to go along the larger arrays
             l = k - s.vl.num_osc
-            # The "universal" part of the equation is the same for all oscillators (in each ear). 
-                # Again, it's the same as for a single vodscillator, just with the interaural coupling!
-            universal = iac_right + (1j*s.vr.omegas[l] + s.vr.epsilon)*z[l] + s.vr.xi_glob(t) + s.vr.xi_loc[l](t) - (s.vr.alpha + s.vr.betas[l]*1j)*((np.abs(z[l]))**2)*z[l]
             
-            # Coupling within each ear
+            # The "universal" part of the equation is the same for all oscillators (in each ear). 
+            universal = iac_right + (1j*s.vr.omegas[l] + s.vr.epsilons[l])*z[l] + s.vr.xi_glob(t) + s.vr.xi_loc[l](t) - (s.vr.alphas[l] + s.vr.betas[l]*1j)*((np.abs(z[l]))**2)*z[l]
+            
+            # Define the original Vodscillator inter-ear coupling
             
             # if we're at an endpoint, we only have one oscillator to couple with
             if k == 0:
-                ddt[k] = universal + s.vr.ccc*(z[l+1] - z[l])
+                ddt[k] = universal + s.vr.cccs[l]*(z[l+1] - z[l])
             elif k == s.vr.num_osc - 1:
-                ddt[k] = universal + s.vr.ccc*(z[l-1] - z[l])
+                ddt[k] = universal + s.vr.cccs[l]*(z[l-1] - z[l])
             # but if we're in the middle of the chain, we couple with the oscillator on either side
             else:
-                ddt[k] = universal + s.vr.ccc*((z[l+1] - z[l]) + (z[l-1] - z[l]))
+                ddt[k] = universal + s.vr.cccs[l]*((z[l+1] - z[l]) + (z[l-1] - z[l]))
 
-        # set derivatives for the new state variables T1, T2, X_C
-        ddt[-3] = (K_T / M_T * (X_l - T_l) + K_C / M_T * (X_c - T_l))*1j + T_l.imag
-        ddt[-2] = (K_C / M_T * (X_c - T_r) + K_T / M_T * (X_r - T_r))*1j + T_r.imag
-        ddt[-1] = (K_C / M_C * (T_l - X_c) + K_C / M_C * (T_r - X_c))*1j + X_c.imag
+        # T_l, T_r, X_c
+        ddt[-3] = (s.K_T / s.M_T * (X_l - T_l) + s.K_C / s.M_T * (X_c - T_l))*1j + T_l.imag
+        ddt[-2] = (s.K_C / s.M_T * (X_c - T_r) + s.K_T / s.M_T * (X_r - T_r))*1j + T_r.imag
+        ddt[-1] = (s.K_C / s.M_C * (T_l - X_c) + s.K_C / s.M_C * (T_r - X_c))*1j + X_c.imag
                 
         return ddt
 
