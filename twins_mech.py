@@ -31,12 +31,19 @@ def ODE(s, t, z):
     N = s.vl.num_osc 
     m_0 = 1 #mass of single vodscillator
     iaccc = k_T / N / m_0 #iac coupling constant
+    k_C = 1
+    m_C = 1
+    m_T = 1
+    T_1 = 0
+    T_2 = 0
+    X_C = 0
+
 
     # This function will only be called by the ODE solver
     # Mark the current point in time to track progress
     print(f"Time = {int(t)}/{int(s.tf)}")
     # First make an array to represent the current (complex) derivative of each oscillator
-    ddt = np.zeros(s.total_num_osc, dtype=complex)
+    ddt = np.zeros(s.total_num_osc+3, dtype=complex) #last 3 are T_1, T_2 and X_C
     # (We are adapting equation (11) in Vilfan & Duke 2008)
     # Define the interaural coupling expressions: iaccc (=interaural complex coupling constant) * summed response of the opposite ear
     X_1 = np.sum(z[s.vl.num_osc:s.vr.num_osc])
@@ -75,5 +82,8 @@ def ODE(s, t, z):
         else:
             ddt[k] = universal + s.vr.ccc*((z[k+1] - z[k]) + (z[k-1] - z[k]))
 
+    ddt[-3] = k_T / m_T * (X_1 - T_1) + k_C / m_T*  (X_C - T_1)
+    ddt[-2] = k_C / m_T * (X_C - T_2) + k_T / m_T * (X_C - T_1)
+    ddt[-1] = k_T / m_T * (T_1 - X_1) + k_C / m_C * (T_2 - X_2)
             
     return ddt
