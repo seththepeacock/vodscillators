@@ -39,12 +39,23 @@ class Vodscillator:
     s.omega_0 = p["omega_0"]  # char frequency of lowest oscillator [default = 2*np.pi] 
     s.omega_N = p["omega_N"]  # char frequency of highest oscillator [default = 5*(2*np.pi)] 
     s.IC_method = p["IC_method"]  # set to "rand" for randomized initial conditions, set to "const" for constant initial conditions
-    s.beta_sigma = p["beta_sigma"] # standard deviation for imaginary coefficient for cubic nonlinearity
+    s.beta_sigma = p["beta_sigma"] # standard deviation for imaginary coefficient for cubic nonlinearity (always mean 0)
+    
+    # if no noise, these will be the values for all oscillators
     s.epsilon = p["epsilon"] # [default = 1.0] --> control parameter
     s.d_R = p["d_R"]  # [default = 0.15] --> real part of coupling coefficient
     s.d_I = p["d_I"]  # [default = -1.0] --> imaginary part of coupling coefficient
     s.alpha = p["alpha"] # [default = 1.0] --> real coefficient for cubic nonlinearity
+    
+    # these parameters will be the *percent* variation in each oscillators parameters... that is:
+      # epsilons[i] = epsilon + (random num between -1 and 1)*epsilon_noise*epsilon
+    s.epsilon_noise = p["epsilon_noise"] 
+    s.d_R_noise = p["d_R_noise"]
+    s.d_I_noise = p["d_I_noise"]
+    s.alpha = p["alpha"]
 
+    # INITIALIZE
+    
     # Tonotopic Frequency Distribution
     # Now we set the frequencies of each oscillator in our chain - linear or exponential
     if s.freq_dist == "linear":
@@ -80,6 +91,8 @@ class Vodscillator:
         y_k = all_y[k]
         s.ICs[k] = x_k + (y_k*1j) # this was x_k - (y_k*1j/s.omegas[k]) in Beth's code
 
+    # generate actual parameters (if no noise, these will be constant)
+    
     # generate beta_j using a gaussian centered at 0 with std deviation beta_sigma (as in Faber & Bozovic)
     s.betas = np.random.normal(loc=0.0, scale=s.beta_sigma, size=s.num_osc)
 
