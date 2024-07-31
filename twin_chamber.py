@@ -25,7 +25,7 @@ p = {
 "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
 "num_wins" : 30, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
-"sample_rate" : 512, #[default = 128]
+"sample_rate" : 128, #[default = 128]
 
 # solve_ODE
 "epsilon" : 4.0, # [default = 1.0] --> control parameter
