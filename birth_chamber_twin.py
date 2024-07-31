@@ -9,7 +9,7 @@ start = timeit.default_timer() # starts timer that tells you code runtime
 p = {
 # General Initializing Params
 "name" : "",
-"num_osc" : 10, # number of oscillators in chain[default = 100 or 150], 80 in paper
+"num_osc" : 80, # number of oscillators in chain[default = 100 or 150], 80 in paper
 
 # initialize()
 
@@ -27,11 +27,11 @@ p = {
 
 # these will be the *percent* of noise (np = noise percent) in each oscillators parameters... that is:
     # epsilons[i] = random number uniformly pulled from the range [epsilon +/- epsilon_np*epsilon]
-"epsilon_np" : 0.20, # [default = 0.20]
-"d_R_np" : 0.20, # [default = 0.20]
-"d_I_np" : 0.20, # [default = 0.20]
+"epsilon_np" : 0, # [default = 0.20]
+"d_R_np" : 0, # [default = 0.20]
+"d_I_np" : 0, # [default = 0.20]
 "alpha_np" : 0, # [default = 0]
-"omega_np" : 0.01, #[default = 0.01]
+"omega_np" : 0, #[default = 0.01]
 
 # nonisochronicity
 "beta_sigma" : 0.0, # [0 = isochronous as in V&D] --> std dev (normal dist w/ 0 mean) for beta_k (V&D's "B" is our alpha_k + beta_k*i)
@@ -42,7 +42,7 @@ p = {
 "ti" : 0, # start time; [default = 0]
 "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
-"num_wins" : 1, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
+"num_wins" : 30, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
 "sample_rate" : 128, #[default = 128]
 }
 
@@ -60,8 +60,8 @@ vright.gen_noise(**p)
 pp = {
     "name" : "test_twins", # name your twins!
     "glob_glob_noise_amp" : 0.1, # global global (aka both ears) noise amplitude
-    "K_C" : 1, # spring constant for IAC
-    "K_T" : 1, # spring constant for tympanum
+    "K_C" : 5, # spring constant for IAC
+    "K_T" : 20, # spring constant for tympanum
     "M_0": 1, # mass of single hair bundle
     "M_C": 1, # mass of IAC air
     "M_T" : 1 # mass of tympanym
