@@ -49,10 +49,10 @@ class Vodscillator:
     
     # these parameters will be the *percent* variation in each oscillators parameters... that is:
       # epsilons[i] = epsilon + (random num between -1 and 1)*epsilon_noise*epsilon
-    s.epsilon_noise = p["epsilon_noise"] 
-    s.d_R_noise = p["d_R_noise"]
-    s.d_I_noise = p["d_I_noise"]
-    s.alpha = p["alpha"]
+    # s.epsilon_noise = p["epsilon_noise"] 
+    # s.d_R_noise = p["d_R_noise"]
+    # s.d_I_noise = p["d_I_noise"]
+    # s.alpha = p["alpha"]
 
     # INITIALIZE
     
