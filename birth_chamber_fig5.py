@@ -37,39 +37,27 @@ p = {
 "beta_sigma" : 0.0, # [0 = isochronous as in V&D] --> std dev (normal dist w/ 0 mean) for beta_k (V&D's "B" is our alpha_k + beta_k*i)
 
 # gen_noise()
+# "loc_noise_amp" : 0.0785, #amplitude for local noise [0 --> off, default = 0.1-5] corresponds to D(tilda) in V&D
+# "glob_noise_amp" : 0, #amplitude for global noise [0 --> off, default = 0.1-5]
+# "ti" : 0, # start time; [default = 0]
+# "t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
+# "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
+# "num_wins" : 30, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
+# "sample_rate" : 128, #[default = 128]
 "loc_noise_amp" : 0.0785, #amplitude for local noise [0 --> off, default = 0.1-5] corresponds to D(tilda) in V&D
 "glob_noise_amp" : 0, #amplitude for global noise [0 --> off, default = 0.1-5]
 "ti" : 0, # start time; [default = 0]
-"t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
-"t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
+"t_transient" : 1, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
+"t_win" : 10, # length of a win of ss observation [default = 64 --> n.transient = 8192]
 "num_wins" : 1, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
-"sample_rate" : 128, #[default = 128]
+"sample_rate" : 20, #[default = 128]
 }
 
-p["name"] = "vod_l"
-vleft = Vodscillator(**p)
-vleft.initialize(**p)
-vleft.gen_noise(**p)
+vod = Vodscillator(**p)
+vod.initialize(**p)
+vod.gen_noise(**p)
+vod.save()
 
-p["name"] = "vod_r"
-vright = Vodscillator(**p)
-vright.initialize(**p)
-vright.gen_noise(**p)
-
-
-pp = {
-    "name" : "test_twins", # name your twins!
-    "glob_glob_noise_amp" : 0.1, # global global (aka both ears) noise amplitude
-    "K_C" : 1, # spring constant for IAC
-    "K_T" : 1, # spring constant for tympanum
-    "M_0": 1, # mass of single hair bundle
-    "M_C": 1, # mass of IAC air
-    "M_T" : 1 # mass of tympanym
-    }
-
-v_twins = Twins(vl=vleft, vr=vright, **pp)
-v_twins.solve_ODE()
-v_twins.save()
 
 stop = timeit.default_timer() # ends timer
 print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 
