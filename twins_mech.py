@@ -171,9 +171,9 @@ class Twins:
         T2_fft = np.zeros((s.num_wins, s.num_freq_points), dtype=complex)
         
         # we'll get the ss solutions:
-        ss_sol = s.osc_sol[:, :, s.n_transient:]
-        T1_ss_sol = s.osc_sol[s.n_transient:]
-        T2_ss_sol = s.osc_sol[s.n_transient:]
+        ss_sol = s.osc_sol[:, :, s.n_transient:] 
+        T1_ss_sol = s.T_l_sol[s.n_transient:]
+        T2_ss_sol = s.T_r_sol[s.n_transient:]
         
         for win in range(s.num_wins):
             # get the start and stop indices for this window
