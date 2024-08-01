@@ -7,8 +7,8 @@ from vlodder import *
 import scipy.io
 from scipy.signal import *
 
-#filename = "F&B fig 2D iso.pkl"
-#filename = "F&B fig 2D noniso.pkl"
+#filename = "V&D fig 2A, loc=0, glob=0.pkl"
+#filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
 #filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
 #with open(filepath + filename, 'rb') as picklefile:
 #    vod = pickle.load(picklefile)
@@ -44,39 +44,49 @@ t_shift = t_win / 2 #set this to half the window size #it used to be 0.1
 fcut=False
 khz=True
 
-fig, (ax1, ax2) = plt.subplots(2) #no hann
-figg, (ax3, ax4) = plt.subplots(2) #yes hann
-fig.suptitle('No Hann')
-figg.suptitle("Yes Hann")
+fig, _ = plt.subplots(2, 2)
+axes = fig.axes
 
-ref_type = "next_win"
-coherence_vs_psd(ax=ax1, t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
-                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
-ax1.legend(loc='upper right')
-ax1.set_title("Next window ")
+fig.suptitle(str((filename) + ", sample_rate=" + str(sample_rate) + ", win_size=" + str(win_size)))
 
 
-ref_type="next_freq"
-coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=ax2, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
-                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
-ax2.legend(loc='upper right')
-ax2.set_title("Next frequency ")
 
 
 ref_type = "next_win"
-coherence_vs_psd(ax=ax3, t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
-                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
-ax3.legend(loc='upper right')
-ax3.set_title("Next window")
+coherence_vs_psd(ax=axes[0], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
+axes[0].legend(loc='upper right')
+axes[0].set_title("Next window (no Hann)")
 
 
 ref_type="next_freq"
-coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=ax4, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[1], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
+axes[1].legend(loc='upper right')
+axes[1].set_title("Next frequency (no Hann)")
+
+
+ref_type = "next_win"
+coherence_vs_psd(ax=axes[2], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
-ax4.legend(loc='upper right')
-ax4.set_title("Next frequency")
+axes[2].legend(loc='upper right')
+axes[2].set_title("Next window (with Hann)")
 
 
+ref_type="next_freq"
+coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[3], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
+axes[3].legend(loc='upper right')
+axes[3].set_title("Next frequency (with Hann)")
+
+dpi=300
+reso=[16, 9]
+bbox="tight"
+plt.gcf().set_size_inches(reso) # set figure's size manually to your full screen (32x18)
+
+save_name = str((filename) + ", sample_rate=" + str(sample_rate) + ", win_size=" + str(win_size) + ".png")
+plt.savefig(save_name, dpi=dpi, bbox_inches=bbox)
 plt.show()
 
-print(filename, ", sample_rate=", sample_rate, ", win_size=", win_size)
+
+#print(save_name)
