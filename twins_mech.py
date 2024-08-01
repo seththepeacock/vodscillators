@@ -149,54 +149,6 @@ class Twins:
         return ddt
 
 
-    def do_fft(s):
-        """ Returns four arrays:
-        1. every_fft[oscillator index, ss win index, output]
-        2. SOO_fft[output]
-        3. AOI_fft[oscillator index, output]
-        4. SOO_AOI_fft[output]
-
-        AOI = Averaged Over Wins (for noise)
-
-        """
-        # first, we get frequency axis: the # of frequencies the fft checks depends on the # signal points we give it (n_win), 
-        # and sample spacing (h) tells it what these frequencies correspond to in terms of real time 
-        s.fft_freq = rfftfreq(s.n_win, 1/s.sample_rate)
-        s.num_freq_points = len(s.fft_freq)
-        
-        # compute the (r)fft for all oscillators individually and store them in "every_fft"
-            # note we are taking the r(eal)fft since (presumably) we don't lose much information by only considering the real part (position) of the oscillators  
-        every_fft = np.zeros((2, s.total_num_osc, s.num_wins, s.num_freq_points), dtype=complex) # every_fft[l/r ear, osc index, which ss win, fft output]
-        T1_fft = np.zeros((s.num_wins, s.num_freq_points), dtype=complex)
-        T2_fft = np.zeros((s.num_wins, s.num_freq_points), dtype=complex)
-        
-        # we'll get the ss solutions:
-        ss_sol = s.osc_sol[:, :, s.n_transient:] 
-        T1_ss_sol = s.T_l_sol[s.n_transient:]
-        T2_ss_sol = s.T_r_sol[s.n_transient:]
-        
-        for win in range(s.num_wins):
-            # get the start and stop indices for this window
-            n_start = win * s.n_win
-            n_stop = (win + 1) * s.n_win
-            # first, we'll calculate the ffts for the left side:
-            for osc in range(s.vl.num_osc):
-                # calculate fft
-                every_fft[0, osc, win, :] = rfft((ss_sol[0, osc, n_start:n_stop]).real)
-            # then we'll do the right side
-            for osc in range(s.vr.num_osc):
-                # calculate fft
-                every_fft[1, osc, win, :] = rfft((ss_sol[1, osc, n_start:n_stop]).real)
-            # then we'll get T1 and T2 ffts
-            T1_fft[win, :] = rfft(T1_ss_sol[n_start:n_stop].real)
-            T2_fft[win, :] = rfft(T2_ss_sol[n_start:n_stop].real)
-            
-
-        # finally, we'll add them all together to get the fft of the summed response (sum of fft's = fft of sum)
-        s.left_SOO_fft = np.sum(every_fft[0], 0)
-        s.right_SOO_fft = np.sum(every_fft[1], 0)
-
-        
 
     def save(s, filename = None):
         """ Saves your Twin Vodscillators in a .pkl file

@@ -107,7 +107,6 @@ if 1==1:
         coherence_vs_psd(wfs[i], sample_rate=twins.sample_rate, t_win=t_win, t_shift=t_shift, ax=axes[i], wf_title=wf_titles[i])
         axes[i].set_xlim(0, 8)
         
-    plt.tight_layout()
     plt.show()
     
     
