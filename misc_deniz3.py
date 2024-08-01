@@ -19,7 +19,7 @@ with open(filepath + filename, 'rb') as picklefile:
     # this "assert" statement will let VSCode know that this is a Twins couple, so it will display its documentation for you!
     assert isinstance(twins, Twins)
 
-twins.do_fft()
+
 twins.save()
 
 
