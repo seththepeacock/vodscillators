@@ -10,6 +10,34 @@ import random as rand
 # vod.n_win = vod.n_ss
 # vod.save()
 
+
+# psd + coherence of vodscillators
+if 1==0:
+    # Open pickled vodscillator
+    # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+    # filename = "V&D fig 5, loc=0.0785, glob=0, sr=128.pkl"
+    # with open(filepath + filename, 'rb') as picklefile:
+    #     vod = pickle.load(picklefile)
+    #     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
+    #     assert isinstance(vod, Vodscillator)
+    # wf_title=filename
+    # wf = np.sum(vod.sol[:, vod.n_transient:], 0)
+    
+    filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+    with open(filepath + filename, 'rb') as picklefile:
+        wf = pickle.load(picklefile)
+        wf=wf[:int(len(wf)/8)]
+    wf_title = "V&D fig 4, loc=0.1, glob=0, sr=128"
+    sample_rate = 128
+    t_win = 10
+    xmin = 0
+    xmax = 10
+    noise_amp = 1
+    wf = wf + 2*noise_amp*np.random.sample(len(wf))-noise_amp
+    coherence_vs_psd(wf, wf_title=wf_title, hann=True, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, xmin=xmin, xmax=xmax)
+    plt.show()
+
 # ALL VALUES <|phase diff|> vs coherence (V&D)
 if 1==0: 
     # filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
@@ -74,7 +102,7 @@ if 1==0:
 
 
 # plotting twins
-if 1==1:
+if 1==0:
     filename = "test_twins.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     with open(filepath + filename, 'rb') as picklefile:
@@ -97,16 +125,15 @@ if 1==1:
     plt.tight_layout()
     plt.show()
     
-    
-
 
 # scatter plot for next freq phase diffs
 if 1==0: 
     # get wf and set wf sepecific params
-    WF = "AC"
+    WF = "TH14"
     
     if WF == "TH14":
         filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
+        filename = 'TH14RearwaveformSOAE.mat'
         # filename = 'ACsb24rearSOAEwfA1'
         mat = scipy.io.loadmat(filepath + filename)
         wf = np.squeeze(mat['wf'])
@@ -132,7 +159,7 @@ if 1==0:
 
 
     # set params
-    t_win=0.02
+    # t_win=0.02
     bin_shift=1
     
     # ax1=plt.subplot(2, 1, 1)
@@ -141,14 +168,14 @@ if 1==0:
 
 
 
-    scatter_phase_diffs(2250, wf, sample_rate, t_win, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax1)
+    scatter_phase_diffs(4370, wf, sample_rate, t_win, unwrap=False, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax1)
     # scatter_phase_diffs(4.8, wf, sample_rate, t_win, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax2)
     plt.tight_layout()
     plt.show()
 
 
 # next freq phase diff comparison for peaks vs valleys (V&D)
-if 1==0: 
+if 1==1: 
     filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
     with open(filepath + filename, 'rb') as picklefile:
@@ -165,11 +192,9 @@ if 1==0:
     ymin=0
     ymax=8
     show_plot=False
-    t_win=50
+    t_win=10
 
-
-
-    coherence_vs_psd(wf, wf_title=wf_title, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, xmin=xmin, xmax=xmax)
+    coherence_vs_psd(wf, wf_title=wf_title, hann=True, do_means=True, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, xmin=xmin, xmax=xmax)
     plt.show()
 
     # c = get_coherence(wf, ref_type="next_freq", sample_rate=sample_rate, t_win=t_win, return_all=True)
@@ -607,21 +632,7 @@ if 1==0:
 
     coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=1, ymin=ymin, ymax=ymax,xmin=xmin, do_coherence=False,xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 512")
 
-# psd + coherence of vodscillators
-if 1==0:
-    # Open pickled vodscillator
-    filename = "V&D fig 2A.pkl"
-    with open(filename, 'rb') as picklefile:
-        vod = pickle.load(picklefile)
-        # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-        assert isinstance(vod, Vodscillator)
 
-    max_vec_strength = 20
-    xmax = 10
-    wf = np.sum(vod.sol[:, vod.n_transient:], 0), vod.sample_rate
-    t_win = 64
-    coherence_vs_psd(wf, vod.sample_rate, t_win, num_wins=None, xmax = xmax, ymin=0, ymax = 30, max_vec_strength=max_vec_strength, fig_num=1)
-    plt.show()
 
 #psd + coherence of generated data
 if 1==0:

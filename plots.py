@@ -168,7 +168,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, freq_ax=None, retu
       "win_psd" : win_psd
       }
 
-def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, bin_shift=1, num_wins=None, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
+def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, unwrap=False, bin_shift=1, num_wins=None, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
   Parameters
@@ -244,7 +244,8 @@ def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, bin_shift=1
     
     # Unwrap Phases (unless the bin_shift is not 1)
     if bin_shift==1:
-      phases = np.unwrap(phases, axis=1)
+      if unwrap:
+        phases = np.unwrap(phases, axis=1)
       
     # initialize array for phase diffs; -bin_shift is because we won't be able to get it for the #(bin_shift) freqs
     phase_diffs = np.zeros((num_wins, num_freq_pts - bin_shift))
@@ -431,6 +432,7 @@ def coherence_vs_psd(wf, sample_rate, t_win, t_shift=None, fcut=False, bin_shift
       label = f"Phase Coherence: t_win={t_win}, t_shift={t_shift}, ref_type={ref_type}, bin_shift={bin_shift}"
     else:
       label = f"Phase Coherence: t_win={t_win}, t_shift={t_shift}, ref_type={ref_type}"
+    # label="Phase Coherence"
     ax.plot(coherence_freq_ax, coherence, label=label, color='purple')
     ax.set_xlabel('Freq [Hz]')
     ax.set_ylabel('Vector Strength', color='purple')
@@ -730,8 +732,8 @@ def phase_portrait(wf, wf_title="Sum of Oscillators"):
   plt.grid()
   plt.show()
   
-def scatter_phase_diffs(freq, wf, sample_rate, t_win, num_wins=None, ref_type="next_freq", bin_shift=1, t_shift=None, wf_title="Waveform", ax=None):
-    c = get_coherence(wf, ref_type=ref_type, sample_rate=sample_rate, num_wins=num_wins, t_win=t_win, t_shift=t_shift, bin_shift=bin_shift, return_all=True)
+def scatter_phase_diffs(freq, wf, sample_rate, t_win, num_wins=None, unwrap=True, ref_type="next_freq", bin_shift=1, t_shift=None, wf_title="Waveform", ax=None):
+    c = get_coherence(wf, ref_type=ref_type, sample_rate=sample_rate, unwrap=unwrap, num_wins=num_wins, t_win=t_win, t_shift=t_shift, bin_shift=bin_shift, return_all=True)
     num_wins = c["num_wins"]
     phase_diffs = c["phase_diffs"]
     # get the freq_bin_index - note this only works if we're using next_freq! Then the 0 index bin is 0 freq, 1 index -> 1/t_win, 2 index -> 2/t_win
