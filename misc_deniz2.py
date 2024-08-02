@@ -38,7 +38,8 @@ ymax=None
 # ymin=0
 # ymax=8
 show_plot=False
-t_win = win_size / sample_rate
+#t_win = win_size / sample_rate
+t_win = 0.05
 hann = True
 t_shift = t_win / 2 #set this to half the window size #it used to be 0.1
 fcut=False
@@ -55,28 +56,32 @@ fig.suptitle(str((filename) + ", sample_rate=" + str(sample_rate) + ", win_size=
 ref_type = "next_win"
 coherence_vs_psd(ax=axes[0], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
-axes[0].legend(loc='upper right')
+axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=5)
 axes[0].set_title("Next window (no Hann)")
 
 
 ref_type="next_freq"
 coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[1], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
-axes[1].legend(loc='upper right')
+axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=5)
 axes[1].set_title("Next frequency (no Hann)")
 
 
 ref_type = "next_win"
 coherence_vs_psd(ax=axes[2], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
-axes[2].legend(loc='upper right')
+axes[2].legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=5)
 axes[2].set_title("Next window (with Hann)")
 
 
 ref_type="next_freq"
 coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[3], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
-axes[3].legend(loc='upper right')
+axes[3].legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=5)
 axes[3].set_title("Next frequency (with Hann)")
 
 dpi=300
