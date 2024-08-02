@@ -175,7 +175,7 @@ if 1==0:
 
 
 # next freq phase diff comparison for peaks vs valleys (V&D)
-if 1==1: 
+if 1==0: 
     filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
     with open(filepath + filename, 'rb') as picklefile:

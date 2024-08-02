@@ -168,7 +168,7 @@ def get_psd(wf, sample_rate, t_win, num_wins=None, wfft=None, freq_ax=None, retu
       "win_psd" : win_psd
       }
 
-def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, unwrap=False, bin_shift=1, num_wins=None, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
+def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, unwrap=False, bin_shift=1, num_wins=None, wfft=None, freq_ax=None, freq_ax_shift=True, ref_type="next_win", return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
   Parameters
@@ -268,6 +268,7 @@ def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, unwrap=Fals
           phase_diffs[win, freq_bin] = phases[win, freq_bin + bin_shift] - phases[win, freq_bin]
           if freq_bin == special_freq_bin:
             phase_diffs[win, freq_bin] = special_phases[win, 1] - special_phases[win, 0]
+            
     # or just do it the normal way!
     else:
       # calc phase diffs
@@ -278,8 +279,9 @@ def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, unwrap=Fals
     # get final coherence
     coherence = get_vector_strength(phase_diffs)
     
+    if freq_ax_shift:
     #alter freq ax so that each coherence is the difference between half a bin on either side
-    # freq_ax = freq_ax + (1/2)*(1/t_win)
+      freq_ax = freq_ax + (1/2)*(1/t_win)
   
   elif ref_type == "prev_freq":
     # unwrap it w.r.t. neighboring frequency bins
@@ -323,6 +325,7 @@ def get_coherence(wf, sample_rate, fcut= False, t_win=16, t_shift=1, unwrap=Fals
 
   if not return_all:
     return coherence
+  
   else:
     return {  
       "freq_ax" : freq_ax,
