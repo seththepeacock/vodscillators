@@ -59,28 +59,28 @@ ref_type = "next_win"
 coherence_vs_psd(ax=axes[0], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
 axes[0].legend()
-axes[0].set_title("Next window (no Hann)")
+axes[0].set_title("$C_{\tau}$ (without Hann window)")
 
 
 ref_type="next_freq"
 coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[1], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
 axes[1].legend()
-axes[1].set_title("Next frequency (no Hann)")
+axes[1].set_title("$C_{\theta}$ (without Hann window)")
 
 
 ref_type = "next_win"
 coherence_vs_psd(ax=axes[2], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
 axes[2].legend()
-axes[2].set_title("Next window (with Hann)")
+axes[2].set_title("$C_{\tau}$ (with Hann window)")
 
 
 ref_type="next_freq"
 coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[3], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
 axes[3].legend()
-axes[3].set_title("Next frequency (with Hann)")
+axes[3].set_title("$C_{\theta}$ (without Hann window)")
 
 dpi=300
 reso=[16, 9]
