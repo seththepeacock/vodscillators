@@ -39,12 +39,10 @@ ymin=None
 ymax=None
 # ymin=0
 # ymax=8
-show_plot=False
 #t_win = win_size / sample_rate
 t_win = 0.1
 hann = True
 t_shift = t_win  #set this to half the window size #it used to be 0.1
-fcut=False
 khz=True
 
 fig, _ = plt.subplots(2, 2)
@@ -56,31 +54,31 @@ fig.suptitle(str((filename) + ", sample_rate=" + str(sample_rate) + ", win_size=
 
 
 ref_type = "next_win"
-coherence_vs_psd(ax=axes[0], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
-                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
+coherence_vs_psd(ax=axes[0], t_shift=t_shift, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sr=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, hann=False)
 axes[0].legend()
-axes[0].set_title("$C_{\tau}$ (without Hann window)")
+axes[0].set_title(r"$C_{\tau}$ (without Hann window)")
 
 
 ref_type="next_freq"
-coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[1], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
-                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
+coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, ax=axes[1], wf=wf, ref_type=ref_type, t_win=t_win, sr=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, hann=False)
 axes[1].legend()
-axes[1].set_title("$C_{\theta}$ (without Hann window)")
+axes[1].set_title(r"$C_{\theta}$ (without Hann window)")
 
 
 ref_type = "next_win"
-coherence_vs_psd(ax=axes[2], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
-                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
+coherence_vs_psd(ax=axes[2], t_shift=t_shift, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sr=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, hann=hann)
 axes[2].legend()
-axes[2].set_title("$C_{\tau}$ (with Hann window)")
+axes[2].set_title(r"$C_{\tau}$ (with Hann window)")
 
 
 ref_type="next_freq"
-coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[3], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
-                 xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
+coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, ax=axes[3], wf=wf, ref_type=ref_type, t_win=t_win, sr=sample_rate,
+                 xmin=xmin, xmax=xmax, khz=khz, hann=hann)
 axes[3].legend()
-axes[3].set_title("$C_{\theta}$ (without Hann window)")
+axes[3].set_title(r"$C_{\theta}$ (without Hann window)")
 
 dpi=300
 reso=[16, 9]
