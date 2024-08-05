@@ -9,39 +9,39 @@ from scipy.signal import *
 
 #filename = "V&D fig 2A, loc=0, glob=0.pkl"
 #filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
-filename = "V&D fig 5, loc=0.0785, glob=0, sr=128.pkl"
-filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
-with open(filepath + filename, 'rb') as picklefile:
-    vod = pickle.load(picklefile)
+#filename = "V&D fig 5, loc=0.0785, glob=0, sr=128.pkl"
+#filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
+#with open(filepath + filename, 'rb') as picklefile:
+#    vod = pickle.load(picklefile)
     #this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-    assert isinstance(vod, Vodscillator)
+#    assert isinstance(vod, Vodscillator)
 #
 #vod.n_win = vod.n_ss
 #vod.save()
 
 #filename = 'AC6rearSOAEwfB1.mat'
-#filename = 'TH14RearwaveformSOAE.mat'
-#mat = scipy.io.loadmat('SOAE Data/' + filename)
-#wf = np.squeeze(mat['wf'])
+filename = 'TH14RearwaveformSOAE.mat'
+mat = scipy.io.loadmat('SOAE Data/' + filename)
+wf = np.squeeze(mat['wf'])
 wf_title = filename
 
-wf = vod.SOO_sol[vod.n_transient:]
+#wf = vod.SOO_sol[vod.n_transient:]
 
 #wf = np.pad(wf, 20) #padding might help???
 
 
-sample_rate=128
-#sample_rate = 44100 #for SOAE data
+#sample_rate=128
+sample_rate = 44100 #for SOAE data
 win_size = 2048
 xmin=0
-xmax=None
+xmax=7
 ymin=None
 ymax=None
 # ymin=0
 # ymax=8
 show_plot=False
 #t_win = win_size / sample_rate
-t_win = 10
+t_win = 0.1
 hann = True
 t_shift = t_win  #set this to half the window size #it used to be 0.1
 fcut=False
