@@ -9,22 +9,23 @@ from scipy.signal import *
 
 #filename = "V&D fig 2A, loc=0, glob=0.pkl"
 #filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
-#filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
-#with open(filepath + filename, 'rb') as picklefile:
-#    vod = pickle.load(picklefile)
+filename = "V&D fig 5, loc=0.0785, glob=0, sr=128.pkl"
+filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
+with open(filepath + filename, 'rb') as picklefile:
+    vod = pickle.load(picklefile)
     #this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
-#    assert isinstance(vod, Vodscillator)
+    assert isinstance(vod, Vodscillator)
 #
-##vod.n_win = vod.n_ss
-##vod.save()
+#vod.n_win = vod.n_ss
+#vod.save()
 
 #filename = 'AC6rearSOAEwfB1.mat'
-filename = 'TH14RearwaveformSOAE.mat'
-mat = scipy.io.loadmat('SOAE Data/' + filename)
-wf = np.squeeze(mat['wf'])
+#filename = 'TH14RearwaveformSOAE.mat'
+#mat = scipy.io.loadmat('SOAE Data/' + filename)
+#wf = np.squeeze(mat['wf'])
 wf_title = filename
 
-#wf = vod.SOO_sol
+wf = vod.SOO_sol
 
 #wf = np.pad(wf, 20) #padding might help???
 
@@ -56,32 +57,28 @@ fig.suptitle(str((filename) + ", sample_rate=" + str(sample_rate) + ", win_size=
 ref_type = "next_win"
 coherence_vs_psd(ax=axes[0], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
-axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=5)
+axes[0].legend(loc='upper center')
 axes[0].set_title("Next window (no Hann)")
 
 
 ref_type="next_freq"
 coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[1], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=False)
-axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=5)
+axes[1].legend(loc='upper center')
 axes[1].set_title("Next frequency (no Hann)")
 
 
 ref_type = "next_win"
 coherence_vs_psd(ax=axes[2], t_shift=t_shift, fcut=fcut, wf_title=wf_title, wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
-axes[2].legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=5)
+axes[2].legend(loc='upper center')
 axes[2].set_title("Next window (with Hann)")
 
 
 ref_type="next_freq"
 coherence_vs_psd(wf_title=wf_title, t_shift=t_shift, fcut=fcut, ax=axes[3], wf=wf, ref_type=ref_type, t_win=t_win, sample_rate=sample_rate,
                  xmin=xmin, xmax=xmax, khz=khz, show_plot=show_plot, hann=hann)
-axes[3].legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=5)
+axes[3].legend(loc='upper center')
 axes[3].set_title("Next frequency (with Hann)")
 
 dpi=300

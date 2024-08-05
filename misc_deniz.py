@@ -15,12 +15,8 @@ with open(filepath + filename, 'rb') as picklefile:
     # this "assert" statement will let VSCode know that this is a Vodscillator, so it will display its documentation for you!
     assert isinstance(vod, Vodscillator)
 
-vod.n_win = vod.n_ss
-
+#vod.n_win = vod.n_ss
 # vod.save()
-
-vlodder(vod, "cluster")
-plt.show()
 
 # all cohero-figs for TH14
 if 1==0:
@@ -66,7 +62,6 @@ if 1==0:
     # freq_ref_step=1
     # coherogram(wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, freq_ref_step=freq_ref_step, scope=scope, t_shift=t_shift, sample_rate=sample_rate, xmax=xmax, ymin=ymin, ymax=ymax, show_plot=show_plot, fig_num=1)
     # plt.show()
-
 
 # all cohero-figs for V&D
 if 1==0:
