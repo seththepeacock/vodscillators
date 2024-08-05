@@ -15,8 +15,8 @@ p = {
 
 "IC_method" : "rand", #rand or const
 "freq_dist" : "exp", #linear or exp
-"omega_0" : 2*np.pi, # char frequency of lowest oscillator [default = 2*np.pi] 
-"omega_N" : 5*(2*np.pi), # char frequency of highest oscillator [default = 5*(2*np.pi)] 
+"omega_0" : 2*np.pi*1000, # char frequency of lowest oscillator [default = 2*np.pi] 
+"omega_N" : 5*(2*np.pi)*1000, # char frequency of highest oscillator [default = 5*(2*np.pi)] 
 
 # if the np's (below) are nonzero, then these become the mean values rather than the parameters themselves
 "epsilon" : 628, # [default = 628] --> control parameter
