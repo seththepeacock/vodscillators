@@ -24,8 +24,7 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False):
       hann: bool, Optional
         Applied a hanning window before the FFT
   """
-
-
+  
   # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
   if t_shift is None:
     t_shift=t_win
@@ -72,16 +71,17 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False):
   # get frequency axis 
   freq_ax = rfftfreq(n_win, sample_spacing)
   num_freq_pts = len(freq_ax)
-  # get fft of each window
+  
+  # initialize windowed fft array
   wfft = np.zeros((num_wins, num_freq_pts), dtype=complex)
-
-
+  # get ffts (optionally apply the Hann window first) 
+    # norm=forward applies the normalizing 1/n_win factor 
   if hann:
     for k in range(num_wins):
-      wfft[k, :] = rfft(windowed_wf[k, :]*np.hanning(n_win))
+      wfft[k, :] = rfft(windowed_wf[k, :]*np.hanning(n_win), norm="forward")
   else:
     for k in range(num_wins):
-      wfft[k, :] = rfft(windowed_wf[k, :])
+      wfft[k, :] = rfft(windowed_wf[k, :], norm="forward")
     
   return {  
     "wfft" : wfft,
@@ -110,7 +110,7 @@ def get_psd(wf, sr, t_win, num_wins=None, wfft=None, freq_ax=None, return_all=Fa
         We have to also pass in the freq_ax for the wfft (either pass in both or neither!)
       return_all: bool, Optional
         Defaults to only returning the PSD averaged over all windows; if this is enabled, then a dictionary is returned with keys:
-        "avg_psd", "freq_ax", "win_psd"
+        "psd", "freq_ax", "win_psd"
   """
   # make sure we either have both or neither
   if (wfft is None and freq_ax is not None) or (wfft is not None and freq_ax is None):
@@ -147,6 +147,60 @@ def get_psd(wf, sr, t_win, num_wins=None, wfft=None, freq_ax=None, return_all=Fa
       "psd" : psd,
       "freq_ax" : freq_ax,
       "win_psd" : win_psd
+      }
+    
+def get_mags(wf, sr, t_win, num_wins=None, wfft=None, freq_ax=None, return_all=False):
+  """ Gets the magnitudes of the given waveform, averaged over windows (with the given window size)
+
+  Parameters
+  ------------
+      wf: array
+        waveform input array
+      sr: int
+        sample rate of waveform
+      t_win: float
+        length (in time) of each window
+      num_wins: int, Optional
+        Used in get_wfft; if this isn't passed, then just gets the maximum number of windows of the given size
+      wfft: any, Optional
+        If you want to avoid recalculating the windowed fft, pass it in here!
+      freq_ax: any, Optional
+        We have to also pass in the freq_ax for the wfft (either pass in both or neither!)
+      return_all: bool, Optional
+        Defaults to only returning the PSD averaged over all windows; if this is enabled, then a dictionary is returned with keys:
+        "mags", "freq_ax", "win_mags"
+  """
+  # make sure we either have both or neither
+  if (wfft is None and freq_ax is not None) or (wfft is not None and freq_ax is None):
+    raise Exception("We need both wfft and freq_ax (or neither)!")
+  
+  # if you passed the wfft and freq_ax in then we'll skip over this
+  if wfft is None:
+    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, norm=True)
+    wfft = d["wfft"]
+    freq_ax = d["freq_ax"]
+  
+  # calculate necessary params from the wfft
+  wfft_size = np.shape(wfft)
+  num_wins = wfft_size[0]
+  num_freq_pts = wfft_size[1]
+  
+  # initialize array
+  win_mags = np.zeros((num_wins, num_freq_pts))
+
+  # get PSD for each window
+  for win in range(num_wins):
+    win_mags[win, :] = np.abs(wfft[win, :])
+    
+  # average over all windows
+  mags = np.mean(win_mags, 0)
+  if not return_all:
+    return mags
+  else:
+    return {  
+      "mags" : mags,
+      "freq_ax" : freq_ax,
+      "win_mags" : win_mags
       }
 
 def get_coherence(wf, sr, t_win=1, t_shift=1, bin_shift=1, num_wins=None, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
@@ -188,7 +242,7 @@ def get_coherence(wf, sr, t_win=1, t_shift=1, bin_shift=1, num_wins=None, wfft=N
     # finally, output the vector strength (for each frequency)
     return np.sqrt(xx**2 + yy**2)
   
-  # make sure we either have both or neither
+  # make sure we either have both wfft and freq_ax or neither
   if (wfft is None and freq_ax is not None) or (wfft is not None and freq_ax is None):
     raise Exception("We need both wfft and freq_ax (or neither)!")
 
@@ -226,7 +280,7 @@ def get_coherence(wf, sr, t_win=1, t_shift=1, bin_shift=1, num_wins=None, wfft=N
   elif ref_type == "next_freq":
     
     # unwrap phases along the frequency bin axis (this won't affect coherence, but it's necessary for means)
-    phases = np.unwrap(phases, axis=1)
+    # phases = np.unwrap(phases, axis=1)
       
     # initialize array for phase diffs; -bin_shift is because we won't be able to get it for the #(bin_shift) freqs
     phase_diffs = np.zeros((num_wins, num_freq_pts - bin_shift))

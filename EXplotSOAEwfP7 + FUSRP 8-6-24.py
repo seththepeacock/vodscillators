@@ -152,7 +152,7 @@ for n in range(0,M):
     if (windowB==1):
         signal=signal*np.hanning(len(signal))  
     # --- deal w/ FFT
-    spec= rfft(signal)  
+    spec= rfft(signal, norm="forward")  
     mag= abs(spec)  # magnitude
     phase= np.angle(spec) # phase
     phaseUW= np.unwrap(phase)   # unwrapped phase (NOT USED)
@@ -167,20 +167,20 @@ for n in range(0,M):
         indxL= (n-1)*Npts  # previous segment index 
         tS= t[indxL]   # time stamp for that point
         signalL=  np.squeeze(wf[indxL:indxL+Npts]);  # re-extract last segment
-        specL= rfft(signalL) 
+        specL= rfft(signalL, norm="forward") 
         phaseL= np.angle(specL)
         # --- grab subsequent time segment (re coherogram)
         indxH= (n+1)*Npts  # previous segment index 
         tSh= t[indxH]   # time stamp for that point
         signalH=  np.squeeze(wf[indxH:indxH+Npts]);  # re-extract last segment
-        specH= rfft(signalH) 
+        specH= rfft(signalH, norm="forward") 
         phaseH= np.angle(specH)
         # ==== now compute phase diff re last segment (phaseDIFF2) or next (phaseDIFF3)
         phaseDIFF2= phase-phaseL 
         phaseDIFF3= phaseH-phase
         # ==== perform "phase correction" re last time buffer
         corrSP= mag*np.exp(1j*phaseDIFF2)    # 
-        corrWF= irfft(corrSP)   # convert to time domain
+        corrWF= irfft(corrSP, norm="forward")   # convert to time domain
         # ==== compute vector strength (across freq) for this instance in one of two ways
         # (first method seems to make more sense and yield consistent results)
         if (1==1):
@@ -216,21 +216,14 @@ freqAVG= freq[1:]- 0.5*np.diff(freq)
 tP = np.arange(indx/SR,(indx+Npts-0)/SR,1/SR); # time assoc. for segment (only for plotting)
 specAVGm= np.average(storeM,axis=1)  # spectral-avgd MAGs
 specAVGmDB= 20*np.log10(specAVGm)    # "  " in dB
-"""
-PSD NORMALIZING FACTOR? Do you average before or after squaring/taking log? 
-The following is what we did - get the canonical PSD for each window and then average that over windows, and finally convert to dB at the end
-"""
-if 1==1:
-    normalizing_factor = SR * Npts
-    specAVGmDB= 10*np.log10(np.mean((storeM**2)/normalizing_factor, axis=1))
 specAVGp= np.average(storeP,axis=1) # spectral-avgd PHASEs
 # --- time-averaged version (sans phase corr.)
 timeAVGwf= np.average(storeWF,axis=1)  # time-averaged waveform
-specAVGwf= rfft(timeAVGwf)    # magnitude
+specAVGwf= rfft(timeAVGwf, norm="forward")    # magnitude
 specAVGwfDB= 20*np.log10(abs(specAVGwf))  # "  " in dB
 # --- time-averaged: phase-corrected version
 timeAVGwfCorr= np.average(storeWFcorr,axis=1)  # time-averaged waveform
-specAVGwfCorr= rfft(timeAVGwfCorr)  # magnitude
+specAVGwfCorr= rfft(timeAVGwfCorr, norm="forward")  # magnitude
 specAVGwfCorrDB= 20*np.log10(abs(specAVGwfCorr))  # "  " in dB
 # --- complex-averaged vers. of phase-corrected version
 # (alternative reality check re performing the irfft and rfft to get specAVGwfCorr)
@@ -355,13 +348,6 @@ if 1==0:
     
 # plot <|phase diffs|> for C_theta
 if 1==1:
-    # fonts and such
-    plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "DejaVuSans"
-    "font."
-    })
-    
     # unwrap phase with respect to frequency bin axis (0th axis), not the time window axis (1st axis)
     phasesUW = np.unwrap(storeP, axis=0)
     # get phase differences between frequency bins (0th axis)
@@ -385,7 +371,7 @@ if 1==1:
     axt = plt.subplot(2, 1, 1)
     axb = plt.subplot(2, 1, 2)
     
-    # marker for PC/PSD
+    # marker for PC/Magnitude
     markA = "+"
     # marker for means
     markB = "."
@@ -409,9 +395,9 @@ if 1==1:
     axt.legend(loc="upper left", fontsize=fs)
 
     # BOTTOM SUBPLOT
-    # plot psd on bottom
-    axb2.plot(freq, specAVGmDB, label="PSD", color='r', marker=markA, lw=1)
-    axb2.set_ylabel('PSD [dB]', fontsize=fs)
+    # plot mags on bottom
+    axb2.plot(freq, specAVGmDB, label="Magnitude", color='r', marker=markA, lw=1)
+    axb2.set_ylabel('Magnitude [dB]', fontsize=fs)
     axb2.legend(loc="lower right", fontsize=fs)
     
     # plot means on bottom
@@ -420,16 +406,19 @@ if 1==1:
     axb.legend(loc="lower left", fontsize=fs)
 
     # set title, xlims, and xlabels
-    title = r"$\langle|\phi_j^{{\theta}}|\rangle$" + ", " + r"$C_{{\theta}}$" + ", and PSD for "
+    title = r"$\langle|\phi_j^{{\theta}}|\rangle$" + ", " + r"$C_{{\theta}}$" + ", and Magnitude for "
     axt.set_xlabel("Frequency [kHz]", fontsize=fs)
     axb.set_xlabel("Frequency [kHz]", fontsize=fs)
     axt.set_title(title + fileN, fontsize="22")
     axt.set_xlim(fPlot)
     axb.set_xlim(fPlot)
 
+    axt.set_ylim(0, np.pi)
+    axb.set_ylim(0, np.pi)
+
     # tighten up layout and show
     plt.tight_layout()
     fig1.set_size_inches(18, 10)
     # save fig
-    fig1.savefig('abs_avg_pd_TH14_ChrisCode.png', dpi=500, bbox_inches='tight')
-    # plt.show()
+    # fig1.savefig('abs_avg_pd_TH14_ChrisCode.png', dpi=500, bbox_inches='tight')
+    plt.show()
