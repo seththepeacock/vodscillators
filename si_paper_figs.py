@@ -19,19 +19,29 @@ wf1 = np.squeeze(mat['wf'])
 sr1=44100
 wf_title1 = "Human SOAE Waveform"
 
-filename = "V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
+filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
 filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
 with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
     wf2 = vod.SOO_sol[vod.n_transient:]
 sr2=128
-wf_title2 = "V\&D Model Waveform (Figure 4 Parameters)"
+wf_title2 = "V&D Model Waveform (Figure 3A Parameters, $\Tilde{D}=0.1$)"
+
+# filename = "wf - V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
+# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+# with open(filepath + filename, 'rb') as picklefile:
+#     wf2 = pickle.load(picklefile)
+# sr2=128
+# wf_title2 = "V\&D Model Waveform (Figure 4 Parameters)"
+
+
+
 
 # set params for TH14
 t_win1=0.1
 hann1=False
 # set params for V&D
-t_win2=10
+t_win2=20
 hann2=True
 
 # get coherence, mags, and means
@@ -59,7 +69,7 @@ axt2 = plt.subplot(2, 1, 1)
 axb2 = plt.subplot(2, 1, 2)
 
 # define a helper function which we'll call for each waveform. c and p are the coherence/mags dictionaries
-def plot(c, m, axt, axb, khz):
+def plot(c, m, axt, axb, khz, wf):
     # get vars from the dictionaries
     mags = m["mags"]
     mags_freq_ax = m["freq_ax"]
@@ -93,11 +103,15 @@ def plot(c, m, axt, axb, khz):
     axt2.plot(coherence_freq_ax, coherence, label=r"$C_{{\theta}}$", marker=markA, color='m', lw=1)
     axt2.set_ylabel('Vector Strength', fontsize=fs)
     axt2.legend(loc="upper right", fontsize=fs)
+    if wf=="V+D":
+        axt2.legend(loc="lower right", fontsize=fs)
     
     # plot means
     axt.plot(coherence_freq_ax, means, label=means_label, color='black', marker=markB, lw=1)
     axt.set_ylabel(means_label, fontsize=fs)
     axt.legend(loc="upper left", fontsize=fs)
+    if wf=="V+D":
+        axt.legend(loc="lower left", fontsize=fs)
 
     # BOTTOM SUBPLOT
     # plot mags 
@@ -117,8 +131,8 @@ def plot(c, m, axt, axb, khz):
 
 
 # call the function on both waveforms
-plot(c1, m1, axt1, axb1, True)
-plot(c2, m2, axt2, axb2, False)
+plot(c1, m1, axt1, axb1, True, "TH14")
+plot(c2, m2, axt2, axb2, False, "V+D")
 
 # set titles
 title = r"$\langle|\phi_j^{{\theta}}|\rangle$" + ", " + r"$C_{{\theta}}$" + ", and Magnitude for "
@@ -141,5 +155,6 @@ axb2.set_ylim(0, np.pi)
 plt.tight_layout()
 fig1.set_size_inches(18, 10) # set figure's size manually
 fig2.set_size_inches(18, 10)
-fig1.savefig('abs_avg_pd_TH14.png', dpi=500, bbox_inches='tight')
+# fig1.savefig('abs_avg_pd_TH14.png', dpi=500, bbox_inches='tight')
 fig2.savefig('abs_avg_pd_V+D.png', dpi=500, bbox_inches='tight')
+plt.show()
