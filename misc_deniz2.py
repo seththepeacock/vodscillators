@@ -48,6 +48,14 @@ khz=True
 fig, _ = plt.subplots(2, 2)
 axes = fig.axes
 
+
+#fig.rcParams.update({
+#    "text.usetex": True,
+#    "font.family": "DejaVuSans"
+#    "font."
+#})
+
+
 fig.suptitle(str((filename) + ", sample_rate=" + str(sample_rate) + ", win_size=" + str(win_size)))
 
 

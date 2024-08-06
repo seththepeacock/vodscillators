@@ -45,7 +45,7 @@ if 1==0:
 
     t_win = 1
     t_shift = 0.025
-    coherence_vs_psd(wf_title=wf_title, wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, xmin=100, xmax=20000, show_plot=show_plot, fig_num=3)
+    quick(wf_title=wf_title, wf=wf, t_win=t_win, t_shift=t_shift, sample_rate=sample_rate, xmin=100, xmax=20000, show_plot=show_plot, fig_num=3)
     plt.show()
     
     # t_win = 24
@@ -165,8 +165,8 @@ if 1==0:
         assert isinstance(vod, Vodscillator)
 
     wf = vod.SOO_sol[vod.n_transient:]
-    coherence_vs_psd(wf, sample_rate=128, t_win=t_win, show_plot=False, fig_num=1, wf_title="128", xmin=0, xmax=10)
-    coherence_vs_psd(wf, sample_rate=128, t_shift=4, t_win=t_win, show_plot=True, fig_num=2, wf_title="128", xmin=0, xmax=10)
+    quick(wf, sample_rate=128, t_win=t_win, show_plot=False, fig_num=1, wf_title="128", xmin=0, xmax=10)
+    quick(wf, sample_rate=128, t_shift=4, t_win=t_win, show_plot=True, fig_num=2, wf_title="128", xmin=0, xmax=10)
 
     # filename = "V&D fig 2A, loc=0.1, glob=0, sr=512.pkl"
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
@@ -224,7 +224,7 @@ if 1==0:
         assert isinstance(vod, Vodscillator)
 
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=False, fig_num=1)
-    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=128, t_win=32, show_plot=False, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 128")
+    quick(vod.SOO_sol[vod.n_transient:], sample_rate=128, t_win=32, show_plot=False, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 128")
 
 
     filename = "V&D fig 2A, loc=0.1, glob=0, sr=512.pkl"
@@ -234,7 +234,7 @@ if 1==0:
         vod = pickle.load(picklefile)
         assert isinstance(vod, Vodscillator)
 
-    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=32, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 512")
+    quick(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=32, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 512")
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=True, fig_num=2)
 
 # comparing F&B sample rate 128 vs 512
@@ -255,7 +255,7 @@ if 1==0:
         vod = pickle.load(picklefile)
         assert isinstance(vod, Vodscillator)
 
-    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=128, t_win=t_win, ymin=ymin, ymax=ymax, show_plot=True, do_coherence=False,fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's iso, loc=0.1, glob=0: SR = 128")
+    quick(vod.SOO_sol[vod.n_transient:], sample_rate=128, t_win=t_win, ymin=ymin, ymax=ymax, show_plot=True, do_coherence=False,fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's iso, loc=0.1, glob=0: SR = 128")
 
 
     filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
@@ -265,7 +265,7 @@ if 1==0:
         vod = pickle.load(picklefile)
         assert isinstance(vod, Vodscillator)
 
-    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=1, ymin=ymin, ymax=ymax,xmin=xmin, do_coherence=False,xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 512")
+    quick(vod.SOO_sol[vod.n_transient:], sample_rate=512, t_win=t_win, fig_num=1, ymin=ymin, ymax=ymax,xmin=xmin, do_coherence=False,xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 512")
 
 # psd + coherence of vodscillators
 if 1==0:
@@ -280,7 +280,7 @@ if 1==0:
     xmax = 10
     wf = np.sum(vod.sol[:, vod.n_transient:], 0), vod.sample_rate
     t_win = 64
-    coherence_vs_psd(wf, vod.sample_rate, t_win, num_wins=None, xmax = xmax, ymin=0, ymax = 30, max_vec_strength=max_vec_strength, fig_num=1)
+    quick(wf, vod.sample_rate, t_win, num_wins=None, xmax = xmax, ymin=0, ymax = 30, max_vec_strength=max_vec_strength, fig_num=1)
     plt.show()
 
 #psd + coherence of generated data
@@ -300,11 +300,11 @@ if 1==0:
     xmax=None
     xmin=0
     xmax=10
-    coherence_vs_psd(wf=wf, sample_rate=sr, t_win=4, xmin=xmin, xmax=xmax, do_psd=True)
+    quick(wf=wf, sample_rate=sr, t_win=4, xmin=xmin, xmax=xmax, do_psd=True)
 
 #psd + coherence of generated data
 if 1==0:
-    coherence_vs_psd(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
+    quick(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
 
 #psd + coherence of soae anolis data
 if 1==0:
@@ -339,7 +339,7 @@ if 1==0:
                         #    db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
     win_size = 2
     fig_num = 2
-    coherence_vs_psd(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
+    quick(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
     
     # plt.figure(1)
@@ -385,7 +385,7 @@ if 1==0:
                         #    db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
     win_size=16
     fig_num = 2
-    coherence_vs_psd(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
+    quick(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
 
 #psd + coherence of vodscillators
@@ -423,7 +423,7 @@ if 1==0:
 
     # win_size = 16
     # fig_num = 2
-    coherence_vs_psd(wf, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
+    quick(wf, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
 
 #freq cluster of vodscillator
