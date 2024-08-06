@@ -25,7 +25,7 @@ with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
     wf2 = vod.SOO_sol[vod.n_transient:]
 sr2=128
-wf_title2 = "V&D Model Waveform (Figure 3A Parameters, $\Tilde{D}=0.1$)"
+wf_title2 = r"V&D Model Waveform"
 
 # filename = "wf - V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
 # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
