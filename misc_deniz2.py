@@ -8,7 +8,6 @@ import scipy.io
 from scipy.signal import *
 
 #filename = "V&D fig 2A, loc=0, glob=0.pkl"
-#filename = "V&D fig 2A, loc=0.1, glob=0.1.pkl"
 #filename = "V&D fig 5, loc=0.0785, glob=0, sr=128.pkl"
 #filepath = "/home/deniz/Dropbox/vodscillators/deniz pickle jar/"
 #with open(filepath + filename, 'rb') as picklefile:
