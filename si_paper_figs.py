@@ -25,7 +25,7 @@ with open(filepath + filename, 'rb') as picklefile:
     vod = pickle.load(picklefile)
     wf2 = vod.SOO_sol[vod.n_transient:]
 sr2=128
-wf_title2 = r"V&D Model Waveform"
+wf_title2 = r"V&D Model Simulated Waveform"
 
 # filename = "wf - V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
 # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
@@ -135,7 +135,8 @@ plot(c1, m1, axt1, axb1, True, "TH14")
 plot(c2, m2, axt2, axb2, False, "V+D")
 
 # set titles
-title = r"$\langle|\phi_j^{{\theta}}|\rangle$" + ", " + r"$C_{{\theta}}$" + ", and Magnitude for "
+# title = r"$\langle|\phi_j^{{\theta}}|\rangle$" + ", " + r"$C_{{\theta}}$" + ", and Magnitude for "
+title = ""
 axt1.set_title(title + wf_title1, fontsize="22")
 axt2.set_title(title + wf_title2, fontsize="22")
 
@@ -155,6 +156,6 @@ axb2.set_ylim(0, np.pi)
 plt.tight_layout()
 fig1.set_size_inches(18, 10) # set figure's size manually
 fig2.set_size_inches(18, 10)
-# fig1.savefig('abs_avg_pd_TH14.png', dpi=500, bbox_inches='tight')
+fig1.savefig('abs_avg_pd_TH14.png', dpi=500, bbox_inches='tight')
 fig2.savefig('abs_avg_pd_V+D.png', dpi=500, bbox_inches='tight')
 plt.show()

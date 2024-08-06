@@ -5,13 +5,13 @@ import pickle
 from plots import *
 from vlodder import *
 from twins_mech import *
-import scipy.io
+# import scipy.io
 import random as rand
 # vod.n_win = vod.n_ss
 # vod.save()
 
 # testing next_freq vs prev_freq vs both_freqs
-if 1==1:
+if 1==0:
     filename = 'TH14RearwaveformSOAE'
     mat = scipy.io.loadmat('SOAE Data/' + 'TH14RearwaveformSOAE.mat')
     wf = np.squeeze(mat['wf'])
@@ -26,11 +26,8 @@ if 1==1:
     scatter_phase_diffs(freq=2900, wf=wf, sr=44100, t_win=0.1, wf_title="TH14 WRAPPED")
     plt.show()
     
-
-
-
 # psd + coherence of vodscillators
-if 1==0:
+if 1==1:
     # Open pickled vodscillator
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     # filename = "V&D fig 5, loc=0.0785, glob=0, sr=128.pkl"
@@ -52,9 +49,16 @@ if 1==0:
     xmin = 0
     xmax = 10
     noise_amp = 1
-    wf = wf + 2*noise_amp*np.random.sample(len(wf))-noise_amp
-    quick(wf, wf_title=wf_title, hann=True, ref_type="next_freq", sr=sr, t_win=t_win, xmin=xmin, xmax=xmax)
+    wf = wf.real
+    mags_normed = rfft(wf, n=1000, norm="forward")
+    mags = rfft(wf, n=1000, norm="backward")
+    freq = rfftfreq(1000, 1/sr)
+    plt.plot(freq, mags/1000 + 1, label="unnormed")
+
+    plt.plot(freq, mags_normed, label="normed")
+    plt.xlim(0, 10)
     plt.show()
+    
 
 # ALL VALUES <|phase diff|> vs coherence (V&D)
 if 1==0: 
