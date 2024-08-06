@@ -31,11 +31,9 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False):
     t_shift=t_win
   
   # calculate the number of samples in the window
-    # + 1 is because if you have SR=2 and you want a two second window, this will take 5 samples!
-  n_win = int(t_win*sr) + 1
+  n_win = int(t_win*sr)
 
   # and the number of samples to shift
-    # no + 1 here; if you want to shift it over one second and SR=2, that will be two samples
   n_shift = int(t_shift*sr)
 
   # get sample_spacing
@@ -130,8 +128,7 @@ def get_psd(wf, sr, t_win, num_wins=None, wfft=None, freq_ax=None, return_all=Fa
   num_freq_pts = wfft_size[1]
 
   # calculate the number of samples in the window for normalizing factor purposes
-    # + 1 is because if you have SR=2 and you want a two second window, this will take 5 samples!
-  n_win = int(t_win*sr) + 1
+  n_win = int(t_win*sr)
   
   # initialize array
   win_psd = np.zeros((num_wins, num_freq_pts))
@@ -244,27 +241,10 @@ def get_coherence(wf, sr, t_win=1, t_shift=1, bin_shift=1, num_wins=None, wfft=N
     # get final coherence
     coherence = get_vector_strength(phase_diffs)
     
-    # get <|phase diffs|> and add to the output dictionary
-    d["means"] = np.mean(np.abs(phase_diffs), 0)
+    # Since this references each frequency bin to its adjacent neighbor, we'll plot them w.r.t. the average frequency 
+        # this corresponds to shifting everything over half a bin width (bin width is 1/t_win)
+    freq_ax = freq_ax + (1/2)*(1/t_win)
     
-    # # Since this references each frequency bin to its adjacent neighbor, we'll plot them w.r.t. the average frequency 
-    #     # this corresponds to shifting everything over half a bin width (bin width is 1/t_win)
-    # freq_ax = freq_ax + (1/2)*(1/t_win)
-  
-  elif ref_type == "prev_freq":
-    # unwrap it w.r.t. neighboring frequency bins
-    phases=np.unwrap(phases, axis=1)
-    # initialize array for phase diffs; - 1 is because we won't be able to get it for the final freq 
-    phase_diffs = np.zeros((num_wins, num_freq_pts - 1))
-    # we'll also need to take the first bin off the freq_ax
-    freq_ax = freq_ax[1:]
-    
-    # calc phase diffs
-    for win in range(num_wins):
-      for freq_bin in range(1, num_freq_pts):
-        # so the first entry is in phase_diffs[win, 0] and corresponds to the entry for phases[win, 1] which makes sense bc our first bin on freq_ax is the one that was originally at index 1
-        phase_diffs[win, freq_bin - 1] = phases[win, freq_bin] - phases[win, freq_bin - 1]
-    coherence = get_vector_strength(phase_diffs)
   
   # or we can reference it against the phase of both the lower and higher frequencies in the same window
   elif ref_type == "both_freqs":
@@ -286,22 +266,27 @@ def get_coherence(wf, sr, t_win=1, t_shift=1, bin_shift=1, num_wins=None, wfft=N
     coherence_high = get_vector_strength(pd_high)
     # average the coherences you would get from either of these
     coherence = (coherence_low + coherence_high)/2
-    # set phase_diffs to one of these so it doesn't throw an error when you try to return phase_piffs
-    phase_diffs = pd_high
+    # set the phase diffs to one of these (could've also been pd_high)
+    phase_diffs = pd_low
+    
   else:
     raise Exception("You didn't input a valid ref_type!")
   
-   
-
+  # get <|phase diffs|>
+    # note we're unwrapping w.r.t. the frequency axis
+  means = np.mean(np.abs(phase_diffs), 0)
+  
   if not return_all:
     return coherence
   
   else:
+    d["coherence"] = coherence
     d["phases"] = phases
+    d["phase_diffs"] = phase_diffs
+    d["means"] = means
     d["num_wins"] = num_wins
     d["freq_ax"] = freq_ax
     d["wfft"] = wfft
-    d["coherence"] = coherence
     return d
     
 
@@ -408,10 +393,10 @@ def coherence_vs_psd(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, re
     ax.plot(coherence_freq_ax, coherence, label=label, color='purple')
     ax.set_ylabel('Vector Strength', color='purple')
     ax.legend(loc="upper right")
-    
+
   if do_means:
     phase_diffs = c["phase_diffs"]
-    means = np.mean(np.abs(phase_diffs[:, :])/np.pi, 0)
+    means = np.mean(np.abs(phase_diffs)/np.pi, 0)
     label = r"$\langle|\phi_j^{{\theta}}|\rangle/\pi$"
     ax.plot(coherence_freq_ax, means, label=label, color='C0')
     if not do_coherence:
