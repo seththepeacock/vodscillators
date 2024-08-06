@@ -60,11 +60,11 @@ if 1==0:
     ax1 = plt.subplot(2, 1, 1)
     ax2 = plt.subplot(2, 1, 2)
 
-    coherence_vs_psd(ax=ax1, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+    quick(ax=ax1, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
     # bin_shift=3
     # t_win=0.02
     do_means=True
-    coherence_vs_psd(do_coherence=False, ax=ax2, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) 
+    quick(do_coherence=False, ax=ax2, wf=wf, wf_title=wf_title, sample_rate=sample_rate, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) 
     plt.tight_layout()
     plt.show()
     
@@ -104,7 +104,7 @@ if 1==1:
     
     for i in range(4):
         wf = wfs[i][twins.n_transient:]
-        coherence_vs_psd(wfs[i], sample_rate=twins.sample_rate, t_win=t_win, t_shift=t_shift, ax=axes[i], wf_title=wf_titles[i])
+        quick(wfs[i], sample_rate=twins.sample_rate, t_win=t_win, t_shift=t_shift, ax=axes[i], wf_title=wf_titles[i])
         axes[i].set_xlim(0, 8)
         
     plt.show()
