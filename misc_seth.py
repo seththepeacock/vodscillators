@@ -10,6 +10,22 @@ import random as rand
 # vod.n_win = vod.n_ss
 # vod.save()
 
+# testing next_freq vs prev_freq vs both_freqs
+if 1==1:
+    filename = 'TH14RearwaveformSOAE'
+    mat = scipy.io.loadmat('SOAE Data/' + 'TH14RearwaveformSOAE.mat')
+    wf = np.squeeze(mat['wf'])
+    wf = wf[0:int(len(wf)/8)]
+    wf_title = filename
+    
+    ax1 = plt.subplot(2, 1, 1)
+    ax2 = plt.subplot(2, 1, 2)
+    coherence_vs_psd(ax=ax1, wf=wf, sr=44100, t_win=0.1, ref_type="next_freq", xmin=4, xmax=6, khz=True)
+    coherence_vs_psd(ax=ax2, wf=wf, sr=44100, t_win=0.1, ref_type="both_freqs", xmin=4, xmax=6, khz=True)
+    plt.show()
+    
+
+
 
 # psd + coherence of vodscillators
 if 1==0:

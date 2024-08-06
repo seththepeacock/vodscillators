@@ -55,9 +55,9 @@ p2 = get_psd(wfft=wfft2, freq_ax=freq_ax2, wf=wf2, sr=sr2, t_win=t_win2, return_
 fig1 = plt.figure(1)
 axt1 = plt.subplot(2, 1, 1)
 axb1 = plt.subplot(2, 1, 2)
-# fig2 = plt.figure(2)
-# axt2 = plt.subplot(2, 1, 1)
-# axb2 = plt.subplot(2, 1, 2)
+fig2 = plt.figure(2)
+axt2 = plt.subplot(2, 1, 1)
+axb2 = plt.subplot(2, 1, 2)
 
 # define a helper function which we'll call for each waveform. c and p are the coherence/psd dictionaries
 def plot(c, p, axt, axb, khz):
@@ -72,7 +72,7 @@ def plot(c, p, axt, axb, khz):
     # means = means/np.pi
     
     # convert to db/khz
-    psd = 20*np.log10(psd)
+    psd = 10*np.log10(psd)
     if khz:
         psd_freq_ax = psd_freq_ax / 1000
         coherence_freq_ax = coherence_freq_ax / 1000
@@ -89,7 +89,7 @@ def plot(c, p, axt, axb, khz):
     axt2 = axt.twinx()
     axb2 = axb.twinx()
     
-    #TOP SUBPLOT
+    # TOP SUBPLOT
     # plot PC
     axt2.plot(coherence_freq_ax, coherence, label=r"$C_{{\theta}}$", marker=markA, color='m', lw=1)
     axt2.set_ylabel('Vector Strength', fontsize=fs)
@@ -100,7 +100,7 @@ def plot(c, p, axt, axb, khz):
     axt.set_ylabel(means_label, fontsize=fs)
     axt.legend(loc="upper left", fontsize=fs)
 
-    #BOTTOM SUBPLOT
+    # BOTTOM SUBPLOT
     # plot psd 
     axb2.plot(psd_freq_ax, psd, label="PSD", color='r', marker=markA, lw=1)
     axb2.set_ylabel('PSD [dB]', fontsize=fs)
@@ -119,25 +119,24 @@ def plot(c, p, axt, axb, khz):
 
 # call the function on both waveforms
 plot(c1, p1, axt1, axb1, True)
-# plot(c2, p2, axt2, axb2, False)
+plot(c2, p2, axt2, axb2, False)
 
 # set titles
 title = r"$\langle|\phi_j^{{\theta}}|\rangle$" + ", " + r"$C_{{\theta}}$" + ", and PSD for "
 axt1.set_title(title + wf_title1, fontsize="22")
-# axt2.set_title(title + wf_title2, fontsize="22")
+axt2.set_title(title + wf_title2, fontsize="22")
 
 # set lims
 fmax1 = 5
 fmax2 = 7
 axt1.set_xlim(0, fmax1)
 axb1.set_xlim(0, fmax1)
-# axt2.set_xlim(0, fmax2)
-# axb2.set_xlim(0, fmax2)
+axt2.set_xlim(0, fmax2)
+axb2.set_xlim(0, fmax2)
 
 # finalize
 plt.tight_layout()
 fig1.set_size_inches(18, 10) # set figure's size manually
-# fig2.set_size_inches(18, 10)
-plt.show()
-# fig1.savefig('abs_avg_pd_TH14.png', dpi=500, bbox_inches='tight')
-# fig2.savefig('abs_avg_pd_V+D.png', dpi=500, bbox_inches='tight')
+fig2.set_size_inches(18, 10)
+fig1.savefig('abs_avg_pd_TH14.png', dpi=500, bbox_inches='tight')
+fig2.savefig('abs_avg_pd_V+D.png', dpi=500, bbox_inches='tight')
