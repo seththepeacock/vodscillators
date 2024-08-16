@@ -100,33 +100,43 @@ def plot(c, m, axt, axb, khz, wf):
     
     # TOP SUBPLOT
     # plot PC
-    axt2.plot(coherence_freq_ax, coherence, label=r"$C_{{\theta}}$", marker=markA, color='m', lw=1)
+    p1 = axt2.plot(coherence_freq_ax, coherence, label=r"$C_{{\theta}}$", marker=markA, color='m', lw=1)
     axt2.set_ylabel('Vector Strength', fontsize=fs)
-    axt2.legend(loc="upper right", fontsize=fs)
-    if wf=="V+D":
-        axt2.legend(loc="lower right", fontsize=fs)
     
     # plot means
-    axt.plot(coherence_freq_ax, means, label=means_label, color='black', marker=markB, lw=1)
+    p2 = axt.plot(coherence_freq_ax, means, label=means_label, color='black', marker=markB, lw=1)
     axt.set_ylabel(means_label, fontsize=fs)
-    axt.legend(loc="upper left", fontsize=fs)
-    if wf=="V+D":
-        axt.legend(loc="lower left", fontsize=fs)
+
+    # add legend
+    p = p1 + p2
+    labs = [l.get_label() for l in p]
+    loc = "lower right"
+    if wf == "TH14":
+        loc = "upper left"
+    axt.legend(p, labs, loc=loc, fontsize=fs)
 
     # BOTTOM SUBPLOT
     # plot mags 
-    axb2.plot(mags_freq_ax, mags, label="Magnitude", color='r', marker=markA, lw=1)
+    p3 = axb2.plot(mags_freq_ax, mags, label="Magnitude", color='r', marker=markA, lw=1)
     axb2.set_ylabel('Magnitude [dB]', fontsize=fs)
-    axb2.legend(loc="lower right", fontsize=fs)
     
     # plot means
-    axb.plot(coherence_freq_ax, means, label=means_label, color='black', marker=markB, lw=1)
+    p4 = axb.plot(coherence_freq_ax, means, label=means_label, color='black', marker=markB, lw=1)
     axb.set_ylabel(means_label, fontsize=fs)
-    axb.legend(loc="lower left", fontsize=fs)
+    
+    # add legend
+    p = p3 + p4
+    labs = [l.get_label() for l in p]
+    axb.legend(p, labs, loc="lower right", fontsize=fs)
     
     # set xlabels
-    axt.set_xlabel("Frequency [kHz]", fontsize=fs)
-    axb.set_xlabel("Frequency [kHz]", fontsize=fs)
+    if khz:
+        xlabel = "Frequency [kHz]"
+    else:
+        xlabel = "Frequency [Hz]"
+    axt.set_xlabel(xlabel, fontsize=fs)
+    axb.set_xlabel(xlabel, fontsize=fs)
+    
 
 
 
@@ -136,9 +146,9 @@ plot(c2, m2, axt2, axb2, False, "V+D")
 
 # set titles
 # title = r"$\langle|\phi_j^{{\theta}}|\rangle$" + ", " + r"$C_{{\theta}}$" + ", and Magnitude for "
-title = ""
-axt1.set_title(title + wf_title1, fontsize="22")
-axt2.set_title(title + wf_title2, fontsize="22")
+# title = ""
+# axt1.set_title(title + wf_title1, fontsize="22")
+# axt2.set_title(title + wf_title2, fontsize="22")
 
 # set lims
 fmax1 = 5
@@ -155,7 +165,9 @@ axb2.set_ylim(0, np.pi)
 # finalize
 plt.tight_layout()
 fig1.set_size_inches(18, 10) # set figure's size manually
+fig1.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.3)
 fig2.set_size_inches(18, 10)
+fig2.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.3)
 fig1.savefig('abs_avg_pd_TH14.png', dpi=500, bbox_inches='tight')
 fig2.savefig('abs_avg_pd_V+D.png', dpi=500, bbox_inches='tight')
 plt.show()
