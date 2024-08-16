@@ -5,10 +5,102 @@ import pickle
 from plots import *
 from vlodder import *
 from twins_mech import *
-# import scipy.io
+import scipy.io
 import random as rand
 # vod.n_win = vod.n_ss
 # vod.save()
+
+# testing human reversal with t_shift
+if 1==1:
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
+    filename = 'TH14RearwaveformSOAE.mat'
+    # filename = 'ACsb24rearSOAEwfA1'
+    mat = scipy.io.loadmat(filepath + filename)
+    wf = np.squeeze(mat['wf'])
+    wf_title=filename
+    sr=44100
+    # xmin=2.17
+    # xmax=2.19
+    xmin=1
+    xmax=5
+    
+    t_win = 0.046
+    t_shift = t_win
+    
+    fig, _ = plt.subplots(3, 2)
+    axes = fig.get_axes()
+    
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[0], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_win = 0.020
+    t_shift = 0.020
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[1], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_win = 0.02
+    t_shift = 0.01
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[2], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_shift = 0.005
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[3], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_shift = 0.003
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[4], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_shift = 0.001
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[5], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    
+    
+    
+    for ax in axes:
+        ax.set_title("")
+    fig.suptitle("Human", fontsize="20")
+    fig = plt.gcf()
+    fig.set_size_inches(18, 10)
+    fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=0.3)
+    fig.savefig('C_tau with t_shift - Human', dpi=500, bbox_inches='tight')
+    plt.show()
+
+
+# testing anolis reversal with t_shift
+if 1==0:
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
+    # filename = 'TH14RearwaveformSOAE.mat'
+    filename = 'ACsb24rearSOAEwfA1'
+    mat = scipy.io.loadmat(filepath + filename)
+    wf = np.squeeze(mat['wf'])
+    wf_title=filename
+    sr=44100
+    # xmin=2.17
+    # xmax=2.19
+    xmin=1
+    xmax=5
+    
+    t_win = 0.023
+    t_shift = t_win
+    
+    fig, _ = plt.subplots(3, 2)
+    axes = fig.get_axes()
+    
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[0], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_win = 0.0058
+    t_shift = 0.0058
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[1], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_win = 0.01
+    t_shift = 0.0058
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[2], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_shift = 0.003
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[3], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_shift = 0.001
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[4], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    t_shift = 0.0005
+    coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ax=axes[5], khz=True, xmin=xmin, xmax=xmax, wf_title=wf_title)
+    
+    
+    
+    for ax in axes:
+        ax.set_title("")
+    fig = plt.gcf()
+    fig.set_size_inches(18, 10)
+    fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=0.3)
+    fig.suptitle("Anolis", fontsize="20")
+    fig.savefig('C_tau with t_shift - Anolis', dpi=500, bbox_inches='tight')
+    plt.show()
+
 
 # testing next_freq vs prev_freq vs both_freqs
 if 1==0:
@@ -27,7 +119,7 @@ if 1==0:
     plt.show()
     
 # psd + coherence of vodscillators
-if 1==1:
+if 1==0:
     # Open pickled vodscillator
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     # filename = "V&D fig 5, loc=0.0785, glob=0, sr=128.pkl"
@@ -151,7 +243,7 @@ if 1==0:
 # scatter plot for next freq phase diffs
 if 1==0: 
     # get wf and set wf sepecific params
-    WF = "TH14"
+    WF = "V&D"
     
     if WF == "TH14":
         filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
@@ -170,14 +262,15 @@ if 1==0:
         sr=44100
         wf_title = filename
     if WF == "V&D":
-        filename = "wf - V&D fig 4, loc=0.1, glob=0, sr=128.pkl"
-        filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
+        filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
+        filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
         with open(filepath + filename, 'rb') as picklefile:
-            wf = pickle.load(picklefile)
-            wf = wf[0:int(len(wf))]
+            vod = pickle.load(picklefile)
+            wf = vod.SOO_sol[vod.n_transient:]
         sr=128
-        wf_title = "V&D fig 4 (loc=0.1, glob=0)"
-        t_win=10
+        wf_title = "V&D fig 3A (loc=0.1, glob=0)"
+        t_win=20
+        hann=True
 
 
     # set params
@@ -188,9 +281,9 @@ if 1==0:
     # ax2=plt.subplot(2, 1, 2)
     ax1= plt.gca()
 
+    freq = 2.226
 
-
-    scatter_phase_diffs(4370, wf, sr, t_win, unwrap=False, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax1)
+    scatter_phase_diffs(freq, wf, sr, t_win, hann=hann, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax1)
     # scatter_phase_diffs(4.8, wf, sr, t_win, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax2)
     plt.tight_layout()
     plt.show()
