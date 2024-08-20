@@ -6,12 +6,99 @@ from plots import *
 from vlodder import *
 from twins_mech import *
 import scipy.io
-import random as rand
+import pandas as pd
 # vod.n_win = vod.n_ss
 # vod.save()
 
-# testing human reversal with t_shift
+
 if 1==1:
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Best Data\\Only_CMS_vs_Control.xlsx"
+    df = pd.read_excel(filepath, header=None)
+    wfs = np.array(df)
+     
+    sr = 1/60
+    t_win = 300
+    ref_type = "next_freq"
+    
+    
+    fig, _ = plt.subplots(5, 4)
+    axes = fig.get_axes()
+    
+    color = "green"
+    for mouse_index in range(18):
+        if mouse_index == 8:
+            color = "red"
+        ax=axes[mouse_index]
+        wf = wfs[:, mouse_index]
+        print(len(wf))
+        wf_title = f"Mouse {mouse_index + 1}"
+        # ft = rfft(wf)
+        # f = rfftfreq(n=60, d=60)
+        d = get_coherence(wf=wf, sr=sr, t_win=t_win, ref_type=ref_type, return_all=True)
+        c = d["coherence"]
+        f = d["freq_ax"]
+        ax.plot(f, c, color=color)
+        ax.set_title(r"$C_\theta$ of Mouse" + f" {mouse_index + 1}")
+        ax.set_ylim(0, 1)
+        # ax.get_legend().remove()
+    plt.tight_layout()
+    
+    plt.show()
+
+
+# randomly generated complex numbers C_theta
+if 1==0:
+    nwin = 1000
+    nfreqs = 1000
+    shape = (nwin, nfreqs)
+    ft = np.sqrt(np.random.uniform(0, 1, shape)) * np.exp(1.j * np.random.uniform(-np.pi, np.pi, shape))
+    ft2 = np.empty(shape, dtype=complex)
+    for i in range(nwin):
+        ft2[i, :] = np.convolve(ft[i, :], [-1/4, 1/2, -1/4], mode="same")
+    phases = np.angle(ft)
+    pd = np.diff(phases, 1)
+    vs = get_vector_strength(pd)
+    
+    phases2 = np.angle(ft2)
+    pd2 = np.diff(phases2, 1)
+    vs2 = get_vector_strength(pd2)
+    
+    print(pd2[0])
+    
+    x = np.arange(len(vs))
+    plt.plot(x, vs, label=r"$C_\theta$ without Convolving")
+    plt.plot(x, vs2, label=r"$C_\theta$ with Convolving")
+    plt.title("Randomly Generated Complex Numbers")
+    plt.legend()
+    plt.show()
+    
+
+# hanning in time vs spectral domains
+if 1==0:
+    filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
+    filename = 'TH14RearwaveformSOAE.mat'
+    # filename = 'ACsb24rearSOAEwfA1'
+    mat = scipy.io.loadmat(filepath + filename)
+    wf = np.squeeze(mat['wf'])
+    wf_title=filename
+    sr=44100
+    # xmin=2.17
+    # xmax=2.19
+    xmin=1
+    xmax=5
+    
+    t_win = 0.1
+    t_shift = t_win
+    hann=True
+    d = get_coherence(wf, sr, t_win, t_shift=t_shift, ref_type="next_freq", hann=hann, return_all=True)
+    pds = d["phase_diffs"]
+    print(pds[405])
+    # coherence_vs_psd(wf, sr, t_win, t_shift=t_shift, ref_type="next_freq", khz=True, xmin=xmin, xmax=xmax, hann=hann, wf_title=wf_title)
+    # plt.show()
+
+
+# testing human reversal with t_shift
+if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
     filename = 'TH14RearwaveformSOAE.mat'
     # filename = 'ACsb24rearSOAEwfA1'

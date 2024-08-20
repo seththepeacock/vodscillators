@@ -3,9 +3,19 @@ import matplotlib.pyplot as plt
 from  matplotlib.axes import Axes
 from vodscillator import *
 from scipy.fft import rfft, rfftfreq
-from scipy.signal import welch
+import scipy.signal.windows as wins
+
 
 # define helper functions
+
+def get_vector_strength(phase_diffs):
+  # get the sin and cos of the phase diffs, and average over the window pairs
+  xx= np.mean(np.sin(phase_diffs),axis=0)
+  yy= np.mean(np.cos(phase_diffs),axis=0)
+
+  # finally, output the vector strength (for each frequency)
+  return np.sqrt(xx**2 + yy**2)
+
 def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False):
   """ Returns a dict with the windowed fft and associated freq ax of the given waveform
 
@@ -78,7 +88,12 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False):
     # norm=forward applies the normalizing 1/n_win factor 
   if hann:
     for k in range(num_wins):
-      wfft[k, :] = rfft(windowed_wf[k, :]*np.hanning(n_win), norm="forward")
+      # wfft[k, :] = rfft(windowed_wf[k, :]*np.hanning(n_win), norm="forward")
+      wfft[k, :] = rfft(windowed_wf[k, :]*wins.hann(n_win, sym=True), norm="forward")
+      # w = rfft(windowed_wf[k, :], norm="forward")
+      # wfft[k, :] = np.convolve(w, [-1/4, 1/2, -1/4], mode="same")
+
+      
   else:
     for k in range(num_wins):
       wfft[k, :] = rfft(windowed_wf[k, :], norm="forward")
@@ -180,7 +195,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
   
   # if you passed the wfft and freq_ax in then we'll skip over this
   if wfft is None:
-    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, norm=True, hann=True)
+    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, norm=True, hann=hann)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
   
@@ -207,7 +222,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
       "win_mags" : win_mags
       }
 
-def get_coherence(wf, sr, t_win=1, t_shift=1, bin_shift=1, num_wins=None, hann=False, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
+def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=False, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
   Parameters
@@ -239,15 +254,6 @@ def get_coherence(wf, sr, t_win=1, t_shift=1, bin_shift=1, num_wins=None, hann=F
   # define output dictionary to be returned (we'll add everything later)
   d = {}
   
-  # define a helper function to calculate vector strength from an array of phase diffs (one for each freq)
-  def get_vector_strength(phase_diffs):
-    # get the sin and cos of the phase diffs, and average over the window pairs
-    xx= np.mean(np.sin(phase_diffs),axis=0)
-    yy= np.mean(np.cos(phase_diffs),axis=0)
-
-    # finally, output the vector strength (for each frequency)
-    return np.sqrt(xx**2 + yy**2)
-  
   # make sure we either have both wfft and freq_ax or neither
   if (wfft is None and freq_ax is not None) or (wfft is not None and freq_ax is None):
     raise Exception("We need both wfft and freq_ax (or neither)!")
@@ -258,7 +264,7 @@ def get_coherence(wf, sr, t_win=1, t_shift=1, bin_shift=1, num_wins=None, hann=F
   
   # if you passed the wfft and freq_ax in then we'll skip over this
   if wfft is None:
-    d = get_wfft(wf=wf, sr=sr, t_win=t_win, t_shift=t_shift, num_wins=num_wins, hann=True)
+    d = get_wfft(wf=wf, sr=sr, t_win=t_win, t_shift=t_shift, num_wins=num_wins, hann=hann)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
   
