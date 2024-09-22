@@ -67,7 +67,7 @@ pp = {
     "M_T" : 1 # mass of tympanym
     }
 
-v_twins = TwinVods(vl=vleft, vr=vright, **pp)
+v_twins = TwinVods(vl=vod_L, vr=vod_R, **pp)
 v_twins.solve_ODE()
 v_twins.save()
 

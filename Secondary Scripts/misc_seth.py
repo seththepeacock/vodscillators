@@ -328,7 +328,7 @@ if 1==0:
     fig, _ = plt.subplots(2, 2)
     axes = fig.axes
     
-    wfs = [twins.SOOL_sol, twins.SOOR_sol, twins.T_l_sol, twins.T_r_sol]
+    wfs = [twins.SOO_L_sol, twins.SOO_R_sol, twins.P_L_sol, twins.P_R_sol]
     wf_titles = ["SOOL", "SOOR", "T_l", "T_r"]
     t_win = 10
     t_shift = t_win
