@@ -4,14 +4,29 @@ import numpy as np
 import pickle
 from plots import *
 from vlodder import *
-from twins_mech import *
+from twins import *
 import scipy.io
 import pandas as pd
+import numpy.random as random
 # vod.n_win = vod.n_ss
 # vod.save()
 
 
-if 1==1:
+
+
+if 1==0:
+    M=1000
+    wf = np.ones(M)
+    zeros = np.zeros(M*100)
+    wf = np.append(wf, zeros)
+    ft = np.fft.fft(wf)
+    freq = np.fft.fftfreq(len(wf))
+    plt.scatter(freq, np.angle(ft))
+    plt.show()
+    
+
+# Best CMS research
+if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Best Data\\Only_CMS_vs_Control.xlsx"
     df = pd.read_excel(filepath, header=None)
     wfs = np.array(df)
@@ -276,11 +291,11 @@ if 1==0:
     ax1 = plt.subplot(2, 1, 1)
     ax2 = plt.subplot(2, 1, 2)
 
-    quick(ax=ax1, wf=wf, wf_title=wf_title, sr=sr, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+    coherence_vs_psd(ax=ax1, wf=wf, wf_title=wf_title, sr=sr, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
     # bin_shift=3
     # t_win=0.02
     do_means=True
-    quick(do_coherence=False, ax=ax2, wf=wf, wf_title=wf_title, sr=sr, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) 
+    coherence_vs_psd(do_coherence=False, ax=ax2, wf=wf, wf_title=wf_title, sr=sr, ref_type="next_freq", do_means=do_means, bin_shift=bin_shift, t_win=t_win, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) 
     plt.tight_layout()
     plt.show()
     
@@ -308,7 +323,7 @@ if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     with open(filepath + filename, 'rb') as picklefile:
         twins = pickle.load(picklefile)
-        assert isinstance(twins, Twins)
+        assert isinstance(twins, TwinVodscillators)
 
     fig, _ = plt.subplots(2, 2)
     axes = fig.axes
@@ -320,7 +335,7 @@ if 1==0:
     
     for i in range(4):
         wf = wfs[i][twins.n_transient:]
-        quick(wfs[i], sr=twins.sr, t_win=t_win, t_shift=t_shift, ax=axes[i], wf_title=wf_titles[i])
+        coherence_vs_psd(wfs[i], sr=twins.sr, t_win=t_win, t_shift=t_shift, ax=axes[i], wf_title=wf_titles[i])
         axes[i].set_xlim(0, 8)
         
     plt.tight_layout()
@@ -328,9 +343,9 @@ if 1==0:
     
 
 # scatter plot for next freq phase diffs
-if 1==0: 
+if 1==1: 
     # get wf and set wf sepecific params
-    WF = "V&D"
+    WF = "pure"
     
     if WF == "TH14":
         filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\SOAE Data\\"
@@ -358,18 +373,30 @@ if 1==0:
         wf_title = "V&D fig 3A (loc=0.1, glob=0)"
         t_win=20
         hann=True
-
+    if WF == "pure":
+        tf = 10000
+        sr = 128
+        ns = tf * sr
+        t = np.linspace(0, tf, ns)
+        noise_amp = 0.0001
+        wf = np.sin(2*np.pi*t) + 2*noise_amp*random.random_sample(len(t)) - noise_amp
+        
+        hann = False
+        t_win= 15
+        wf_title = f"Pure 1Hz Sin with Noise={noise_amp}, "+r"$\tau$"+f"={t_win} -->"+r"$\Delta\omega$"+f"={1/t_win}"
+        xmin = 0
+        xmax = 2
 
     # set params
     # t_win=0.02
     bin_shift=1
     
-    # ax1=plt.subplot(2, 1, 1)
-    # ax2=plt.subplot(2, 1, 2)
-    ax1= plt.gca()
+    ax1=plt.subplot(2, 1, 1)
+    ax2=plt.subplot(2, 1, 2)
+    # ax1= plt.gca()
 
-    freq = 2.226
-
+    freq = 1
+    coherence_vs_psd(wf=wf, t_win=t_win, sr=sr, xmin=xmin, xmax=xmax, ref_type="next_freq", wf_title=wf_title)
     scatter_phase_diffs(freq, wf, sr, t_win, hann=hann, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax1)
     # scatter_phase_diffs(4.8, wf, sr, t_win, ref_type="next_freq", bin_shift=bin_shift, t_shift=None, wf_title=wf_title, ax=ax2)
     plt.tight_layout()
@@ -396,7 +423,7 @@ if 1==0:
     show_plot=False
     t_win=10
 
-    quick(wf, wf_title=wf_title, hann=True, do_means=True, ref_type="next_freq", sr=sr, t_win=t_win, xmin=xmin, xmax=xmax)
+    coherence_vs_psd(wf, wf_title=wf_title, hann=True, do_means=True, ref_type="next_freq", sr=sr, t_win=t_win, xmin=xmin, xmax=xmax)
     plt.show()
 
     # c = get_coherence(wf, ref_type="next_freq", sr=sr, t_win=t_win)
@@ -504,14 +531,14 @@ if 1==0:
     ax1 = plt.subplot(2, 1, 1)
     t_win = 20
     t_shift = t_win
-    quick(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax)
+    coherence_vs_psd(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax)
     ax1.set_title("Referenced to Next Freq (Window Size = 20s)")
     
     ax3 = plt.subplot(2, 1, 2)
     ref_type="next_freq"
     t_win = 30
     t_shift = t_win
-    quick(downsample_freq=downsample_freq, ax=ax3, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax)
+    coherence_vs_psd(downsample_freq=downsample_freq, ax=ax3, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax)
     ax3.set_title("Referenced to Next Freq (Window Size = 30s)")
     
     plt.tight_layout()
@@ -524,14 +551,14 @@ if 1==0:
     t_win = 10
     t_shift = t_win
     ax2 = plt.subplot(2, 1, 1)
-    quick(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax)
+    coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax)
     ax2.set_title("Referenced to Next Window (Small Window Size)")
     
     ax4 = plt.subplot(2, 1, 2)
     ref_type="next_win"
     t_win = 50
     t_shift = t_win
-    quick(downsample_freq=downsample_freq, ax=ax4, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax)
+    coherence_vs_psd(downsample_freq=downsample_freq, ax=ax4, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax)
     ax4.set_title("Referenced to Next Window (Large Window Size)")
     
     plt.tight_layout()
@@ -582,11 +609,11 @@ if 1==0:
     t_shift=t_win
     ref_type="next_win"
     ax1 = plt.subplot(2, 1, 1)
-    quick(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    coherence_vs_psd(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
     
     ref_type="next_freq"
     ax2 = plt.subplot(2, 1, 2)
-    quick(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
     plt.tight_layout()
     plt.show()
     
@@ -654,11 +681,11 @@ if 1==0:
     t_shift=t_win
     ref_type="next_win"
     ax1 = plt.subplot(2, 1, 1)
-    quick(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    coherence_vs_psd(ax=ax1, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
     
     ref_type="next_freq"
     ax2 = plt.subplot(2, 1, 2)
-    quick(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    coherence_vs_psd(ax=ax2, wf_title=wf_title, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
     plt.tight_layout()
     plt.show()
     
@@ -732,8 +759,8 @@ if 1==0:
         assert isinstance(vod, Vodscillator)
 
     wf = vod.SOO_sol[vod.n_transient:]
-    quick(wf, sr=128, t_win=t_win, show_plot=False, fig_num=1, wf_title="128", xmin=0, xmax=10)
-    quick(wf, sr=128, t_shift=4, t_win=t_win, show_plot=True, fig_num=2, wf_title="128", xmin=0, xmax=10)
+    coherence_vs_psd(wf, sr=128, t_win=t_win, show_plot=False, fig_num=1, wf_title="128", xmin=0, xmax=10)
+    coherence_vs_psd(wf, sr=128, t_shift=4, t_win=t_win, show_plot=True, fig_num=2, wf_title="128", xmin=0, xmax=10)
 
     # filename = "V&D fig 2A, loc=0.1, glob=0, sr=512.pkl"
     # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
@@ -791,7 +818,7 @@ if 1==0:
         assert isinstance(vod, Vodscillator)
 
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=False, fig_num=1)
-    quick(vod.SOO_sol[vod.n_transient:], sr=128, t_win=32, show_plot=False, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 128")
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sr=128, t_win=32, show_plot=False, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 128")
 
 
     filename = "V&D fig 2A, loc=0.1, glob=0, sr=512.pkl"
@@ -801,7 +828,7 @@ if 1==0:
         vod = pickle.load(picklefile)
         assert isinstance(vod, Vodscillator)
 
-    quick(vod.SOO_sol[vod.n_transient:], sr=512, t_win=32, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 512")
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sr=512, t_win=32, fig_num=1, xmin=xmin, xmax=xmax, wf_title="SR = 512")
     # vlodder(vod, "superimpose", xmin=0, xmax=5, show_plot=True, fig_num=2)
 
 # comparing F&B sample rate 128 vs 512
@@ -822,7 +849,7 @@ if 1==0:
         vod = pickle.load(picklefile)
         assert isinstance(vod, Vodscillator)
 
-    quick(vod.SOO_sol[vod.n_transient:], sr=128, t_win=t_win, ymin=ymin, ymax=ymax, show_plot=True, do_coherence=False,fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's iso, loc=0.1, glob=0: SR = 128")
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sr=128, t_win=t_win, ymin=ymin, ymax=ymax, show_plot=True, do_coherence=False,fig_num=1, xmin=xmin, xmax=xmax, wf_title="Seth's iso, loc=0.1, glob=0: SR = 128")
 
 
     filename = "F&B fig 2D, noniso, loc=0.1, glob=0, sr=512.pkl"
@@ -832,7 +859,7 @@ if 1==0:
         vod = pickle.load(picklefile)
         assert isinstance(vod, Vodscillator)
 
-    quick(vod.SOO_sol[vod.n_transient:], sr=512, t_win=t_win, fig_num=1, ymin=ymin, ymax=ymax,xmin=xmin, do_coherence=False,xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 512")
+    coherence_vs_psd(vod.SOO_sol[vod.n_transient:], sr=512, t_win=t_win, fig_num=1, ymin=ymin, ymax=ymax,xmin=xmin, do_coherence=False,xmax=xmax, wf_title="Seth's Non-Iso No Glob: SR = 512")
 
 
 
@@ -853,11 +880,11 @@ if 1==0:
     xmax=None
     xmin=0
     xmax=10
-    quick(wf=wf, sr=sr, t_win=4, xmin=xmin, xmax=xmax, do_psd=True)
+    coherence_vs_psd(wf=wf, sr=sr, t_win=4, xmin=xmin, xmax=xmax, do_psd=True)
 
 #psd + coherence of generated data
 if 1==0:
-    quick(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
+    coherence_vs_psd(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
 
 #psd + coherence of soae anolis data
 if 1==0:
@@ -892,7 +919,7 @@ if 1==0:
                         #    db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
     win_size = 2
     fig_num = 2
-    quick(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
+    coherence_vs_psd(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
     
     # plt.figure(1)
@@ -977,13 +1004,13 @@ if 1==0:
     wf_title1 = wf_title + f" with NWPC (noise_amp = {noise_amp})"
     # wf_title1 = wf_title + f" with PR to Next Win"
     ax1 = plt.subplot(2, 1, 2)
-    quick(ax=ax1, downsample_freq=downsample_freq, khz=khz, wf_title=wf_title1, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    coherence_vs_psd(ax=ax1, downsample_freq=downsample_freq, khz=khz, wf_title=wf_title1, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
 
     ref_type="next_freq"
     wf_title2 = wf_title + f" with NFPC (noise_amp = {noise_amp})"
     # wf_title2 = wf_title + f" with PR to Higher Freq"
     ax2 = plt.subplot(2, 1, 1)
-    quick(ax=ax2, khz=khz, downsample_freq=downsample_freq, wf_title=wf_title2, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
+    coherence_vs_psd(ax=ax2, khz=khz, downsample_freq=downsample_freq, wf_title=wf_title2, wf=wf, t_win=t_win, ref_type=ref_type, t_shift=t_shift, sr=sr, xmin=xmin, xmax=xmax, do_psd=do_psd)
     
     plt.tight_layout()
     plt.show()
@@ -1022,7 +1049,7 @@ if 1==0:
 
     # win_size = 16
     # fig_num = 2
-    quick(wf, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
+    coherence_vs_psd(wf, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                            db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
 
 #freq cluster of vodscillator

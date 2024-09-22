@@ -1,5 +1,5 @@
 from vodscillator import *
-from twins_mech import *
+from twins import *
 from vodscillator import *
 import matplotlib.pyplot as plt
 import numpy as np

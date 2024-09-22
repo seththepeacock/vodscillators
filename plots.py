@@ -504,8 +504,11 @@ def coherence_vs_psd(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, re
 
   # finally, overwrite any default x and y lims (this does nothing if none were inputted)
   ax.set_xlim(left = xmin, right = xmax)
-  # note this will alter the coherence y axis
-  ax.set_ylim(bottom = ymin, top = ymax)
+  ax2.set_ylim(bottom = ymin, top = ymax)
+  # now we alter the coherence y axis
+  ax.set_ylim(bottom = 0, top = 1.2)
+  
+
   
   return ax, ax2
 
@@ -784,7 +787,7 @@ def scatter_phase_diffs(freq, wf, sr, t_win, num_wins=None, ref_type="next_freq"
 
       
     ax.scatter(range(num_wins), phase_diffs[:, freq_bin_index])
-    ax.set_title(f"Next Freq Bin Phase Diffs for {wf_title} at {freq}Hz")
+    ax.set_title(f"Next Freq Bin Phase Diffs (at {freq}Hz Bin) for {wf_title}")
     ax.set_xlabel("Window #")
     ax.set_ylabel("Phase Diff")
     

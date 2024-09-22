@@ -1,5 +1,5 @@
 from vodscillator import *
-from twins_mech import *
+from twins import *
 import timeit
 
 # CREATE AND SAVE A VODSCILLATOR
