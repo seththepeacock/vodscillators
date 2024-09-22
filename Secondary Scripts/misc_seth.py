@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 from plots import *
 from vlodder import *
-from twins import *
+from twinvods import *
 import scipy.io
 import pandas as pd
 import numpy.random as random
@@ -323,7 +323,7 @@ if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
     with open(filepath + filename, 'rb') as picklefile:
         twins = pickle.load(picklefile)
-        assert isinstance(twins, TwinVodscillators)
+        assert isinstance(twins, TwinVods)
 
     fig, _ = plt.subplots(2, 2)
     axes = fig.axes
