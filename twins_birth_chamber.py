@@ -31,18 +31,18 @@ p = {
 "d_R_np" : 0, # [default = 0.20]
 "d_I_np" : 0, # [default = 0.20]
 "alpha_np" : 0, # [default = 0]
-"omega_np" : 0, #[default = 0.01]
+"omega_np" : 0.01, #[default = 0.01]
 
 # nonisochronicity
 "beta_sigma" : 0.0, # [0 = isochronous as in V&D] --> std dev (normal dist w/ 0 mean) for beta_k (V&D's "B" is our alpha_k + beta_k*i)
 
 # gen_noise()
-"loc_noise_amp" : 0.1, #amplitude for local noise [0 --> off, default = 0.1-5] corresponds to D(tilda) in V&D
-"glob_noise_amp" : 0, #amplitude for global noise [0 --> off, default = 0.1-5]
+"loc_noise_amp" : 0.1, #amplitude for local noise [default = 0.1-5] corresponds to D(tilda) in V&D
+"glob_noise_amp" : 0.1, #amplitude for global noise [default = 0.1-5] applied to all hair bundles and papilla in the (left or right, not both) ear
 "ti" : 0, # start time; [default = 0]
-"t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
+"t_transient" : 10, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
-"num_wins" : 30, # [default for no noise is 1; when we have noise we average over multiple wins, default = 30]
+"num_wins" : 1, # [default = 30]
 "sample_rate" : 128, #[default = 128]
 }
 
@@ -57,19 +57,21 @@ vod_R.initialize(**p)
 vod_R.gen_noise(**p)
 
 
-pp = {
-    "name" : "test_twins", # name your twins!
-    "glob_glob_noise_amp" : 0.1, # global global (aka both ears) noise amplitude
-    "K_C" : 5, # spring constant for IAC
-    "K_T" : 20, # spring constant for tympanum
-    "M_0": 1, # mass of single hair bundle
-    "M_C": 1, # mass of IAC air
-    "M_T" : 1 # mass of tympanym
+twin_p = {
+        "name" : "test_twins", # name your TwinVodscillators! (name.pkl is filename)
+        "omega_P" : 2*np.pi, # papilla char freq
+        "epsilon_P" : -1, # papilla damping (negative for damped harmonic oscillator)
+        "D_R_P" : 0.15, # papilla dissipative coupling w/ hair bundles (real coefficient) 
+        "D_I_P" : -1.0, # papilla reactive coupling w/ hair bundles (imaginary coefficient) 
+        "D_R_IAC" : 0.15, # IAC dissipative coupling w/ papillas (real coefficient) 
+        "D_I_IAC" : -1.0, # IAC reactive coupling w/ papillas (imaginary coefficient)
+        "IAC_noise_amp" : 0.1, # amplitude of (uniformly generated) noise applied just to IAC
+        "glob_glob_noise_amp" : 0.1 # amplitude of (uniformly generated) noise applied to everything in system
     }
 
-v_twins = TwinVods(vl=vod_L, vr=vod_R, **pp)
-v_twins.solve_ODE()
-v_twins.save()
+twins = TwinVods(vod_L=vod_L, vod_R=vod_R, **twin_p)
+twins.solve_ODE()
+twins.save()
 
 stop = timeit.default_timer() # ends timer
 print('Total time:', stop - start, "seconds, or", (stop-start)/60, "minutes") 

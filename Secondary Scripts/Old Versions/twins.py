@@ -112,7 +112,7 @@ class TwinVodscillators:
         for k in range(s.vl.num_osc):
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
                 # Note it's the same as for a single vodscillator, just with the interaural coupling!
-            universal = iac_left + (1j*s.vl.omegas[k] + s.vl.epsilons[k])*z[k] + s.vl.xi_glob(t) + s.vl.xi_loc[k](t) - (s.vl.alphas[k] + s.vl.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
+            universal = iac_left + (1j*s.vl.omegas[k] + s.vl.epsilons[k])*z[k] + s.vl.xi(t) + s.vl.xi_loc[k](t) - (s.vl.alphas[k] + s.vl.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
             
             # Coupling within each ear
             # if we're at an endpoint, we only have one oscillator to couple with
@@ -130,7 +130,7 @@ class TwinVodscillators:
             l = k - s.vl.num_osc
             
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
-            universal = iac_right + (1j*s.vr.omegas[l] + s.vr.epsilons[l])*z[l] + s.vr.xi_glob(t) + s.vr.xi_loc[l](t) - (s.vr.alphas[l] + s.vr.betas[l]*1j)*((np.abs(z[l]))**2)*z[l]
+            universal = iac_right + (1j*s.vr.omegas[l] + s.vr.epsilons[l])*z[l] + s.vr.xi(t) + s.vr.xi_loc[l](t) - (s.vr.alphas[l] + s.vr.betas[l]*1j)*((np.abs(z[l]))**2)*z[l]
             
             # Define the original Vodscillator inter-ear coupling
             

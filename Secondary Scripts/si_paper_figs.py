@@ -55,10 +55,10 @@ freq_ax2 = w2["freq_ax"]
 
 # we'll pass the wfft and its freq axis into these so we don't have to get them again
 c1 = get_coherence(wfft=wfft1, freq_ax=freq_ax1, wf=wf1, sr=sr1, ref_type="next_freq", t_win=t_win1, return_all=True)
-m1 = get_mags(wfft=wfft1, freq_ax=freq_ax1, wf=wf1, sr=sr1, t_win=t_win1, return_all=True)
+m1 = get_mags(wfft=wfft1, freq_ax=freq_ax1, wf=wf1, sr=sr1, t_win=t_win1, dict=True)
 
 c2 = get_coherence(wfft=wfft2, freq_ax=freq_ax2, wf=wf2, sr=sr2, ref_type="next_freq", t_win=t_win2, return_all=True)
-m2 = get_mags(wfft=wfft2, freq_ax=freq_ax2, wf=wf2, sr=sr2, t_win=t_win2, return_all=True)
+m2 = get_mags(wfft=wfft2, freq_ax=freq_ax2, wf=wf2, sr=sr2, t_win=t_win2, dict=True)
 
 # set up axes
 fig1 = plt.figure(1)

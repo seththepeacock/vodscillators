@@ -23,9 +23,9 @@ class TwinVods:
         # **p unpacks the dictionary of parameters (p) we pass into the initializer
         s.vod_L = vod_L #left Vodscillator
         s.vod_R = vod_R #right Vodscillator
-        s.name = p["name"] # name your TwinVodscillators! (also will be used as a filename)
-        s.OMEGA_P = p["OMEGA_P"] # papilla char freq
-        s.EPSILON_P = p["EPSILON_P"] # papilla damping (negative for damped harmonic oscillator)
+        s.name = p["name"] # name your TwinVodscillators! (name.pkl is filename)
+        s.omega_P = p["omega_P"] # papilla char freq
+        s.epsilon_P = p["epsilon_P"] # papilla damping (negative for damped harmonic oscillator)
         s.D_R_P = p["D_R_P"] # papilla dissipative coupling w/ hair bundles (real coefficient) 
         s.D_I_P = p["D_I_P"] # papilla reactive coupling w/ hair bundles (imaginary coefficient) 
         s.D_R_IAC = p["D_R_IAC"] # IAC dissipative coupling w/ papillas (real coefficient) 
@@ -34,8 +34,8 @@ class TwinVods:
         s.glob_glob_noise_amp = p["glob_glob_noise_amp"] # amplitude of (uniformly generated) noise applied to everything in system
         
         # define our complex coupling constants (CCCs)
-        s.P_CCC = s.D_R_P + 1j*s.D_I_P
-        s.IAC_CCC = s.D_R_IAC + 1j*s.D_I_IAC
+        s.CCC_P = s.D_R_P + 1j*s.D_I_P
+        s.CCC_IAC = s.D_R_IAC + 1j*s.D_I_IAC
         
         # check that our time parameters are the same for both or we might have some issues!
         vod_params = np.empty((2, 6))
@@ -77,54 +77,55 @@ class TwinVods:
         
         # Numerically integrate our ODE (making sure that it gives us the value at our tpoints)
         sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y
-        
         # adding ".y" grabs the solutions - an array of arrays, where the first dimension is oscillator index.
+        
         # lets add a dimension at the beginning of osc_sol to track if its the left or right ear
             # in case each has different # oscillators, we'll use the max of the two
         max_num_osc = max(s.vod_L.num_osc, s.vod_R.num_osc)
         s.osc_sol = np.zeros((2, max_num_osc, len(s.tpoints)), dtype=complex)
         s.osc_sol[0, :, :] = sol[0:s.vod_L.num_osc, :]
-        s.osc_sol[1, :, :] = sol[s.vod_L.num_osc:(s.total_num_osc), :]
+        s.osc_sol[1, :, :] = sol[s.vod_L.num_osc:s.total_num_osc, :]
            
             # (s.sol[1, 2, 1104] is the value of the solution for the 3rd oscillator in the right ear at the 1105th time point)
        
-        # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators)
-        s.SOO_L_sol = np.sum(s.osc_sol[0, :, :], 0)
-        s.SOO_R_sol = np.sum(s.osc_sol[1, :, :], 0)
-        s.P_L_sol = sol[-3]
-        s.P_R_sol = sol[-2]
-        s.Z_C_sol = sol[-1]
+        # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators), papillas, and IAC
+        s.SOO_L = np.sum(s.osc_sol[0, :, :], 0)
+        s.SOO_R = np.sum(s.osc_sol[1, :, :], 0)
+        s.P_L = sol[-3]
+        s.P_R = sol[-2]
+        s.Z_IAC = sol[-1]
 
     def ODE(s, t, z):
         # This function will only be called by the ODE solver
         # Mark the current point in time to track progress
         print(f"Time = {int(t)}/{int(s.tf)}")
-        # First make an array to represent the current (complex) derivative of each oscillator
-        ddt = np.zeros(s.total_num_osc+3, dtype=complex) #last 3 are T_1, T_2 and X_C
-        # (We are adapting equation (11) in Vilfan & Duke 2008)
-
-        # GET VARIABLES
+        
+        # First make an array to collect the current (complex) derivative of each hair bundle, papilla, and IAC
+        ddt = np.zeros(s.total_num_osc+3, dtype=complex)
+        
+        # GET USEFUL VARIABLES
+        
         # summed vodscillators
-        X_l = np.sum(z[s.vod_L.num_osc:s.vod_R.num_osc])
-        X_r = np.sum(z[0:s.vod_R.num_osc])
+        SOO_l = np.sum(z[0:s.vod_L.num_osc])
+        SOO_r = np.sum(z[s.vod_L.num_osc:s.total_num_osc])
         # papillas
         P_l = z[-3]
         P_r = z[-2]
         # air cavity
-        Z_c = z[-1]
+        Z_iac = z[-1]
+        
         
         # Now define our derivatives!
         
         # LEFT EAR
         for k in range(s.vod_L.num_osc):
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
-                # Note it's the same as for a single vodscillator, just with the interaural coupling!
             universal = z[k]*(1j*s.vod_L.omegas[k] + s.vod_L.epsilons[k] 
                               - (s.vod_L.alphas[k] + s.vod_L.betas[k]*1j)*((np.abs(z[k]))**2))
             # papilla coupling
-            + s.P_CCC(P_l - z[k])
+            + s.CCC_P*(P_l - z[k])
             # noise
-            + s.vod_L.xi_glob(t) + s.vod_L.xi_loc[k](t) - s.xi(t)
+            + s.vod_L.xi(t) + s.vod_L.xi_loc[k](t) + s.xi(t)
             
             # HAIR BUNDLE NN COUPLING
             # if we're at an endpoint, we only have one oscillator to couple with
@@ -137,30 +138,39 @@ class TwinVods:
                 ddt[k] = universal + s.vod_L.cccs[k]*((z[k+1] - z[k]) + (z[k-1] - z[k])) 
                 
         # RIGHT EAR
-        for k in range(s.vod_L.num_osc, s.total_num_osc):
-            # define an index "l" to go along the larger arrays
-            l = k - s.vod_L.num_osc
+        for k in range(0, s.vod_R.num_osc):
+            # define an index "l" to go along the z and ddt arrays (indexed from vod_L.num_osc to total_num_osc)
+            l = s.vod_L.num_osc + k
             
             # The "universal" part of the equation is the same for all oscillators (in each ear). 
-            universal = iac_right + (1j*s.vod_R.omegas[l] + s.vod_R.epsilons[l])*z[l] + s.vod_R.xi_glob(t) + s.vod_R.xi_loc[l](t) - (s.vod_R.alphas[l] + s.vod_R.betas[l]*1j)*((np.abs(z[l]))**2)*z[l]
+            universal = z[l]*(1j*s.vod_R.omegas[k] + s.vod_R.epsilons[k] 
+                              - (s.vod_R.alphas[k] + s.vod_R.betas[k]*1j)*((np.abs(z[l]))**2))
+            # papilla coupling
+            + s.CCC_P*(P_r - z[l])
+            # noise
+            + s.vod_R.xi(t) + s.vod_R.xi_loc[k](t) + s.xi(t)
             
-            # Define the original Vodscillator inter-ear coupling
-            
+            # HAIR BUNDLE NN COUPLING
             # if we're at an endpoint, we only have one oscillator to couple with
             if k == 0:
-                ddt[k] = universal + s.vod_R.cccs[l]*(z[l+1] - z[l])
+                ddt[l] = universal + s.vod_R.cccs[k]*(z[l+1] - z[l]) 
             elif k == s.vod_R.num_osc - 1:
-                ddt[k] = universal + s.vod_R.cccs[l]*(z[l-1] - z[l])
+                ddt[l] = universal + s.vod_R.cccs[k]*(z[l-1] - z[l])
             # but if we're in the middle of the chain, we couple with the oscillator on either side
             else:
-                ddt[k] = universal + s.vod_R.cccs[l]*((z[l+1] - z[l]) + (z[l-1] - z[l]))
-
+                ddt[l] = universal + s.vod_R.cccs[k]*((z[l+1] - z[l]) + (z[l-1] - z[l])) 
+        
         # P_l
-        ddt[-3] = (s.K_T / s.M_T * (X_l - P_l) + s.K_C / s.M_T * (Z_c - P_l))*1j + P_l.imag
+        ddt[-3] = P_l*(1j*s.omega_P + s.epsilon_P) + s.CCC_P*(SOO_l - s.vod_L.num_osc*P_l) 
+        + s.vod_L.xi(t) + s.xi(t)
+        
         # P_r
-        ddt[-2] = (s.K_C / s.M_T * (Z_c - P_r) + s.K_T / s.M_T * (X_r - P_r))*1j + P_r.imag
+        ddt[-2] = P_r*(1j*s.omega_P + s.epsilon_P) + s.CCC_P*(SOO_r - s.vod_R.num_osc*P_r) 
+        + s.vod_R.xi(t) + s.xi(t)
+        
         # Z_c
-        ddt[-1] = (s.K_C / s.M_C * (P_l - Z_c) + s.K_C / s.M_C * (P_r - Z_c))*1j + Z_c.imag
+        ddt[-1] = s.CCC_IAC*(P_l + P_r - 2*Z_iac) 
+        + s.xi_IAC(t) + s.xi(t)
                 
         return ddt
 

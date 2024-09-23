@@ -3,8 +3,6 @@ import pickle
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
 from scipy.fft import rfft, rfftfreq
-from scipy.signal import hilbert
-from itertools import combinations
 
 class Vodscillator:
   """
@@ -135,16 +133,16 @@ class Vodscillator:
     # First, generate time points
     s.tpoints = np.arange(s.ti, s.tf, s.delta_t)
 
-    # global --> will impact each oscillator equally at each point in time (e.g., wind blowing?)
+    # global --> will impact all hair bundles (and associated papilla for TwinVods) equally
+    
     # first we randomly generate points uniformly within the given amplitude range
     global_noise = np.random.uniform(-s.glob_noise_amp, s.glob_noise_amp, len(s.tpoints)) 
     # then interpolate between (using a cubic spline) for ODE solving adaptive step purposes
-    s.xi_glob = CubicSpline(s.tpoints, global_noise)
+    s.xi = CubicSpline(s.tpoints, global_noise)
 
     # local --> will impact each oscillator differently at each point in time (e.g., brownian motion of fluid in inner ear surrounding hair cells)
     s.xi_loc = np.empty(s.num_osc, dtype=CubicSpline)
     for k in range(s.num_osc):
-      # again, we randomly generate points uniformly within the given (local) amplitude range, then interpolate between
       local_noise = np.random.uniform(-s.loc_noise_amp, s.loc_noise_amp, len(s.tpoints))
       s.xi_loc[k] = CubicSpline(s.tpoints, local_noise)
 
@@ -173,7 +171,7 @@ class Vodscillator:
     for k in range(s.num_osc):
       # This "universal" part of the equation is the same for all oscillators. 
       # (Note our xi are functions of time, and z[k] is the current position of the k-th oscillator)
-      universal = (1j*s.omegas[k] + s.epsilons[k])*z[k] + s.xi_glob(t) + s.xi_loc[k](t) - (s.alphas[k] + s.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
+      universal = (1j*s.omegas[k] + s.epsilons[k])*z[k] + s.xi(t) + s.xi_loc[k](t) - (s.alphas[k] + s.betas[k]*1j)*((np.abs(z[k]))**2)*z[k]
 
       # ADD COUPLING
 

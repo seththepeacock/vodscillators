@@ -166,7 +166,7 @@ def get_psd(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, r
       "win_psd" : win_psd
       }
     
-def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, return_all=False):
+def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, dict=False):
   """ Gets the magnitudes of the given waveform, averaged over windows (with the given window size)
 
   Parameters
@@ -185,7 +185,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
         If you want to avoid recalculating the windowed fft, pass it in here!
       freq_ax: any, Optional
         We have to also pass in the freq_ax for the wfft (either pass in both or neither!)
-      return_all: bool, Optional
+      dict: bool, Optional
         Defaults to only returning the PSD averaged over all windows; if this is enabled, then a dictionary is returned with keys:
         "mags", "freq_ax", "win_mags"
   """
@@ -195,7 +195,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
   
   # if you passed the wfft and freq_ax in then we'll skip over this
   if wfft is None:
-    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, norm=True, hann=hann)
+    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, hann=hann)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
   
@@ -213,7 +213,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
     
   # average over all windows
   mags = np.mean(win_mags, 0)
-  if not return_all:
+  if not dict:
     return mags
   else:
     return {  
