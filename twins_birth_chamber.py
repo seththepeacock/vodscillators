@@ -40,25 +40,25 @@ p = {
 "loc_noise_amp" : 0.1, #amplitude for local noise [default = 0.1-5] corresponds to D(tilda) in V&D
 "glob_noise_amp" : 0.1, #amplitude for global noise [default = 0.1-5] applied to all hair bundles and papilla in the (left or right, not both) ear
 "ti" : 0, # start time; [default = 0]
-"t_transient" : 10, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
+"t_transient" : 280, # how long we give for transient behavior to settle down [default = 280 --> n.transient = 35840]
 "t_win" : 64, # length of a win of ss observation [default = 64 --> n.transient = 8192]
-"num_wins" : 1, # [default = 30]
+"num_wins" : 30, # [default = 30]
 "sample_rate" : 128, #[default = 128]
 }
 
-p["name"] = "vod_L"
+p["name"] = "frank"
 vod_L = Vodscillator(**p)
 vod_L.initialize(**p)
 vod_L.gen_noise(**p)
 
-p["name"] = "vod_R"
+p["name"] = "fronk"
 vod_R = Vodscillator(**p)
 vod_R.initialize(**p)
 vod_R.gen_noise(**p)
 
 
 twin_p = {
-        "name" : "test_twins", # name your TwinVodscillators! (name.pkl is filename)
+        "name" : "frankfronk", # name your TwinVodscillators! (name.pkl is filename)
         "omega_P" : 2*np.pi, # papilla char freq
         "epsilon_P" : -1, # papilla damping (negative for damped harmonic oscillator)
         "D_R_P" : 0.15, # papilla dissipative coupling w/ hair bundles (real coefficient) 

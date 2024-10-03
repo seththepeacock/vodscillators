@@ -72,8 +72,15 @@ class TwinVods:
     def solve_ODE(s):
         # NOTE WE ALWAYS PUT LEFT BEFORE RIGHT
         
-        # create ICs by concatenating left and right IC arrays with zeros for papillas/IAC
-        s.ICs = np.concatenate((s.vod_L.ICs, s.vod_R.ICs, np.array([0, 0, 0])))
+        pap_IAC_ICs = np.zeros(3, complex)
+        for k in range(3):
+            # grab a random position / velocity
+            x = np.random.uniform(-1, 1)
+            x_dot = np.random.uniform(-1, 1)
+            pap_IAC_ICs[k] = x + 1j*x_dot
+            
+        # create ICs by concatenating left and right IC arrays with ICs for papillas/IAC
+        s.ICs = np.concatenate((s.vod_L.ICs, s.vod_R.ICs, pap_IAC_ICs))
         
         # Numerically integrate our ODE (making sure that it gives us the value at our tpoints)
         sol = solve_ivp(s.ODE, [s.ti, s.tf], s.ICs, t_eval=s.tpoints).y
@@ -82,15 +89,17 @@ class TwinVods:
         # lets add a dimension at the beginning of osc_sol to track if its the left or right ear
             # in case each has different # oscillators, we'll use the max of the two
         max_num_osc = max(s.vod_L.num_osc, s.vod_R.num_osc)
-        s.osc_sol = np.zeros((2, max_num_osc, len(s.tpoints)), dtype=complex)
-        s.osc_sol[0, :, :] = sol[0:s.vod_L.num_osc, :]
-        s.osc_sol[1, :, :] = sol[s.vod_L.num_osc:s.total_num_osc, :]
+        
+        # let's not save all osc_sol to the pickle for space reasons. If we want to though, we can make this "s.osc_sol"
+        osc_sol = np.zeros((2, max_num_osc, len(s.tpoints)), dtype=complex)
+        osc_sol[0, :, :] = sol[0:s.vod_L.num_osc, :]
+        osc_sol[1, :, :] = sol[s.vod_L.num_osc:s.total_num_osc, :]
            
             # (s.sol[1, 2, 1104] is the value of the solution for the 3rd oscillator in the right ear at the 1105th time point)
        
-        # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators), papillas, and IAC
-        s.SOO_L = np.sum(s.osc_sol[0, :, :], 0)
-        s.SOO_R = np.sum(s.osc_sol[1, :, :], 0)
+        # Now get the summed response of all the oscillators (SOO = Summed Over Oscillators), papillas, and IAC (these will be pickled)
+        s.SOO_L = np.sum(osc_sol[0, :, :], 0)
+        s.SOO_R = np.sum(osc_sol[1, :, :], 0)
         s.P_L = sol[-3]
         s.P_R = sol[-2]
         s.Z_IAC = sol[-1]

@@ -81,9 +81,12 @@ class Vodscillator:
     if s.IC_method == "rand":
       # generate random ICs
       for k in range(s.num_osc):
-        x_k = np.random.uniform(-1, 1)
-        y_k = np.random.uniform(-1, 1) # this was (0,1) in Beth's code
-        s.ICs[k] = complex(x_k, y_k) # make a complex combination of x and y and save it in ICs
+        # grab a random position / velocity
+        x = np.random.uniform(-1, 1)
+        x_dot = np.random.uniform(-1, 1)
+        # do the V&D transform (shouldn't matter much since they're random anyhow)
+        z = x - 1j*x_dot/s.omegas[k]
+        s.ICs[k] = z
     elif s.IC_method == "const":
       # generate the same predetermined ICs as Beth
       all_x = np.linspace(-1, 1, s.num_osc)
@@ -91,7 +94,7 @@ class Vodscillator:
       for k in range(s.num_osc):
         x_k = all_x[k]
         y_k = all_y[k]
-        s.ICs[k] = x_k + (y_k*1j) # this was x_k - (y_k*1j/s.omegas[k]) in Beth's code
+        s.ICs[k] = x_k + (y_k*1j/s.omegas[k])
 
     # generate actual parameters (if no noise, these will be constant)
     amp = s.epsilon*s.epsilon_np

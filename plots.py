@@ -16,7 +16,7 @@ def get_vector_strength(phase_diffs):
   # finally, output the vector strength (for each frequency)
   return np.sqrt(xx**2 + yy**2)
 
-def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False):
+def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False, norm="backward"):
   """ Returns a dict with the windowed fft and associated freq ax of the given waveform
 
   Parameters
@@ -33,6 +33,8 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False):
         If this isn't passed, then just get the maximum number of windows of the given size
       hann: bool, Optional
         Applied a hanning window before the FFT
+      norm: string, Optional
+        Whether Scipy normalizes in the forward or backward FFT direction
   """
   
   # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
@@ -89,14 +91,12 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False):
   if hann:
     for k in range(num_wins):
       # wfft[k, :] = rfft(windowed_wf[k, :]*np.hanning(n_win), norm="forward")
-      wfft[k, :] = rfft(windowed_wf[k, :]*wins.hann(n_win, sym=True), norm="forward")
+      wfft[k, :] = rfft(windowed_wf[k, :]*wins.hann(n_win, sym=True), norm=norm)
       # w = rfft(windowed_wf[k, :], norm="forward")
       # wfft[k, :] = np.convolve(w, [-1/4, 1/2, -1/4], mode="same")
-
-      
   else:
     for k in range(num_wins):
-      wfft[k, :] = rfft(windowed_wf[k, :], norm="forward")
+      wfft[k, :] = rfft(windowed_wf[k, :], norm=norm)
     
   return {  
     "wfft" : wfft,
@@ -166,7 +166,7 @@ def get_psd(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, r
       "win_psd" : win_psd
       }
     
-def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, dict=False):
+def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, dict=False, norm="forward"):
   """ Gets the magnitudes of the given waveform, averaged over windows (with the given window size)
 
   Parameters
@@ -188,6 +188,8 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
       dict: bool, Optional
         Defaults to only returning the PSD averaged over all windows; if this is enabled, then a dictionary is returned with keys:
         "mags", "freq_ax", "win_mags"
+      norm: string, Optional
+        Whether Scipy normalizes in the forward or backward FFT direction
   """
   # make sure we either have both or neither
   if (wfft is None and freq_ax is not None) or (wfft is not None and freq_ax is None):
@@ -195,7 +197,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
   
   # if you passed the wfft and freq_ax in then we'll skip over this
   if wfft is None:
-    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, hann=hann)
+    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, hann=hann, norm=norm)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
   
@@ -207,7 +209,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
   # initialize array
   win_mags = np.zeros((num_wins, num_freq_pts))
 
-  # get PSD for each window
+  # get magnitudes for each window
   for win in range(num_wins):
     win_mags[win, :] = np.abs(wfft[win, :])
     

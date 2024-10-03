@@ -26,37 +26,86 @@ if 1==0:
     
 
 # Best CMS research
-if 1==0:
+if 1==1:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Best Data\\Only_CMS_vs_Control.xlsx"
     df = pd.read_excel(filepath, header=None)
-    wfs = np.array(df)
-     
+    wfs = np.array(df).transpose()
+    N = 60
+    # preprocessing wf's
+    num_zeros = 0
+    interp = True
+    
+    
+    
+    if interp:
+        og_tpoints = np.arange(N)
+        tpoints = np.arange(0, N, 0.5)
+        N_t = len(tpoints)
+        interp_wfs = np.zeros((18, N_t))
+
+        for i in range(18):
+            interp_wfs[i, :]= CubicSpline(og_tpoints, wfs[i, :])(tpoints)
+        
+        # plt.plot(og_tpoints, wfs[1, :])
+        # fig, ax = plt.subplots(figsize=(6.5, 4))
+        # ax.plot(og_tpoints, wfs[17, :], 'o', label='data')
+        # # ax.plot(tpoints, cs(tpoints), label="S")
+        # ax.plot(tpoints, interp_wfs[17, :] + 0.1, label="S array-d")
+        # ax.legend(loc='lower left', ncol=2)
+        # plt.show()
+        
+    
+    zeros = np.zeros((18, num_zeros))
+    wfs = np.concatenate((wfs, zeros), axis=1)
+
+   
+    
+    # 1 sample per 60 seconds 
     sr = 1/60
-    t_win = 300
+    kind = "mags"
     ref_type = "next_freq"
     
     
     fig, _ = plt.subplots(5, 4)
     axes = fig.get_axes()
-    
+
     color = "green"
     for mouse_index in range(18):
         if mouse_index == 8:
             color = "red"
         ax=axes[mouse_index]
-        wf = wfs[:, mouse_index]
-        print(len(wf))
+        wf = wfs[mouse_index, :]
         wf_title = f"Mouse {mouse_index + 1}"
+        ax.set_xlabel("Cycles / Hour")
+        ax.set_title(r"Mouse" + f" {mouse_index + 1}")
+        
         # ft = rfft(wf)
         # f = rfftfreq(n=60, d=60)
-        d = get_coherence(wf=wf, sr=sr, t_win=t_win, ref_type=ref_type, return_all=True)
-        c = d["coherence"]
-        f = d["freq_ax"]
-        ax.plot(f, c, color=color)
-        ax.set_title(r"$C_\theta$ of Mouse" + f" {mouse_index + 1}")
-        ax.set_ylim(0, 1)
-        # ax.get_legend().remove()
-    plt.tight_layout()
+        if kind == "coherence": 
+            # t_win / 60 is length in minutes
+            t_win = 3600
+            d = get_coherence(wf=wf, sr=sr, t_win=t_win, ref_type=ref_type, return_all=True)
+            c = d["coherence"]
+            f = d["freq_ax"] * 3600
+            ax.plot(f, c, color=color)
+            ax.set_ylabel(r"$C_\theta$ of Mouse")
+            ax.set_ylim(0, 1)
+            # ax.get_legend().remove()
+        elif kind == "mags":
+            hann = False
+            if hann:
+                wf = wf*wins.hann(60, sym=True)
+            m = rfft(wf, norm="backward")
+            # get freqs; multiply by 3600 sec / hour
+            f = rfftfreq(60 + num_zeros, 60) * 3600
+            # normalize by original N=60 sample points
+            m = m / N
+            ax.plot(f, m, color=color)
+            ax.set_ylabel("Spectral Magnitude")
+            ax.set_ylim(-5, 10)
+
+    # plt.tight_layout()
+    plt.subplots_adjust(wspace=0.5, hspace=1)
     
     plt.show()
 
@@ -343,7 +392,7 @@ if 1==0:
     
 
 # scatter plot for next freq phase diffs
-if 1==1: 
+if 1==0: 
     # get wf and set wf sepecific params
     WF = "pure"
     
