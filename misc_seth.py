@@ -11,7 +11,7 @@ import numpy.random as random
 # vod.n_win = vod.n_ss
 # vod.save()
 
-
+    
 
 
 if 1==0:
@@ -26,7 +26,7 @@ if 1==0:
     
 
 # Best CMS research
-if 1==1:
+if 1==0:
     filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Best Data\\Only_CMS_vs_Control.xlsx"
     df = pd.read_excel(filepath, header=None)
     wfs = np.array(df).transpose()

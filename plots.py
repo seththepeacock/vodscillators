@@ -200,6 +200,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
     d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, hann=hann, norm=norm)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
+
   
   # calculate necessary params from the wfft
   wfft_size = np.shape(wfft)
@@ -215,6 +216,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
     
   # average over all windows
   mags = np.mean(win_mags, 0)
+
   if not dict:
     return mags
   else:
