@@ -227,7 +227,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
       }
 
 def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=False, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
-  """ Gets the PSD of the given waveform with the given window size
+  """ Gets the phase coherence of the given waveform with the given window size
 
   Parameters
   ------------
