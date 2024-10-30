@@ -2,6 +2,7 @@
 *.code-workspace
 *.pkl
 *.mat
+*.parquet
 phase.txt
 seth_birth_chamber.py
 einstein.py
