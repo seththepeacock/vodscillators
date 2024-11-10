@@ -121,11 +121,11 @@ if 1==0:
         ft2[i, :] = np.convolve(ft[i, :], [-1/4, 1/2, -1/4], mode="same")
     phases = np.angle(ft)
     pd = np.diff(phases, 1)
-    vs = get_vector_strength(pd)
+    vs = get_avg_vector(pd)
     
     phases2 = np.angle(ft2)
     pd2 = np.diff(phases2, 1)
-    vs2 = get_vector_strength(pd2)
+    vs2 = get_avg_vector(pd2)
     
     print(pd2[0])
     
@@ -914,40 +914,63 @@ if 1==0:
 
 #psd + coherence of generated data
 if 1==0:
-    sr = 8
-    t = np.arange(0, 10, 1/sr)
-    noise_amp = 0
-    noise = np.random.uniform(-noise_amp, noise_amp, len(t))
-    freqs = [1, 2, 3, 4, 5]
-    wf = noise
-    for freq in freqs[0:2]:
-        wf = wf + np.sin(2*np.pi*freq*t + 2)
-    for freq in freqs[1:4]:
-        wf = wf + 3*np.cos(2*np.pi*freq*t)
+    dt = 0.01
+    sr = 1/dt
+    t = np.arange(0, 0.3, dt)
+    freq = 32
+    wf = np.sin(2*np.pi*freq*t)
+    # noise_amp = 0
+    # noise = np.random.uniform(-noise_amp, noise_amp, len(t))
+    # freqs = [1, 2, 3, 4, 5]
+    # wf = noise
+    # for freq in freqs[0:2]:
+    #     wf = wf + np.sin(2*np.pi*freq*t + 2)
+    # for freq in freqs[1:4]:
+    #     wf = wf + 3*np.cos(2*np.pi*freq*t)
 
-    xmin=None
-    xmax=None
-    xmin=0
-    xmax=10
-    coherence_vs_psd(wf=wf, sr=sr, t_win=4, xmin=xmin, xmax=xmax, do_psd=True)
+    # wf = np.append(wf, np.zeros((1000, 1)))
+
+    # xmin=None
+    # xmax=None
+    # xmin=0
+    # xmax=10
+    
+    mags = np.abs(rfft(wf))
+    freqs = rfftfreq(len(wf), dt)
+    # get_mags(wf=wf, sr=sr, t_win=100, n)
+    # plt.show()
+    # coherence_vs_psd(wf=wf, sr=sr, t_win=4, xmin=xmin, xmax=xmax, do_psd=True)
+    plt.figure(1)
+    plt.plot(freqs, mags)
+    
+    plt.figure(2)
+    wf = np.append(wf, np.zeros((1, 1)))
+    mags = np.abs(rfft(wf))
+    freqs = rfftfreq(len(wf), dt)
+    # get_mags(wf=wf, sr=sr, t_win=100, n)
+    # plt.show()
+    # coherence_vs_psd(wf=wf, sr=sr, t_win=4, xmin=xmin, xmax=xmax, do_psd=True)
+
+    plt.plot(freqs, mags)
+    plt.show()
+    
+
 
 #psd + coherence of generated data
 if 1==0:
     coherence_vs_psd(wf, sr, xmax = 0.1, psd_shift = 0, max_vec_strength=1)
 
 #psd + coherence of soae anolis data
-if 1==0:
+if 1==1:
     # Load the .mat file
     filepath = 'C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\SOAE Data'
-    filename = '\\2020.02.21 Anolis\\ACsb18learSOAEwfG4.mat'
+    filename = '\\TH14RearwaveformSOAE.mat'
     mat = scipy.io.loadmat(filepath + filename)
     soae = np.squeeze(mat['wf'])
-    wf_title = 'ACsb18learSOAEwfG4.mat'
+    wf_title = 'TH21RearwaveformSOAE.mat'
     fig_num=1
-    win_size=128
+    t_win=0.1
     show_plot=True
-    max_vec_strength=20
-    psd_shift=100
     db=True
     do_psd=True
     do_coherence=True,
@@ -961,16 +984,15 @@ if 1==0:
     # xmin = 0.9
     # xmax = 1.17
     xmin=0
-    xmax=4
+    xmax=None
     # ymin=0
     # ymax=20
     # coherence_vs_psd(soae, win_size=win_size, show_plot=False, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
                         #    db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
     win_size = 2
     fig_num = 2
-    coherence_vs_psd(soae, win_size=win_size, show_plot=True, max_vec_strength=max_vec_strength,psd_shift=psd_shift, 
-                           db=db, wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
-    
+    coherence_vs_psd(soae, sr=44100, t_win=t_win, db=db, ref_type="next_freq", wf_title=wf_title, do_psd=do_psd,do_coherence=do_coherence,xmin = xmin, xmax=xmax, ymin=ymin, ymax=ymax, fig_num = fig_num)
+    plt.show()
     # plt.figure(1)
     # # plt.xlim(left=0, right=30)
     # plt.plot(f, coherence, color='purple')

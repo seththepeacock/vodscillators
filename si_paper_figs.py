@@ -19,13 +19,26 @@ wf1 = np.squeeze(mat['wf'])
 sr1=44100
 wf_title1 = "Human SOAE Waveform"
 
-filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
-filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
-with open(filepath + filename, 'rb') as picklefile:
-    vod = pickle.load(picklefile)
-    wf2 = vod.SOO_sol[vod.n_transient:]
-sr2=128
-wf_title2 = r"V&D Model Simulated Waveform"
+
+# filename = "V&D fig 3A, loc=0.1, glob=0, sr=128.pkl"
+# filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Pickle Jar\\"
+# with open(filepath + filename, 'rb') as picklefile:
+#     vod = pickle.load(picklefile)
+#     wf2 = vod.SOO_sol[vod.n_transient:]
+# sr2=128
+# wf_title2 = r"V&D Model Simulated Waveform"
+
+
+dt = 0.0001
+t = np.arange(0, 10, dt)
+freq = 2000
+noise_amp = 0.01
+noise = np.random.uniform(-noise_amp, noise_amp, len(t))
+wf2 = np.sin(2*np.pi*freq*t) + noise
+sr2 = 1/dt
+wf_title2 = f"Generated Data at {freq} Hz"
+
+
 
 # filename = "wf - V&D fig 2A, loc=0.1, glob=0, sr=128.pkl"
 # filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\Chris's Pickle Jar\\"
@@ -41,8 +54,10 @@ wf_title2 = r"V&D Model Simulated Waveform"
 t_win1=0.1
 hann1=False
 # set params for V&D
-t_win2=20
-hann2=True
+# t_win2=20
+# hann2=True
+t_win2=0.1
+hann2=False
 
 # get coherence, mags, and means
 w1 = get_wfft(wf=wf1, sr=sr1, t_win=t_win1, hann=hann1)
@@ -75,7 +90,7 @@ def plot(c, m, axt, axb, khz, wf):
     mags_freq_ax = m["freq_ax"]
     coherence = c["coherence"]
     coherence_freq_ax = c["freq_ax"]
-    means = c["means"]
+    means = c["avg_phase_diff"]
     
     # normalize by pi
     # means = means/np.pi
