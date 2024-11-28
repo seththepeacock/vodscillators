@@ -90,7 +90,9 @@ def plot(c, m, axt, axb, khz, wf):
     mags_freq_ax = m["freq_ax"]
     coherence = c["coherence"]
     coherence_freq_ax = c["freq_ax"]
+    # means = c["means"]
     means = c["avg_phase_diff"]
+    avg_phase_diffs = c["avg_phase_diff"]
     
     # normalize by pi
     # means = means/np.pi
@@ -172,7 +174,8 @@ axt1.set_xlim(0, fmax1)
 axb1.set_xlim(0, fmax1)
 axt2.set_xlim(0, fmax2)
 axb2.set_xlim(0, fmax2)
-axt1.set_ylim(0, np.pi)
+axt1.set_ylim(-np.pi, np.pi)
+# axt1.set_ylim(0, np.pi)
 axb1.set_ylim(0, np.pi)
 axt2.set_ylim(0, np.pi)
 axb2.set_ylim(0, np.pi)
@@ -185,4 +188,4 @@ fig2.set_size_inches(18, 10)
 fig2.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.3)
 fig1.savefig('abs_avg_pd_TH14.png', dpi=500, bbox_inches='tight')
 fig2.savefig('abs_avg_pd_V+D.png', dpi=500, bbox_inches='tight')
-plt.show()
+# plt.show()

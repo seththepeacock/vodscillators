@@ -15,7 +15,7 @@ def get_avg_vector(phase_diffs):
   
   # finally, output the averaged vector's vector strength and angle with x axis (for each frequency) 
   return np.sqrt(xx**2 + yy**2), np.arctan2(yy, xx)
-
+# I THINK THE ISSUE HERE IS THAT THE ANGLE OF THIS AVERAGED VECTOR IS NOT THE SAME AS THE AVERAGE OF THE ANGLES OF THE INDIVIDUAL VECTORS
 def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False, norm="backward"):
   """ Returns a dict with the windowed fft and associated freq ax of the given waveform
 
