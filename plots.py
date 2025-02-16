@@ -16,7 +16,7 @@ def get_avg_vector(phase_diffs):
   # finally, output the averaged vector's vector strength and angle with x axis (for each frequency) 
   return np.sqrt(xx**2 + yy**2), np.arctan2(yy, xx)
 # I THINK THE ISSUE HERE IS THAT THE ANGLE OF THIS AVERAGED VECTOR IS NOT THE SAME AS THE AVERAGE OF THE ANGLES OF THE INDIVIDUAL VECTORS
-def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False, norm="backward"):
+def get_wfft(wf, sr, tau, xi=None, num_wins=None, fftshift=True, hann=False, norm="backward"):
   """ Returns a dict with the windowed fft and associated freq ax of the given waveform
 
   Parameters
@@ -25,27 +25,29 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False, norm="backw
         waveform input array
       sr: int
         sample rate of waveform
-      t_win: float
+      tau: float
         length (in time) of each window
-      t_shift: float
+      xi: float
         length (in time) between the start of successive windows
       num_wins: int, Optional
         If this isn't passed, then just get the maximum number of windows of the given size
+      fftshift: bool, Optional
+        Shifts each time-domain window of the fft with fftshift
       hann: bool, Optional
-        Applied a hanning window before the FFT
+        Applies a hanning window before the FFT
       norm: string, Optional
         Whether Scipy normalizes in the forward or backward FFT direction
   """
   
-  # if you didn't pass in t_shift we'll assume you want no overlap - each new window starts at the end of the last!
-  if t_shift is None:
-    t_shift=t_win
+  # if you didn't pass in xi we'll assume you want no overlap - each new window starts at the end of the last!
+  if xi is None:
+    xi=tau
   
   # calculate the number of samples in the window
-  n_win = int(t_win*sr)
+  n_win = int(tau*sr)
 
   # and the number of samples to shift
-  n_shift = int(t_shift*sr)
+  n_shift = int(xi*sr)
 
   # get sample_spacing
   sample_spacing = 1/sr
@@ -75,7 +77,7 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False, norm="backw
     # grab the (real part of the) waveform in this window
     windowed_wf[k, :] = wf[win_start:win_end].real
     # note this grabs the wf at indices win_start, win_start+1, ..., win_end-1
-      # if there are 4 samples and t_win=t_shift=1 and SR=1, then n_win=2, n_shift=1 and
+      # if there are 4 samples and tau=xi=1 and SR=1, then n_win=2, n_shift=1 and
       # Thus the first window will be samples 0 and 1, the next 1 and 2...
 
   # Now we do the ffts!
@@ -88,15 +90,17 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False, norm="backw
   wfft = np.zeros((num_wins, num_freq_pts), dtype=complex)
   # get ffts (optionally apply the Hann window first) 
     # norm=forward applies the normalizing 1/n_win factor 
-  if hann:
+  if hann == True:
     for k in range(num_wins):
-      # wfft[k, :] = rfft(windowed_wf[k, :]*np.hanning(n_win), norm="forward")
       wfft[k, :] = rfft(windowed_wf[k, :]*wins.hann(n_win, sym=True), norm=norm)
-      # w = rfft(windowed_wf[k, :], norm="forward")
-      # wfft[k, :] = np.convolve(w, [-1/4, 1/2, -1/4], mode="same")
-  else:
+
+  elif hann == False:
     for k in range(num_wins):
       wfft[k, :] = rfft(windowed_wf[k, :], norm=norm)
+  elif hann == 'conv':
+    # This should be equivalent to hann==True
+    for k in range(num_wins):
+      wfft[k, :] = np.convolve(rfft(windowed_wf[k, :], norm=norm), [-1/4, 1/2, -1/4], mode="same")
     
   return {  
     "wfft" : wfft,
@@ -105,7 +109,7 @@ def get_wfft(wf, sr, t_win, t_shift=None, num_wins=None, hann=False, norm="backw
     }
 
 
-def get_psd(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, return_all=False):
+def get_psd(wf, sr, tau, num_wins=None, hann=False, wfft=None, freq_ax=None, return_all=False):
   """ Gets the PSD of the given waveform with the given window size
 
   Parameters
@@ -114,7 +118,7 @@ def get_psd(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, r
         waveform input array
       sr: int
         sample rate of waveform
-      t_win: float
+      tau: float
         length (in time) of each window; used in get_wfft and to calculate normalizing factor
       num_wins: int, Optional
         Used in get_wfft;
@@ -135,7 +139,7 @@ def get_psd(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, r
   
   # if you passed the wfft and freq_ax in then we'll skip over this
   if wfft is None:
-    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, hann=True)
+    d = get_wfft(wf=wf, sr=sr, tau=tau, num_wins=num_wins, hann=hann)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
   
@@ -145,16 +149,17 @@ def get_psd(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, r
   num_freq_pts = wfft_size[1]
 
   # calculate the number of samples in the window for normalizing factor purposes
-  n_win = int(t_win*sr)
+  n_win = int(tau*sr)
   
   # initialize array
   win_psd = np.zeros((num_wins, num_freq_pts))
 
-  # calculate the normalizing factor (canonical for discrete PSD)
+  # calculate the normalizing factor (this only applies with boxcar, hann should be different)
   normalizing_factor = sr * n_win
   # get PSD for each window
   for win in range(num_wins):
     win_psd[win, :] = ((np.abs(wfft[win, :]))**2) / normalizing_factor
+    
   # average over all windows
   psd = np.mean(win_psd, 0)
   if not return_all:
@@ -166,7 +171,7 @@ def get_psd(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, r
       "win_psd" : win_psd
       }
     
-def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, dict=False, norm="forward"):
+def get_mags(wf, sr, tau, num_wins=None, hann=False, wfft=None, freq_ax=None, dict=False, norm="forward"):
   """ Gets the magnitudes of the given waveform, averaged over windows (with the given window size)
 
   Parameters
@@ -175,7 +180,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
         waveform input array
       sr: int
         sample rate of waveform
-      t_win: float
+      tau: float
         length (in time) of each window
       num_wins: int, Optional
         Used in get_wfft; if this isn't passed, then just gets the maximum number of windows of the given size
@@ -197,7 +202,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
   
   # if you passed the wfft and freq_ax in then we'll skip over this
   if wfft is None:
-    d = get_wfft(wf=wf, sr=sr, t_win=t_win, num_wins=num_wins, hann=hann, norm=norm)
+    d = get_wfft(wf=wf, sr=sr, tau=tau, num_wins=num_wins, hann=hann, norm=norm)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
 
@@ -226,7 +231,7 @@ def get_mags(wf, sr, t_win, num_wins=None, hann=False, wfft=None, freq_ax=None, 
       "win_mags" : win_mags
       }
 
-def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=False, wfft=None, freq_ax=None, ref_type="next_win", return_all=False):
+def get_coherence(wf, sr, tau, xi=None, bin_shift=1, num_wins=None, hann=False, wfft=None, freq_ax=None, ref_type="nextau", return_all=False):
   """ Gets the phase coherence of the given waveform with the given window size
 
   Parameters
@@ -235,9 +240,9 @@ def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=
         waveform input array
       sr:
         sample rate of waveform
-      t_win: float
+      tau: float
         length (in time) of each window
-      t_shift: float
+      xi: float
         length (in time) between the start of successive windows (primarily for next_)
       num_wins: int, Optional
         If this isn't passed, then just get the maximum number of windows of the given size
@@ -248,12 +253,19 @@ def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=
       freq_ax: any, Optional
         We have to also pass in the freq_ax for the wfft (either pass in both or neither!)
       ref_type: str, Optional
-        Either "next_win" to ref phase against next window or "next_freq" for next frequency bin or "both_freqs" to compare freq bin on either side
+        Either "nextau" to ref phase against next window or "next_freq" for next frequency bin or "both_freqs" to compare freq bin on either side
       bin_shift: int, Optional
         How many bins over to reference phase against for next_freq
       return_all: bool, Optional
-        Defaults to only returning the PSD averaged over all windows; if this is enabled, then a dictionary is returned with keys:
-        "avg_psd", "freq_ax", "win_psd"
+        Defaults to only returning the coherence; if this is enabled, then a dictionary is returned with keys:
+        d["coherence"] = coherence
+        d["phases"] = phases
+        d["phase_diffs"] = phase_diffs
+        d["means"] = means
+        d["avg_phase_diff"] = avg_phase_diff
+        d["num_wins"] = num_wins
+        d["freq_ax"] = freq_ax
+        d["wfft"] = wfft
   """
   # define output dictionary to be returned (we'll add everything later)
   d = {}
@@ -262,13 +274,13 @@ def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=
   if (wfft is None and freq_ax is not None) or (wfft is not None and freq_ax is None):
     raise Exception("We need both wfft and freq_ax (or neither)!")
 
-  # default t_shift to t_win (no overlap)
-  if t_shift is None:
-    t_shift=t_win
+  # default xi to tau (no overlap)
+  if xi is None:
+    xi=tau
   
   # if you passed the wfft and freq_ax in then we'll skip over this
   if wfft is None:
-    d = get_wfft(wf=wf, sr=sr, t_win=t_win, t_shift=t_shift, num_wins=num_wins, hann=hann)
+    d = get_wfft(wf=wf, sr=sr, tau=tau, xi=xi, num_wins=num_wins, hann=hann)
     wfft = d["wfft"]
     freq_ax = d["freq_ax"]
   
@@ -281,7 +293,7 @@ def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=
   phases=np.angle(wfft)
   
   # we can reference each phase against the phase of the same frequency in the next window:
-  if ref_type == "next_win":
+  if ref_type == "nextau":
     # unwrap phases along time window axis (this won't affect coherence, but it's necessary for <|phase diffs|>)
     phases = np.unwrap(phases, axis=0)
     
@@ -314,8 +326,8 @@ def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=
     coherence, avg_phase_diff = get_avg_vector(phase_diffs)
     
     # Since this references each frequency bin to its adjacent neighbor, we'll plot them w.r.t. the average frequency 
-        # this corresponds to shifting everything over half a bin width (bin width is 1/t_win)
-    freq_ax = freq_ax + (1/2)*(1/t_win)
+        # this corresponds to shifting everything over half a bin width (bin width is 1/tau)
+    freq_ax = freq_ax + (1/2)*(1/tau)
     
   
   # or we can reference it against the phase of both the lower and higher frequencies in the same window
@@ -369,7 +381,7 @@ def get_coherence(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, hann=
     
 
 
-def coherence_vs_psd(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, ref_type="next_win", hann=False, khz=False, db=True, downsample_freq=False, 
+def coherence_vs_psd(wf, sr, tau, xi=None, bin_shift=1, num_wins=None, ref_type="nextau", hann=False, khz=False, db=True, downsample_freq=False, 
                      xmin=None, xmax=None, ymin=None, ymax=None, wf_title=None, slabel=False, do_coherence=True, do_psd=True, do_means=False, ax=None, fig_num=1):
   """ Plots the power spectral density and phase coherence of an input waveform
   
@@ -379,20 +391,20 @@ def coherence_vs_psd(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, re
         waveform input array
       sr: int
         sample rate of waveform
-      t_win: float
+      tau: float
         length (in time) of each window
-      t_shift: float, Optional
-        amount (in time) between the start points of adjacent windows. Defaults to t_win (aka no overlap)
+      xi: float, Optional
+        amount (in time) between the start points of adjacent windows. Defaults to tau (aka no overlap)
       bin_shift: int, Optional
         How many bins over to reference phase against for next_freq, defaults to 1
       num_wins: int, Optional
         If this isn't passed, then it will just get the maximum number of windows of the given size
       ref_type: str, Optional
-        Either "next_win" to ref phase against next window or "next_freq" for next frequency bin or "both_freqs" to compare freq bin on either side
+        Either "nextau" to ref phase against next window or "next_freq" for next frequency bin or "both_freqs" to compare freq bin on either side
       hann: bool, Optional
         Applies a hanning window before FFT
       downsample_freq: int, Optional
-        This will skip every "downsample_freq"-th frequency point (for comparing effect of t_win)
+        This will skip every "downsample_freq"-th frequency point (for comparing effect of tau)
       khz: bool, Optional
         Plots frequency in kHz
       db: bool, Optional
@@ -418,22 +430,22 @@ def coherence_vs_psd(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, re
       fig_num: int, Optional
         If you didn't pass in an Axes, then it will create a figure and this will set the figure number
   """
-  # get default for t_shift
-  if t_shift is None:
-    t_shift = t_win
+  # get default for xi
+  if xi is None:
+    xi = tau
   # get wfft so we don't have to do it twice below
-  d = get_wfft(wf=wf, sr=sr, t_win=t_win, t_shift=t_shift, num_wins=num_wins, hann=hann)
+  d = get_wfft(wf=wf, sr=sr, tau=tau, xi=xi, num_wins=num_wins, hann=hann)
   wfft = d["wfft"]
   # we'll want to pass this through the subsequent functions as well to maintain correspondence through all the shifts
   freq_ax = d["freq_ax"]
   
   # get (averaged over windows) PSD
-  p = get_psd(wf=wf, sr=sr, t_win=t_win, wfft=wfft, freq_ax=freq_ax, return_all=True)
+  p = get_psd(wf=wf, sr=sr, tau=tau, wfft=wfft, freq_ax=freq_ax, return_all=True)
   psd = p["psd"]
   psd_freq_ax = p["freq_ax"]
 
   # get coherence
-  c = get_coherence(wf=wf, sr=sr, t_win=t_win, wfft=wfft, ref_type=ref_type, freq_ax=freq_ax, bin_shift=bin_shift, return_all=True)
+  c = get_coherence(wf=wf, sr=sr, tau=tau, wfft=wfft, ref_type=ref_type, freq_ax=freq_ax, bin_shift=bin_shift, return_all=True)
   coherence = c["coherence"]
   coherence_freq_ax = c["freq_ax"]
 
@@ -469,9 +481,9 @@ def coherence_vs_psd(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, re
   # plot + set labels
   if do_coherence:
     if ref_type == "next_freq":
-      label = f"Phase Coherence: t_win={t_win}, t_shift={t_shift}, ref_type={ref_type}, bin_shift={bin_shift}"
+      label = f"Phase Coherence: tau={tau}, xi={xi}, ref_type={ref_type}, bin_shift={bin_shift}"
     else:
-      label = f"Phase Coherence: t_win={t_win}, t_shift={t_shift}, ref_type={ref_type}"
+      label = f"Phase Coherence: tau={tau}, xi={xi}, ref_type={ref_type}"
     if slabel:
       label = "Phase Coherence"
     p1 = ax.plot(coherence_freq_ax, coherence, label=label, color='purple')
@@ -520,7 +532,7 @@ def coherence_vs_psd(wf, sr, t_win, t_shift=None, bin_shift=1, num_wins=None, re
   return ax, ax2
 
 
-def spectrogram(wf, sr, t_win, t_shift=None, num_wins=None, db=True, khz=False, cmap='rainbow', vmin=None, vmax=None,
+def spectrogram(wf, sr, tau, xi=None, num_wins=None, db=True, khz=False, cmap='rainbow', vmin=None, vmax=None,
                 xmin=0, xmax=None, ymin=None, ymax=None, wf_title=None, show_plot=False, ax=None,fig_num=1):
   
   """ Plots a spectrogram of the waveform
@@ -531,10 +543,10 @@ def spectrogram(wf, sr, t_win, t_shift=None, num_wins=None, db=True, khz=False, 
         waveform input array
       sr: int
         sample rate of waveform
-      t_win: float
+      tau: float
         length (in time) of each window
-      t_shift: float
-        amount (in time) between the start points of adjacent windows. Defaults to t_win (aka no overlap)
+      xi: float
+        amount (in time) between the start points of adjacent windows. Defaults to tau (aka no overlap)
       num_wins: int, Optional
         If this isn't passed, then it will just get the maximum number of windows of the given size
       db: bool, Optional
@@ -561,7 +573,7 @@ def spectrogram(wf, sr, t_win, t_shift=None, num_wins=None, db=True, khz=False, 
       fig_num: int, Optional
   """
   # calculate the windowed fft, which outputs three arrays we will use
-  wfft_output = get_wfft(wf, sr=sr, num_wins=num_wins, t_win=t_win, t_shift=t_shift)
+  wfft_output = get_wfft(wf, sr=sr, num_wins=num_wins, tau=tau, xi=xi)
   # this is the windowed fft itself
   wfft = wfft_output["wfft"]
   # this is the frequency axis
@@ -571,7 +583,7 @@ def spectrogram(wf, sr, t_win, t_shift=None, num_wins=None, db=True, khz=False, 
   # to convert these to time, just divide by sample rate 
   t_ax = win_start_indices / sr
   # calculate the psd of each window
-  win_psd = get_psd(wf, sr=sr, t_win=t_win, wfft=wfft, freq_ax=freq_ax, return_all=True)["win_psd"]
+  win_psd = get_psd(wf, sr=sr, tau=tau, wfft=wfft, freq_ax=freq_ax, return_all=True)["win_psd"]
   # make meshgrid
   xx, yy = np.meshgrid(t_ax, freq_ax)
   if khz:
@@ -606,16 +618,16 @@ def spectrogram(wf, sr, t_win, t_shift=None, num_wins=None, db=True, khz=False, 
   ax.set_xlim(xmin, xmax)
   ax.set_ylim(ymin, ymax)
   if wf_title:
-      title = f"Spectrogram of {wf_title}: t_win={t_win}, t_shift={t_shift}"
+      title = f"Spectrogram of {wf_title}: tau={tau}, xi={xi}"
   else: 
-    title = f"Spectrogram: t_win={t_win}, t_shift={t_shift}"
+    title = f"Spectrogram: tau={tau}, xi={xi}"
   ax.set_title(title)
   
   # optionally show plot!
   if show_plot:
       plt.show()
 
-def coherogram(wf, sr, t_win, t_shift, scope=2, freq_ref_step=1, ref_type="next_win", num_wins=None, khz=False, cmap='rainbow', vmin=None, vmax=None,
+def coherogram(wf, sr, tau, xi, scope=2, freq_ref_step=1, ref_type="nextau", num_wins=None, khz=False, cmap='rainbow', vmin=None, vmax=None,
                 xmin=0, xmax=None, ymin=None, ymax=None, wf_title=None, show_plot=False, ax=None, fig_num=1):
   
   """ Plots a coherogram of the waveform
@@ -625,13 +637,13 @@ def coherogram(wf, sr, t_win, t_shift, scope=2, freq_ref_step=1, ref_type="next_
       wf: array
         waveform input array
       sr: int
-      t_win: float
+      tau: float
         length (in time) of each window
-      t_shift: float
-        amount (in time) between the start points of adjacent windows. Defaults to t_win (aka no overlap)
+      xi: float
+        amount (in time) between the start points of adjacent windows. Defaults to tau (aka no overlap)
       ref_type: str, Optional
         determines what to reference the phase of each window against:
-        "next_win" for the same freq of the following window or "next_freq" for the next freq bin of the current window
+        "nextau" for the same freq of the following window or "next_freq" for the next freq bin of the current window
       scope: int, Optional
         number of windows on either side to average over for vector strength
       freq_ref_step: int, Optional
@@ -661,7 +673,7 @@ def coherogram(wf, sr, t_win, t_shift, scope=2, freq_ref_step=1, ref_type="next_
   """
 
   # calculate the windowed fft, which outputs three arrays we will use
-  wfft_output = get_wfft(wf, sr=sr, num_wins=num_wins, t_win=t_win, t_shift=t_shift)
+  wfft_output = get_wfft(wf, sr=sr, num_wins=num_wins, tau=tau, xi=xi)
   # this is the windowed fft itself
   wfft = wfft_output["wfft"]
   # this is the frequency axis
@@ -681,7 +693,7 @@ def coherogram(wf, sr, t_win, t_shift, scope=2, freq_ref_step=1, ref_type="next_
     # this is because the : operator is [start, stop)... and this is what we want!
   t_ax = t_ax[scope:-scope]
 
-  if ref_type == "next_win":
+  if ref_type == "nextau":
     # if using this reference method, since we must compare it to the subsequent window, 
     # we will not be able to calculate a coherence for the final t value
     t_ax = t_ax[0:-1] 
@@ -697,7 +709,7 @@ def coherogram(wf, sr, t_win, t_shift, scope=2, freq_ref_step=1, ref_type="next_
   # get phase information from wfft
   phases = np.angle(wfft)
   
-  if ref_type == "next_win":
+  if ref_type == "nextau":
     # initialize phase_diffs; the -1 is because we will not be able to calculate a phase diff for the final window!
     phase_diffs = np.zeros((num_wins - 1, num_freqs))
     for index in range(num_wins - 1):
@@ -759,9 +771,9 @@ def coherogram(wf, sr, t_win, t_shift, scope=2, freq_ref_step=1, ref_type="next_
   else:
     ax.set_ylabel("Frequency [Hz]")
   if wf_title:
-      title = f"Coherogram of {wf_title}: ref_type={ref_type}, t_win={t_win}, t_shift={t_shift}, scope={scope}"
+      title = f"Coherogram of {wf_title}: ref_type={ref_type}, tau={tau}, xi={xi}, scope={scope}"
   else: 
-    title = f"Coherogram: ref_type={ref_type}, t_win={t_win}, t_shift={t_shift}, scope={scope}"
+    title = f"Coherogram: ref_type={ref_type}, tau={tau}, xi={xi}, scope={scope}"
   if ref_type == "next_freq":
     title = title + f", freq_ref_step={freq_ref_step}"
   ax.set_title(title)
@@ -778,14 +790,14 @@ def phase_portrait(wf, wf_title="Sum of Oscillators"):
   plt.grid()
   plt.show()
   
-def scatter_phase_diffs(freq, wf, sr, t_win, num_wins=None, ref_type="next_freq", hann=False, bin_shift=1, t_shift=None, wf_title="Waveform", ax=None):
-    c = get_coherence(wf, ref_type=ref_type, sr=sr, hann=hann, num_wins=num_wins, t_win=t_win, t_shift=t_shift, bin_shift=bin_shift, return_all=True)
+def scatter_phase_diffs(freq, wf, sr, tau, num_wins=None, ref_type="next_freq", hann=False, bin_shift=1, xi=None, wf_title="Waveform", ax=None):
+    c = get_coherence(wf, ref_type=ref_type, sr=sr, hann=hann, num_wins=num_wins, tau=tau, xi=xi, bin_shift=bin_shift, return_all=True)
     num_wins = c["num_wins"]
     phase_diffs = c["phase_diffs"]
-    # get the freq_bin_index - note this only works if we're using next_freq! Then the 0 index bin is 0 freq, 1 index -> 1/t_win, 2 index -> 2/t_win
-        # so then if freq is 0.8 and t_win is 10, the 1 index is 1/10=0.1, the 2 index is 0.2, ... , the 8 index is 0.8. So int(freq*t_win) = int(8.0) = 8
-        # if you don't know the exact freq bin, rounding up is good... if it looked like ~ 0.84 then int(freq*t_win) = int(8.4) = 8
-    freq_bin_index = int(freq*t_win)
+    # get the freq_bin_index - note this only works if we're using next_freq! Then the 0 index bin is 0 freq, 1 index -> 1/tau, 2 index -> 2/tau
+        # so then if freq is 0.8 and tau is 10, the 1 index is 1/10=0.1, the 2 index is 0.2, ... , the 8 index is 0.8. So int(freq*tau) = int(8.0) = 8
+        # if you don't know the exact freq bin, rounding up is good... if it looked like ~ 0.84 then int(freq*tau) = int(8.4) = 8
+    freq_bin_index = int(freq*tau)
     
     if ax is None:
       plt.figure(1)
@@ -800,14 +812,14 @@ def scatter_phase_diffs(freq, wf, sr, t_win, num_wins=None, ref_type="next_freq"
     
     print("<|phase diffs|> = " + str(np.mean(np.abs(phase_diffs))))
 
-def scatter_phases(freq, wf, sr, t_win, num_wins=None, ref_type="next_freq", bin_shift=1, t_shift=None, wf_title="Waveform", ax=None):
-    c = get_coherence(wf, ref_type=ref_type, sr=sr, num_wins=num_wins, t_win=t_win, t_shift=t_shift, bin_shift=bin_shift, return_all=True)
+def scatter_phases(freq, wf, sr, tau, num_wins=None, ref_type="next_freq", bin_shift=1, xi=None, wf_title="Waveform", ax=None):
+    c = get_coherence(wf, ref_type=ref_type, sr=sr, num_wins=num_wins, tau=tau, xi=xi, bin_shift=bin_shift, return_all=True)
     num_wins = c["num_wins"]
     phases = c["phases"]
-    # get the freq_bin_index - note this only works if we're using next_freq! Then the 0 index bin is 0 freq, 1 index -> 1/t_win, 2 index -> 2/t_win
-        # so then if freq is 0.8 and t_win is 10, the 1 index is 1/10=0.1, the 2 index is 0.2, ... , the 8 index is 0.8. So int(freq*t_win) = int(8.0) = 8
-        # if you don't know the exact freq bin, rounding up is good... if it looked like ~ 0.84 then int(freq*t_win) = int(8.4) = 8
-    freq_bin_index = int(freq*t_win)
+    # get the freq_bin_index - note this only works if we're using next_freq! Then the 0 index bin is 0 freq, 1 index -> 1/tau, 2 index -> 2/tau
+        # so then if freq is 0.8 and tau is 10, the 1 index is 1/10=0.1, the 2 index is 0.2, ... , the 8 index is 0.8. So int(freq*tau) = int(8.0) = 8
+        # if you don't know the exact freq bin, rounding up is good... if it looked like ~ 0.84 then int(freq*tau) = int(8.4) = 8
+    freq_bin_index = int(freq*tau)
     
     if ax is None:
       plt.figure(1)
