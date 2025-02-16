@@ -68,12 +68,19 @@ def get_sfft(wf, sr, tau, xi=None, num_segs=None, fftshift_segs=False, win_type=
     # if no num_segs is passed in, we'll just use the max number of segments
     num_segs = len(seg_start_indices)
 
+  # Initialize segmented waveform matrix
   segmented_wf = np.zeros((num_segs, nperseg))
+  
+  # Get window function (boxcar is no window)
+  win = get_window(win_type, nperseg)
+  
   for k in range(num_segs):
     seg_start = seg_start_indices[k]
     seg_end = seg_start + nperseg
     # grab the waveform in this segment
     seg = wf[seg_start:seg_end]
+    if win_type != "boxcar":
+      seg = seg * win
     if fftshift_segs: # optionally swap the halves of the waveform to effectively center it in time
       seg = fftshift(seg)
     segmented_wf[k, :] = seg
@@ -90,11 +97,9 @@ def get_sfft(wf, sr, tau, xi=None, num_segs=None, fftshift_segs=False, win_type=
   # initialize segmented fft array
   sfft = np.zeros((num_segs, num_freq_pts), dtype=complex)
   
-  # get ffts (applying a window first; boxcar is no window) 
-
-  win = get_window(win_type, nperseg)
+  # get ffts
   for k in range(num_segs):
-    sfft[k, :] = rfft(segmented_wf[k, :] * win)
+    sfft[k, :] = rfft(segmented_wf[k, :])
 
     
   return {  
