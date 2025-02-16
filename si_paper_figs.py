@@ -60,11 +60,11 @@ t_win2=0.1
 hann2=False
 
 # get coherence, mags, and means
-w1 = get_wfft(wf=wf1, sr=sr1, t_win=t_win1, hann=hann1)
+w1 = get_sfft(wf=wf1, sr=sr1, t_win=t_win1, hann=hann1)
 wfft1 = w1["wfft"]
 freq_ax1 = w1["freq_ax"]
 
-w2 = get_wfft(wf=wf2, sr=sr2, t_win=t_win2, hann=hann2)
+w2 = get_sfft(wf=wf2, sr=sr2, t_win=t_win2, hann=hann2)
 wfft2 = w2["wfft"]
 freq_ax2 = w2["freq_ax"]
 
