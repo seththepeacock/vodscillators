@@ -1,8 +1,8 @@
 from vodscillator import *
 import matplotlib.pyplot as plt
 import numpy as np
-from plots import *
-from vlodder import *
+from funcs_plotting import *
+from funcs_spectral import *
 import scipy.io
 
 # plt.rcParams.update({
@@ -51,29 +51,29 @@ wf_title2 = f"Generated Data at {freq} Hz"
 
 
 # set params for TH14
-t_win1=0.1
+tau1=0.1
 hann1=False
 # set params for V&D
-# t_win2=20
+# tau2=20
 # hann2=True
-t_win2=0.1
+tau2=0.1
 hann2=False
 
 # get coherence, mags, and means
-w1 = get_sfft(wf=wf1, sr=sr1, t_win=t_win1, hann=hann1)
+w1 = get_stft(wf=wf1, sr=sr1, tau=tau1, hann=hann1)
 wfft1 = w1["wfft"]
 freq_ax1 = w1["freq_ax"]
 
-w2 = get_sfft(wf=wf2, sr=sr2, t_win=t_win2, hann=hann2)
+w2 = get_stft(wf=wf2, sr=sr2, tau=tau2, hann=hann2)
 wfft2 = w2["wfft"]
 freq_ax2 = w2["freq_ax"]
 
 # we'll pass the wfft and its freq axis into these so we don't have to get them again
-c1 = get_coherence(wfft=wfft1, freq_ax=freq_ax1, wf=wf1, sr=sr1, ref_type="next_freq", t_win=t_win1, return_all=True)
-m1 = get_mags(wfft=wfft1, freq_ax=freq_ax1, wf=wf1, sr=sr1, t_win=t_win1, dict=True)
+c1 = get_coherence(wfft=wfft1, freq_ax=freq_ax1, wf=wf1, sr=sr1, ref_type="next_freq", tau=tau1, return_all=True)
+m1 = get_welch(wfft=wfft1, freq_ax=freq_ax1, wf=wf1, sr=sr1, tau=tau1, dict=True)
 
-c2 = get_coherence(wfft=wfft2, freq_ax=freq_ax2, wf=wf2, sr=sr2, ref_type="next_freq", t_win=t_win2, return_all=True)
-m2 = get_mags(wfft=wfft2, freq_ax=freq_ax2, wf=wf2, sr=sr2, t_win=t_win2, dict=True)
+c2 = get_coherence(wfft=wfft2, freq_ax=freq_ax2, wf=wf2, sr=sr2, ref_type="next_freq", tau=tau2, return_all=True)
+m2 = get_welch(wfft=wfft2, freq_ax=freq_ax2, wf=wf2, sr=sr2, tau=tau2, dict=True)
 
 # set up axes
 fig1 = plt.figure(1)

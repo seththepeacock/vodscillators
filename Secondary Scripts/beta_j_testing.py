@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import timeit
 import pickle
-from plots import *
+from funcs_plotting import *
 import scipy.io
 from vlodder import *
 

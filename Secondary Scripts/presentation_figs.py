@@ -2,7 +2,8 @@
 import numpy as np
 from vodscillator import *
 from matplotlib import pyplot as plt, patches
-from plots import *
+from funcs_plotting import *
+from funcs_spectral import *
 import scipy.io
 
 dpi=300
@@ -19,7 +20,7 @@ if 1==0:
     mat = scipy.io.loadmat(filepath + filename)
     wf = np.squeeze(mat['wf'])
     sr=44100
-    coherence_vs_psd(wf, sr, t_win=0.1, t_shift=0.1, xmin=0, xmax=5000, wf_title="Human SOAE Waveform")
+    coherence_vs_spectrum(wf, sr, t_win=0.1, t_shift=0.1, xmin=0, xmax=5000, wf_title="Human SOAE Waveform")
     
     plt.gcf().set_size_inches(reso) # set figure's size manually to your full screen (32x18)
     plt.savefig('human soae wf.png', dpi=dpi, bbox_inches=bbox)

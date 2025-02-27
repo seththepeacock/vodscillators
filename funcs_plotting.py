@@ -4,352 +4,8 @@ from  matplotlib.axes import Axes
 from vodscillator import *
 from scipy.fft import rfft, rfftfreq, fftshift
 from scipy.signal.windows import get_window
-
-
-# define helper functions
-
-def get_avg_vector(phase_diffs):
-  # get the sin and cos of the phase diffs, and average over the window pairs
-  xx= np.mean(np.sin(phase_diffs),axis=0)
-  yy= np.mean(np.cos(phase_diffs),axis=0)
-  
-  # finally, output the averaged vector's vector strength and angle with x axis (for each frequency) 
-  return np.sqrt(xx**2 + yy**2), np.arctan2(yy, xx)
-# I THINK THE ISSUE HERE IS THAT THE ANGLE OF THIS AVERAGED VECTOR IS NOT THE SAME AS THE AVERAGE OF THE ANGLES OF THE INDIVIDUAL VECTORS
-def get_sfft(wf, sr, tau, xi=None, num_segs=None, fftshift_segs=False, win_type='boxcar'):
-  """ Returns a dict with the segmented fft and associated freq ax of the given waveform
-
-  Parameters
-  ------------
-      wf: array
-        waveform input array
-      sr: int
-        sample rate of waveform
-      tau: float
-        length (in time) of each window
-      xi: float
-        length (in time) between the start of successive segments
-      num_segs: int, Optional
-        If this isn't passed, then just get the maximum number of segments of the given size
-      fftshift_segs: bool, Optional
-        Shifts each time-domain window of the fft with fftshift()
-      win_type: String, Optional
-        Window to apply before the FFT
-  """
-  
-  # if you didn't pass in xi we'll assume you want no overlap - each new window starts at the end of the last!
-  if xi is None:
-    xi=tau
-  
-  # calculate the number of samples in the window
-  nperseg = int(tau*sr)
-
-  # and the number of samples to shift
-  n_shift = int(xi*sr)
-
-  # get sample_spacing
-  sample_spacing = 1/sr
-
-  # first, get the last index of the waveform
-  final_wf_index = len(wf) - 1
-    # - 1 is because of zero-indexing!
-  # next, we get what we would be the largest potential seg_start_index
-  final_seg_start_index = final_wf_index - (nperseg-1)
-    # start at the final_wf_index. we need to collect nperseg points. this final index is our first one, and then we need nperseg - 1 more. 
-    # So we march back nperseg-1 points, and then THAT is the last_potential_seg_start_index!
-  seg_start_indices = np.arange(0, final_seg_start_index + 1, n_shift)
-    # the + 1 here is because np.arange won't ever include the "stop" argument in the output array... but it could include (stop - 1) which is just our final_seg_start_index!
-
-  # if number of segments is passed in, we make sure it's less than the length of seg_start_indices
-  if num_segs is not None:
-    if num_segs > len(seg_start_indices):
-      raise Exception("That's more segments than we can manage! Decrease num_segs!")
-  else:
-    # if no num_segs is passed in, we'll just use the max number of segments
-    num_segs = len(seg_start_indices)
-
-  # Initialize segmented waveform matrix
-  segmented_wf = np.zeros((num_segs, nperseg))
-  
-  # Get window function (boxcar is no window)
-  win = get_window(win_type, nperseg)
-  
-  for k in range(num_segs):
-    seg_start = seg_start_indices[k]
-    seg_end = seg_start + nperseg
-    # grab the waveform in this segment
-    seg = wf[seg_start:seg_end]
-    if win_type != "boxcar":
-      seg = seg * win
-    if fftshift_segs: # optionally swap the halves of the waveform to effectively center it in time
-      seg = fftshift(seg)
-    segmented_wf[k, :] = seg
-    # note this grabs the wf at indices seg_start, seg_start+1, ..., seg_end-1
-      # if there are 4 samples and tau=xi=1 and SR=1, then nperseg=2, n_shift=1 and
-      # Thus the first window will be samples 0 and 1, the next 1 and 2...
-
-  # Now we do the ffts!
-
-  # get frequency axis 
-  freq_ax = rfftfreq(nperseg, sample_spacing)
-  num_freq_pts = len(freq_ax)
-  
-  # initialize segmented fft array
-  sfft = np.zeros((num_segs, num_freq_pts), dtype=complex)
-  
-  # get ffts
-  for k in range(num_segs):
-    sfft[k, :] = rfft(segmented_wf[k, :])
-
-    
-  return {  
-    "sfft" : sfft,
-    "freq_ax" : freq_ax,
-    "seg_start_indices" : seg_start_indices
-    }
-
-
-def get_spectrum(wf, sr, tau, num_segs=None, win_type='boxcar', scaling='density', sfft=None, freq_ax=None, return_all=True):
-  """ Gets the spectrum of the given waveform with the given window size
-
-  Parameters
-  ------------
-      wf: array
-        waveform input array
-      sr: int
-        sample rate of waveform
-      tau: float
-        length (in time) of each window; used in get_sfft and to calculate normalizing factor
-      num_segs: int, Optional
-        Used in get_sfft;
-          if this isn't passed, then just gets the maximum number of segments of the given size
-      sfft: any, Optional
-        If you want to avoid recalculating the segmented fft, pass it in here!
-      win_type: String, Optional
-        Window to apply before the FFT
-      scaling: String, Optional
-        "mags" (magnitudes) or "density" (PSD) or "spectrum" (power spectrum)
-      freq_ax: any, Optional
-        We have to also pass in the freq_ax for the sfft (either pass in both or neither!)
-      return_all: bool, Optional
-        Defaults to only returning the spectrum averaged over all segments; if this is enabled, then a dictionary is returned with keys:
-        "spectrum", "freq_ax", "win_spectrum"
-  """
-  # make sure we either have both or neither
-  if (sfft is None and freq_ax is not None) or (sfft is not None and freq_ax is None):
-    raise Exception("We need both sfft and freq_ax (or neither)!")
-  
-  # if you passed the sfft and freq_ax in then we'll skip over this
-  if sfft is None:
-    d = get_sfft(wf=wf, sr=sr, tau=tau, num_segs=num_segs, win_type=win_type)
-    sfft = d["sfft"]
-    freq_ax = d["freq_ax"]
-  
-  # calculate necessary params from the sfft
-  sfft_size = np.shape(sfft)
-  num_segs = sfft_size[0]
-  num_freq_pts = sfft_size[1]
-
-  # calculate the number of samples in the window for normalizing factor purposes
-  nperseg = int(tau*sr)
-  
-  # initialize array
-  win_spectrum = np.zeros((num_segs, num_freq_pts))
-  
-  # get spectrum for each window
-  for win in range(num_segs):
-    win_spectrum[win, :] = ((np.abs(sfft[win, :]))**2)
-    
-  # average over all segments (in power)
-  spectrum = np.mean(win_spectrum, 0)
-  
-  window = get_window(win_type, nperseg)
-  S1 = np.sum(window)
-  S2 = np.sum(window**2)
-  ENBW = nperseg * S2 / S1**2
-  
-  if scaling == 'mags':
-    spectrum = np.sqrt(spectrum)
-    normalizing_factor = 1 / S1
-    
-  elif scaling == 'spectrum':
-    normalizing_factor = 1 / S1**2
-    
-  elif scaling == 'density':
-    bin_width = 1/tau
-    normalizing_factor = 1 / (S1**2 * ENBW * bin_width) # Start with spectrum scaling, then divide by bin width (times ENBW in samples)
-
-  else:
-    raise Exception("scaling must be 'mags', 'density', or 'spectrum'!")
-  
-  # Normalize; since this is an rfft, we should multiply by 2 
-  spectrum = spectrum * 2 * normalizing_factor
-  # Except DC bin should NOT be scaled by 2
-  spectrum[0] = spectrum[0] / 2
-  # Nyquist bin shouldn't either (this bin only exists if nperseg is even)
-  if nperseg % 2 == 0:
-    spectrum[-1] = spectrum[-1] / 2
-  
-  if not return_all:
-    return spectrum
-  else:
-    return {  
-      "spectrum" : spectrum,
-      "freq_ax" : freq_ax,
-      "win_spectrum" : win_spectrum
-      }
-    
-
-def get_coherence(wf, sr, tau, xi=None, bin_shift=1, num_segs=None, win_type='boxcar', fftshift_segs=False, sfft=None, freq_ax=None, ref_type="next_win", return_all=False):
-  """ Gets the phase coherence of the given waveform with the given window size
-
-  Parameters
-  ------------
-      wf: array
-        waveform input array
-      sr:
-        sample rate of waveform
-      tau: float
-        length (in time) of each window
-      xi: float
-        length (in time) between the start of successive segments (primarily for next_)
-      num_segs: int, Optional
-        If this isn't passed, then just get the maximum number of segments of the given size
-      win_type: String, Optional
-        Window to apply before the FFT
-      fftshift_segs: bool, Optional
-        Shifts each time-domain window of the fft with fftshift_segs
-      sfft: any, Optional
-        If you want to avoid recalculating the segmented fft, pass it in here!
-      freq_ax: any, Optional
-        We have to also pass in the freq_ax for the sfft (either pass in both or neither!)
-      ref_type: str, Optional
-        Either "next_win" to ref phase against next window or "next_freq" for next frequency bin or "both_freqs" to compare freq bin on either side
-      bin_shift: int, Optional
-        How many bins over to reference phase against for next_freq
-      return_all: bool, Optional
-        Defaults to only returning the coherence; if this is enabled, then a dictionary is returned with keys:
-        d["coherence"] = coherence
-        d["phases"] = phases
-        d["phase_diffs"] = phase_diffs
-        d["means"] = means
-        d["avg_phase_diff"] = avg_phase_diff
-        d["num_segs"] = num_segs
-        d["freq_ax"] = freq_ax
-        d["sfft"] = sfft
-  """
-  # define output dictionary to be returned (we'll add everything later)
-  d = {}
-  
-  # make sure we either have both sfft and freq_ax or neither
-  if (sfft is None and freq_ax is not None) or (sfft is not None and freq_ax is None):
-    raise Exception("We need both sfft and freq_ax (or neither)!")
-  
-  # if you passed the sfft and freq_ax in then we'll skip over this
-  if sfft is None:
-    d = get_sfft(wf=wf, sr=sr, tau=tau, xi=xi, num_segs=num_segs, win_type=win_type, fftshift_segs=fftshift_segs)
-    sfft = d["sfft"]
-    freq_ax = d["freq_ax"]
-    
-  # default xi to tau (no overlap)
-  if xi is None:
-    xi=tau
-  
-  # calculate necessary params from the sfft
-  sfft_size = np.shape(sfft)
-  num_segs = sfft_size[0]
-  num_freq_pts = sfft_size[1]
-
-  # get phases
-  phases=np.angle(sfft)
-  
-  # we can reference each phase against the phase of the same frequency in the next window:
-  if ref_type == "next_win":
-    # unwrap phases along time window axis (this won't affect coherence, but it's necessary for <|phase diffs|>)
-    phases = np.unwrap(phases, axis=0)
-    
-    # initialize array for phase diffs; we won't be able to get it for the final window
-    phase_diffs = np.zeros((num_segs - 1, num_freq_pts))
-    
-    # calc phase diffs
-    for win in range(num_segs - 1):
-      # take the difference between the phases in this current window and the next
-      phase_diffs[win] = phases[win + 1] - phases[win]
-    
-    coherence, avg_phase_diff = get_avg_vector(phase_diffs)
-    
-  # or we can reference it against the phase of the next frequency in the same window:
-  elif ref_type == "next_freq":
-    # unwrap phases along the frequency bin axis (this won't affect coherence, but it's necessary for <|phase diffs|>)
-    phases = np.unwrap(phases, axis=1)
-      
-    # initialize array for phase diffs; -bin_shift is because we won't be able to get it for the #(bin_shift) freqs
-    phase_diffs = np.zeros((num_segs, num_freq_pts - bin_shift))
-    # we'll also need to take the last #(bin_shift) bins off the freq_ax
-    freq_ax = freq_ax[0:-bin_shift]
-    
-    # calc phase diffs
-    for win in range(num_segs):
-      for freq_bin in range(num_freq_pts - bin_shift):
-        phase_diffs[win, freq_bin] = phases[win, freq_bin + bin_shift] - phases[win, freq_bin]
-    
-    # get final coherence
-    coherence, avg_phase_diff = get_avg_vector(phase_diffs)
-    
-    # Since this references each frequency bin to its adjacent neighbor, we'll plot them w.r.t. the average frequency 
-        # this corresponds to shifting everything over half a bin width (bin width is 1/tau)
-    freq_ax = freq_ax + (1/2)*(1/tau)
-    
-  
-  # or we can reference it against the phase of both the lower and higher frequencies in the same window
-  elif ref_type == "both_freqs":
-    # unwrap phases along the frequency bin axis (this won't affect coherence, but it's necessary for <|phase diffs|>)
-    phases = np.unwrap(phases, axis=1)
-    
-    # initialize arrays
-      # even though we only lose ONE freq point with lower and one with higher, we want to get all the points we can get from BOTH so we do - 2
-    pd_low = np.zeros((num_segs, num_freq_pts - 2))
-    pd_high = np.zeros((num_segs, num_freq_pts - 2))
-    # take the first and last bin off the freq ax
-    freq_ax = freq_ax[1:-1]
-    
-    # calc phase diffs
-    for win in range(num_segs):
-      for freq_bin in range(1, num_freq_pts - 1):
-        # the - 1 is so that we start our phase_diffs arrays at 0 and put in num_freq_pts-2 points. 
-        # These will correspond to our new frequency axis.
-        pd_low[win, freq_bin - 1] = phases[win, freq_bin] - phases[win, freq_bin - 1]
-        pd_high[win, freq_bin - 1] = phases[win, freq_bin + 1] - phases[win, freq_bin]
-    coherence_low, _ = get_avg_vector(pd_low)
-    coherence_high, _ = get_avg_vector(pd_high)
-    # average the coherences you would get from either of these
-    coherence = (coherence_low + coherence_high)/2
-    # set the phase diffs to one of these (could've also been pd_high)
-    phase_diffs = pd_low
-    
-  else:
-    raise Exception("You didn't input a valid ref_type!")
-  
-  
-  
-  # get <|phase diffs|>
-    # note we're unwrapping w.r.t. the frequency axis
-  means = np.mean(np.abs(phase_diffs), 0)
-  
-  if not return_all:
-    return coherence
-  
-  else:
-    d["coherence"] = coherence
-    d["phases"] = phases
-    d["phase_diffs"] = phase_diffs
-    d["means"] = means
-    d["avg_phase_diff"] = avg_phase_diff
-    d["num_segs"] = num_segs
-    d["freq_ax"] = freq_ax
-    d["sfft"] = sfft
-    return d
-    
+from scipy.signal import butter, sosfilt
+   
 
 
 def coherence_vs_spectrum(wf, sr, tau, xi=None, bin_shift=1, num_segs=None, scaling='density', ref_type="next_win", win_type='boxcar', fftshift_segs=False, khz=False, db=True, downsample_freq=False, 
@@ -404,19 +60,19 @@ def coherence_vs_spectrum(wf, sr, tau, xi=None, bin_shift=1, num_segs=None, scal
   # get default for xi
   if xi is None:
     xi = tau
-  # get sfft so we don't have to do it twice below
-  d = get_sfft(wf=wf, sr=sr, tau=tau, xi=xi, num_segs=num_segs, win_type=win_type)
-  sfft = d["sfft"]
+  # get stft so we don't have to do it twice below
+  d = get_stft(wf=wf, sr=sr, tau=tau, xi=xi, num_segs=num_segs, win_type=win_type)
+  stft = d["stft"]
   # we'll want to pass this through the subsequent functions as well to maintain correspondence through all the shifts
   freq_ax = d["freq_ax"]
   
   # get (averaged over segments) spectrum
-  p = get_spectrum(wf=wf, sr=sr, tau=tau, sfft=sfft, scaling=scaling, win_type=win_type, fftshift_segs=fftshift_segs, freq_ax=freq_ax, return_all=True)
+  p = get_spectrum(wf=wf, sr=sr, tau=tau, stft=stft, scaling=scaling, win_type=win_type, fftshift_segs=fftshift_segs, freq_ax=freq_ax, return_dict=True)
   spectrum = p["spectrum"]
   spectrum_freq_ax = p["freq_ax"]
 
   # get coherence
-  c = get_coherence(wf=wf, sr=sr, tau=tau, sfft=sfft, ref_type=ref_type, freq_ax=freq_ax, win_type=win_type, fftshift_segs=fftshift_segs, bin_shift=bin_shift, return_all=True)
+  c = get_coherence(wf=wf, sr=sr, tau=tau, stft=stft, ref_type=ref_type, freq_ax=freq_ax, win_type=win_type, fftshift_segs=fftshift_segs, bin_shift=bin_shift, return_dict=True)
   coherence = c["coherence"]
   coherence_freq_ax = c["freq_ax"]
 
@@ -544,17 +200,17 @@ def spectrogram(wf, sr, tau, xi=None, num_segs=None, db=True, fftshift_segs=Fals
       fig_num: int, Optional
   """
   # calculate the segmented fft, which outputs three arrays we will use
-  sfft_output = get_sfft(wf, sr=sr, num_segs=num_segs, fftshift_segs=fftshift_segs, tau=tau, xi=xi)
+  stft_output = get_stft(wf, sr=sr, num_segs=num_segs, fftshift_segs=fftshift_segs, tau=tau, xi=xi)
   # this is the segmented fft itself
-  sfft = sfft_output["sfft"]
+  stft = stft_output["stft"]
   # this is the frequency axis
-  freq_ax = sfft_output["freq_ax"]
+  freq_ax = stft_output["freq_ax"]
   # these are the indices of where each window starts in the waveform 
-  seg_start_indices = sfft_output["seg_start_indices"]
+  seg_start_indices = stft_output["seg_start_indices"]
   # to convert these to time, just divide by sample rate 
   t_ax = seg_start_indices / sr
   # calculate the spectrum of each window
-  win_spectrum = get_spectrum(wf, sr=sr, tau=tau, sfft=sfft, freq_ax=freq_ax, fftshift_segs=fftshift_segs, scaling=scaling, return_all=True)["win_spectrum"]
+  win_spectrum = get_spectrum(wf, sr=sr, tau=tau, stft=stft, freq_ax=freq_ax, fftshift_segs=fftshift_segs, scaling=scaling, return_dict=True)["win_spectrum"]
   # make meshgrid
   xx, yy = np.meshgrid(t_ax, freq_ax)
   if khz:
@@ -644,13 +300,13 @@ def coherogram(wf, sr, tau, xi, scope=2, freq_ref_step=1, ref_type="next_win", n
   """
 
   # calculate the segmented fft, which outputs three arrays we will use
-  sfft_output = get_sfft(wf, sr=sr, num_segs=num_segs, tau=tau, xi=xi, fftshift_segs=fftshift_segs)
+  stft_output = get_stft(wf, sr=sr, num_segs=num_segs, tau=tau, xi=xi, fftshift_segs=fftshift_segs)
   # this is the segmented fft itself
-  sfft = sfft_output["sfft"]
+  stft = stft_output["stft"]
   # this is the frequency axis
-  freq_ax = sfft_output["freq_ax"]
+  freq_ax = stft_output["freq_ax"]
   # these are the indices of where each window starts in the waveform 
-  seg_start_indices = sfft_output["seg_start_indices"]
+  seg_start_indices = stft_output["seg_start_indices"]
   # get num_segs (if you passed in a num_segs, this will just redefine it at the same value!)
   num_segs = len(seg_start_indices)
   # to convert these to time, just divide by sample rate 
@@ -677,8 +333,8 @@ def coherogram(wf, sr, tau, xi, scope=2, freq_ref_step=1, ref_type="next_win", n
   num_freqs = len(freq_ax)
   # initialize matrix for coherences (taking the above considerations into account)
   coherences = np.zeros((len(t_ax), num_freqs))
-  # get phase information from sfft
-  phases = np.angle(sfft)
+  # get phase information from stft
+  phases = np.angle(stft)
   
   if ref_type == "next_win":
     # initialize phase_diffs; the -1 is because we will not be able to calculate a phase diff for the final window!
@@ -762,7 +418,7 @@ def phase_portrait(wf, wf_title="Sum of Oscillators"):
   plt.show()
   
 def scatter_phase_diffs(freq, wf, sr, tau, num_segs=None, ref_type="next_freq", win_type='boxcar', bin_shift=1, xi=None, fftshift_segs=False, wf_title="Waveform", ax=None):
-    c = get_coherence(wf, ref_type=ref_type, sr=sr, win_type=win_type, num_segs=num_segs, tau=tau, xi=xi, bin_shift=bin_shift, fftshift_segs=fftshift_segs, return_all=True)
+    c = get_coherence(wf, ref_type=ref_type, sr=sr, win_type=win_type, num_segs=num_segs, tau=tau, xi=xi, bin_shift=bin_shift, fftshift_segs=fftshift_segs, return_dict=True)
     num_segs = c["num_segs"]
     phase_diffs = c["phase_diffs"]
     # get the freq_bin_index - note this only works if we're using next_freq! Then the 0 index bin is 0 freq, 1 index -> 1/tau, 2 index -> 2/tau
@@ -784,7 +440,7 @@ def scatter_phase_diffs(freq, wf, sr, tau, num_segs=None, ref_type="next_freq", 
     print("<|phase diffs|> = " + str(np.mean(np.abs(phase_diffs))))
 
 def scatter_phases(freq, wf, sr, tau, num_segs=None, ref_type="next_freq", bin_shift=1, xi=None, fftshift_segs=False, wf_title="Waveform", ax=None):
-    c = get_coherence(wf, ref_type=ref_type, sr=sr, num_segs=num_segs, tau=tau, xi=xi, bin_shift=bin_shift, fftshift_segs=fftshift_segs, return_all=True)
+    c = get_coherence(wf, ref_type=ref_type, sr=sr, num_segs=num_segs, tau=tau, xi=xi, bin_shift=bin_shift, fftshift_segs=fftshift_segs, return_dict=True)
     num_segs = c["num_segs"]
     phases = c["phases"]
     # get the freq_bin_index - note this only works if we're using next_freq! Then the 0 index bin is 0 freq, 1 index -> 1/tau, 2 index -> 2/tau

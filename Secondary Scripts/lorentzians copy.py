@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import scipy.io
 from vodscillator import *
-from plots import *
+from funcs_plotting import *
 from vlodder import *
 from twinvods import *
 from scipy.signal import find_peaks

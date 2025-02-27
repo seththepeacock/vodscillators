@@ -1,7 +1,7 @@
 from vodscillator import *
 from vlodder import *
 import pickle
-from plots import *
+from funcs_plotting import *
 
 # calculates APC and then save to file
 def apc_and_save(vod=Vodscillator, cluster_width=float, t_win=float, amp_weights=bool, num_wins=float, f_min=float, f_max=float, f_resolution=float):

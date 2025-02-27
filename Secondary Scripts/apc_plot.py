@@ -2,7 +2,7 @@ from vodscillator import *
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
-from plots import *
+from funcs_plotting import *
 from vlodder import *
 
 """

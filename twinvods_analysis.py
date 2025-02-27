@@ -3,7 +3,8 @@ from twinvods import *
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
-from plots import *
+from funcs_plotting import *
+from funcs_spectral import *
 
 filename = "test_twins.pkl"
 filepath = "C:\\Users\\Owner\\OneDrive\\Documents\\GitHub\\vodscillators\\"
@@ -12,14 +13,14 @@ with open(filepath + filename, 'rb') as picklefile:
     assert isinstance(twins, TwinVods)
     sr = twins.sample_rate
     
-t_win = 10
+tau = 10
 fmin = 0
 fmax = 10
 
-d = get_mags(wf=twins.P_L, sr=sr, t_win=t_win, dict=True)
+d = get_welch(wf=twins.P_L, sr=sr, tau=tau, dict=True)
 mags_P_L = d["mags"]
 freqs = d["freq_ax"]
-mags_P_R = get_mags(wf=twins.SOO_R, sr=sr, t_win=t_win)
+mags_P_R = get_welch(wf=twins.SOO_R, sr=sr, tau=tau)
 
 ax1 = plt.subplot(2, 1, 1)
 ax2 = plt.subplot(2, 1, 2)
