@@ -4,7 +4,8 @@ from vodscillator import *
 from scipy.signal import hilbert
 from itertools import combinations
 
-# Vlodder helper functions:
+# Plotting functions:
+
 def vlodder(vod: Vodscillator, plot_type:str, osc=-1, window=-1, xmin=0, xmax=None, ymin=None, ymax=None, db=True, psd_shift=0, wf_comp="re", 
                    wf_ss=False, show_plot=True, fig_num=1, wf_title=None):
   """ Plots various plots from Vodscillator
